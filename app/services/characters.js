@@ -45,7 +45,7 @@ const getCharacters = async (filters = {}) => {
                     acc[key] = value;
                     return acc;
                 }, {}) : {},
-                elements: row.elements
+                elements: row.elements ? row.elements.split(', ') : []
             };
         }
         return acc;
@@ -87,7 +87,7 @@ const getCharacter = async (id) => {
             acc[key] = value;
             return acc;
         }, {}),
-        elements: row.elements
+        elements: row.elements ? row.elements.split(', ') : []
     };
 
     return character;

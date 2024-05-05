@@ -57,7 +57,7 @@ const getTeam = async (id) => {
                     DEF: row.DEF,
                     SPEED: row.SPEED,
                     XP: row.XP,
-                    elements: row.elements
+                    elements: row.elements ? row.elements.split(', ') : []
                 });
             }
         }
