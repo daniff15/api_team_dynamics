@@ -1,4 +1,5 @@
 const pool = require('../config/connection');
+const baseAttributes = require('../utils/baseAttributes');
 
 const getCharacters = async (filters = {}) => {
     let baseQuery = `
@@ -93,7 +94,82 @@ const getCharacter = async (id) => {
     return character;
 }
 
+const createCharacter = async (name, characterType, level, elements, attributes) => {
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction(); 
+
+        // Prevent creating a character with more than one element
+        if (characterType === 1 && elements.length !== 1) {
+            throw new Error('Players must have exactly one element.');
+        }
+
+        // Prevent creating a character with level > 1
+        const finalLevel = characterType === 1 ? 1 : level;
+        const [character] = await connection.query(
+            'INSERT INTO characters (name, character_type, level) VALUES (?, ?, ?)',
+            [name, characterType, finalLevel]
+        );
+
+        const characterId = character.insertId;
+        for (const elementId of elements) {
+            await connection.query(
+                'INSERT INTO character_elements (character_id, element_id) VALUES (?, ?)',
+                [characterId, elementId]
+            );
+        }
+
+        if (characterType === 1) {
+            const [element] = await connection.query(
+                'SELECT name FROM elements WHERE id = ?',
+                [elements[0]]
+            );
+
+            if (!element.length) {
+                throw new Error('Element not found');
+            }
+
+            const attrs = baseAttributes[element[0].name.toLowerCase()];
+            if (!attrs) {
+                throw new Error('Attributes not defined for the element');
+            }
+
+            // Batch insert attributes for efficiency
+            const attributeInserts = attrs.map((value, index) => [
+                characterId, finalLevel, index + 1, value
+            ]);
+            await connection.query(
+                'INSERT INTO character_level_attributes (character_id, level_id, attribute_id, value) VALUES ?',
+                [attributeInserts]
+            );
+        } else {
+            // Insert non-player character attributes
+            for (const [attribute, value] of Object.entries(attributes)) {
+                const [[{id: attributeId}]] = await connection.query(
+                    'SELECT id FROM attributes WHERE name = ?',
+                    [attribute]
+                );
+
+                await connection.query(
+                    'INSERT INTO character_level_attributes (character_id, level_id, attribute_id, value) VALUES (?, ?, ?, ?)',
+                    [characterId, finalLevel, attributeId, value]
+                );
+            }
+        }
+
+
+        await connection.commit(); 
+        return { id: characterId, message: "Character created successfully" };
+    } catch (error) {
+        await connection.rollback(); 
+        throw error;
+    } finally {
+        connection.release();
+    }
+};
+
 module.exports = {
     getCharacters,
-    getCharacter
+    getCharacter,
+    createCharacter
 };

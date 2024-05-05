@@ -29,5 +29,16 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+router.post('/', async (req, res) => {
+    try {
+        const { name, characterType, level, elements, attributes } = req.body;
+        const result = await charactersService.createCharacter(name, characterType, level, elements, attributes);
+        res.status(201).send(result);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ message: error.message });
+    }
+});
+
 module.exports = router;
 
