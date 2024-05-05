@@ -1,6 +1,7 @@
 const express = require('express');
-const pool = require('./config/connection');
 const communitiesRoutes = require('./routes/communities');
+const teamsRoutes = require('./routes/teams');
+const charactersRoutes = require('./routes/characters');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -8,7 +9,6 @@ app.use(express.json());
 
 app.get('/', (req, res) => {
     try {
-        // send hello world
         const rows = 'Hello World';
         res.json(rows);
     } catch (err) {
@@ -18,6 +18,9 @@ app.get('/', (req, res) => {
 });
 
 app.use('/communities', communitiesRoutes);
+app.use('/teams', teamsRoutes);
+app.use('/characters', charactersRoutes);
+
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
