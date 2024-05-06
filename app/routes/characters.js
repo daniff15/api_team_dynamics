@@ -40,5 +40,16 @@ router.post('/', async (req, res) => {
     }
 });
 
+router.delete('/:id', async (req, res) => {
+    try {
+        const id = req.params.id;
+        const result = await charactersService.deleteCharacter(id);
+        res.status(204).send(result);
+    } catch (err) {
+        console.error(err);
+        res.status(err.message === 'Character not found' ? 404 : 500).send({ message: err.message });
+    }
+});
+
 module.exports = router;
 

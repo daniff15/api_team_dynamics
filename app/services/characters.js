@@ -8,6 +8,7 @@ const getCharacters = async (filters = {}) => {
             c.name AS character_name,
             c.character_type,
             c.level,
+            tc.team_id AS team_id,
             GROUP_CONCAT(DISTINCT CONCAT(a.name, ':', cla.value) ORDER BY a.name SEPARATOR ', ') AS attributes,
             GROUP_CONCAT(DISTINCT e.name ORDER BY e.name SEPARATOR ', ') AS elements
         FROM characters c
@@ -15,6 +16,7 @@ const getCharacters = async (filters = {}) => {
         LEFT JOIN attributes a ON cla.attribute_id = a.id
         LEFT JOIN character_elements ce ON c.id = ce.character_id
         LEFT JOIN elements e ON ce.element_id = e.id
+        LEFT JOIN team_characters tc ON c.id = tc.character_id
     `;
 
     const conditions = [];
@@ -29,31 +31,29 @@ const getCharacters = async (filters = {}) => {
         baseQuery += ' WHERE ' + conditions.join(' AND ');
     }
 
-    baseQuery += ' GROUP BY c.id, c.name, c.character_type, c.level';
+    // Include tc.team_id in GROUP BY to satisfy ONLY_FULL_GROUP_BY SQL mode
+    baseQuery += ' GROUP BY c.id, c.name, c.character_type, c.level, tc.team_id';
 
     const [rows] = await pool.query(baseQuery, params);
 
     // Process rows...
-    const characters = rows.reduce((acc, row) => {
-        if (!acc[row.character_id]) {
-            acc[row.character_id] = {
-                id: row.character_id,
-                name: row.character_name,
-                character_type: row.character_type,
-                level: row.level,
-                attributes: row.attributes ? row.attributes.split(', ').reduce((acc, attr) => {
-                    const [key, value] = attr.split(':');
-                    acc[key] = value;
-                    return acc;
-                }, {}) : {},
-                elements: row.elements ? row.elements.split(', ') : []
-            };
-        }
-        return acc;
-    }, {});
+    const characters = rows.map(row => ({
+        id: row.character_id,
+        name: row.character_name,
+        character_type: row.character_type,
+        level: row.level,
+        team_id: row.team_id || null,  // Null if not part of any team
+        attributes: row.attributes ? row.attributes.split(', ').reduce((acc, attr) => {
+            const [key, value] = attr.split(':');
+            acc[key] = value;
+            return acc;
+        }, {}) : {},
+        elements: row.elements ? row.elements.split(', ') : []
+    }));
 
-    return Object.values(characters);
+    return characters;
 };
+
 
 const getCharacter = async (id) => {
     const [rows] = await pool.query(`
@@ -62,6 +62,7 @@ const getCharacter = async (id) => {
             c.name AS character_name,
             c.character_type,
             c.level,
+            tc.team_id AS team_id,
             GROUP_CONCAT(DISTINCT CONCAT(a.name, ':', cla.value) ORDER BY a.name SEPARATOR ', ') AS attributes,
             GROUP_CONCAT(DISTINCT e.name ORDER BY e.name SEPARATOR ', ') AS elements
         FROM characters c
@@ -69,8 +70,9 @@ const getCharacter = async (id) => {
         LEFT JOIN attributes a ON cla.attribute_id = a.id
         LEFT JOIN character_elements ce ON c.id = ce.character_id
         LEFT JOIN elements e ON ce.element_id = e.id
+        LEFT JOIN team_characters tc ON c.id = tc.character_id  -- Joining with team_characters to get team_id
         WHERE c.id = ?
-        GROUP BY c.id, c.name, c.character_type, c.level
+        GROUP BY c.id, c.name, c.character_type, c.level, tc.team_id  -- Including team_id in GROUP BY
     `, [id]);
 
     if (!rows.length) {
@@ -83,16 +85,23 @@ const getCharacter = async (id) => {
         name: row.character_name,
         character_type: row.character_type,
         level: row.level,
-        attributes: row.attributes.split(', ').reduce((acc, attr) => {
-            const [key, value] = attr.split(':');
-            acc[key] = value;
-            return acc;
-        }, {}),
+        team_id: row.team_id,  // Adding team_id to the result object
+        attributes: {},
         elements: row.elements ? row.elements.split(', ') : []
     };
 
+    // Processing attributes if any
+    if (row.attributes) {
+        character.attributes = row.attributes.split(', ').reduce((acc, attr) => {
+            const [key, value] = attr.split(':');
+            acc[key] = value;
+            return acc;
+        }, {});
+    }
+
     return character;
 }
+
 
 const createCharacter = async (name, characterType, level, elements, attributes) => {
     const connection = await pool.getConnection();
@@ -168,8 +177,18 @@ const createCharacter = async (name, characterType, level, elements, attributes)
     }
 };
 
+const deleteCharacter = async (id) => {
+    const [result] = await pool.query('DELETE FROM characters WHERE id = ?', [id]);
+    if (result.affectedRows === 0) {
+        throw new Error('Character not found');
+    }
+
+    return result;
+};
+
 module.exports = {
     getCharacters,
     getCharacter,
-    createCharacter
+    createCharacter,
+    deleteCharacter
 };
