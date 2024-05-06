@@ -123,17 +123,22 @@ CREATE TABLE `character_elements` (
 CREATE TABLE `battles` (
     `id` INT AUTO_INCREMENT NOT NULL,
     `team_id` INT NOT NULL,
-    `bosses_id` INT NOT NULL,
+    `opponent_team_id` INT,  -- NULL if this is a boss fight
+    `boss_id` INT,  -- NULL if this is a team fight
     `battle_date` DATETIME NOT NULL,
-    `winner_id` INT NOT NULL,
+    `winner_id` INT,  -- Can be NULL initially
     PRIMARY KEY (`id`),
-    CONSTRAINT `fk_battles_teams` FOREIGN KEY (`team_id`)
+    CONSTRAINT `fk_battles_initiating_teams` FOREIGN KEY (`team_id`)
         REFERENCES `teams` (`id`)
         ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT `fk_battles_characters` FOREIGN KEY (`bosses_id`)
+    CONSTRAINT `fk_battles_opponent_teams` FOREIGN KEY (`opponent_team_id`)
+        REFERENCES `teams` (`id`)
+        ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT `fk_battles_bosses` FOREIGN KEY (`boss_id`)
         REFERENCES `characters` (`id`)
-        ON DELETE CASCADE ON UPDATE CASCADE
+        ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 
 CREATE TABLE `attacks` (
     `id` INT AUTO_INCREMENT NOT NULL,

@@ -85,7 +85,7 @@ const getCharacter = async (id) => {
         name: row.character_name,
         character_type: row.character_type,
         level: row.level,
-        team_id: row.team_id,  // Adding team_id to the result object
+        team_id: row.team_id,  
         attributes: {},
         elements: row.elements ? row.elements.split(', ') : []
     };
