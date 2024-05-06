@@ -196,16 +196,13 @@ INSERT INTO character_elements (character_id, element_id) VALUES
 (12, 2);
 
 -- Inserting data into the 'battles' table - team battle
-INSERT INTO battles (team_id, opponent_team_id, battle_date, winner_id)
-VALUES (1, 2, NOW(), 1),
-VALUES (1, 2, NOW(), 2);
+INSERT INTO battles (team_id, opponent_team_id, battle_date, winner_id) VALUES (1, 2, NOW(), 1);
+INSERT INTO battles (team_id, opponent_team_id, battle_date, winner_id) VALUES (1, 2, NOW(), 2);
 
 -- Inserting data into the 'battles' table - boss battle
-INSERT INTO battles (team_id, boss_id, battle_date, winner_id)
-VALUES (1, 9, NOW(), 1),
-VALUES (1, 10, NOW(), 10),
-VALUES (1, 11, NOW(), 11),
-VALUES (1, 12, NOW(), 12);
+INSERT INTO battles (team_id, boss_id, battle_date, winner_id) VALUES (1, 9, NOW(), 1);
+INSERT INTO battles (team_id, boss_id, battle_date, winner_id) VALUES (2, 10, NOW(), 10);
+
 
 
 -- Inserting data into the 'attacks' table - simulate the attacks between characters and bosses

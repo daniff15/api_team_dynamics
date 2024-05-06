@@ -1,5 +1,21 @@
 USE team_dynamics;
 
+SET FOREIGN_KEY_CHECKS = 0; -- Disable foreign key checks in MySQL
+
+TRUNCATE TABLE character_elements;
+TRUNCATE TABLE element_strengths;
+TRUNCATE TABLE team_characters;
+TRUNCATE TABLE characters;
+TRUNCATE TABLE teams;
+TRUNCATE TABLE character_level_attributes;
+TRUNCATE TABLE attributes;
+TRUNCATE TABLE character_types;
+TRUNCATE TABLE levels;
+TRUNCATE TABLE elements;
+TRUNCATE TABLE communities;
+
+SET FOREIGN_KEY_CHECKS = 1; -- Re-enable foreign key checks
+
 -- Inserting data into the 'communities' table
 INSERT INTO communities (name) VALUES 
 ('Community One'), 
@@ -180,16 +196,13 @@ INSERT INTO character_elements (character_id, element_id) VALUES
 (12, 2);
 
 -- Inserting data into the 'battles' table - team battle
-INSERT INTO battles (team_id, opponent_team_id, battle_date, winner_id)
-VALUES (1, 2, NOW(), 1),
-VALUES (1, 2, NOW(), 2);
+INSERT INTO battles (team_id, opponent_team_id, battle_date, winner_id) VALUES (1, 2, NOW(), 1);
+INSERT INTO battles (team_id, opponent_team_id, battle_date, winner_id) VALUES (1, 2, NOW(), 2);
 
 -- Inserting data into the 'battles' table - boss battle
-INSERT INTO battles (team_id, boss_id, battle_date, winner_id)
-VALUES (1, 9, NOW(), 1),
-VALUES (1, 10, NOW(), 10),
-VALUES (1, 11, NOW(), 11),
-VALUES (1, 12, NOW(), 12);
+INSERT INTO battles (team_id, boss_id, battle_date, winner_id) VALUES (1, 9, NOW(), 1);
+INSERT INTO battles (team_id, boss_id, battle_date, winner_id) VALUES (2, 10, NOW(), 10);
+
 
 
 -- Inserting data into the 'attacks' table - simulate the attacks between characters and bosses

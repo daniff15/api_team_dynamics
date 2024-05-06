@@ -2,6 +2,7 @@ const express = require('express');
 const communitiesRoutes = require('./routes/communities');
 const teamsRoutes = require('./routes/teams');
 const charactersRoutes = require('./routes/characters');
+const battlesRoutes = require('./routes/battles');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -20,6 +21,7 @@ app.get('/', (req, res) => {
 app.use('/communities', communitiesRoutes);
 app.use('/teams', teamsRoutes);
 app.use('/characters', charactersRoutes);
+app.use('/battles', battlesRoutes);
 
 
 app.listen(PORT, () => {
