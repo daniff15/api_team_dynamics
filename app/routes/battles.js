@@ -32,6 +32,15 @@ router.get("/:id", async (req, res) => {
     }
 });
 
+router.post("/", async (req, res) => {
+    try {
+        const battle = await battlesService.createBattle(req.body);
+        res.json(battle);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    }
+});
 
 module.exports = router;
 
