@@ -1,15 +1,26 @@
 const fetchAttributes = async (connection, teamId, isBoss = false) => {
     const idField = isBoss ? "c.id" : "tc.team_id";
     return await connection.query(`
-        SELECT c.id, c.name, c.level, c.character_type,
-               GROUP_CONCAT(a.name ORDER BY a.name) AS attribute_names,
-               GROUP_CONCAT(cla.value ORDER BY a.name) AS attribute_values
+        SELECT 
+            c.id,
+            c.name,
+            c.character_type,
+            c.level,
+            GROUP_CONCAT(DISTINCT e.name ORDER BY e.name) AS elements,
+            GROUP_CONCAT(DISTINCT es.name ORDER BY es.name) AS strengths,
+            GROUP_CONCAT(a.name ORDER BY a.name) AS attribute_names,
+            GROUP_CONCAT(cla.value ORDER BY a.name) AS attribute_values
         FROM characters c
         JOIN character_level_attributes cla ON c.id = cla.character_id
         JOIN attributes a ON cla.attribute_id = a.id
         ${isBoss ? '' : 'JOIN team_characters tc ON c.id = tc.character_id'}
+        JOIN character_elements ce ON c.id = ce.character_id
+        JOIN elements e ON ce.element_id = e.id
+        LEFT JOIN element_strengths ess ON e.id = ess.element_id
+        LEFT JOIN elements es ON ess.strong_against_id = es.id
         WHERE ${idField} = ?
-        GROUP BY c.id
+        GROUP BY c.id;
+
     `, [teamId]);
 };
 
@@ -46,7 +57,9 @@ const fetchParticipants = async (connection, team_id, opponent_team_id, boss_id)
             name: participant.name,
             level: participant.level,
             character_type: participant.character_type, 
-            attributes: attributes
+            attributes: attributes,
+            element: participant.elements,
+            strength: participant.strengths,
         };
     });
 
@@ -76,12 +89,13 @@ const calculateDamage = (attacker, defender) => {
     }
 
     // VER A OPCAO DE QUANDO O BOSS TEM DIFERENTES ELEMENTS
+    // Por agora realiza a batalha na mesma, mas damageModifier = 1.0 pq nao entra em nenhuma condicao
     let damageModifier = 1.0;
-    // if (attacker.element === defender.weakness) {
-    //     damageModifier = 1.5;
-    // } else if (attacker.element === defender.strength) {
-    //     damageModifier = 0.5;
-    // }
+    if (attacker.strength === defender.element) {
+        damageModifier = 1.5;
+    } else if (attacker.element === defender.strength) {
+        damageModifier = 0.5;
+    }
 
     const totalDamage = parseInt((baseDamage * damageModifier) * (Math.floor(Math.random() * (255 - 240 + 1)) + 240) / 255, 10);
     
