@@ -4,6 +4,7 @@ const fetchAttributes = async (connection, teamId, isBoss = false) => {
         SELECT 
             c.id,
             c.name,
+            ${isBoss ? '' : 'tc.team_id,'}
             c.character_type,
             c.level,
             GROUP_CONCAT(DISTINCT e.name ORDER BY e.name) AS elements,
@@ -19,7 +20,7 @@ const fetchAttributes = async (connection, teamId, isBoss = false) => {
         LEFT JOIN element_strengths ess ON e.id = ess.element_id
         LEFT JOIN elements es ON ess.strong_against_id = es.id
         WHERE ${idField} = ?
-        GROUP BY c.id;
+        GROUP BY c.id ${isBoss ? ';' : ', tc.team_id;'}
 
     `, [teamId]);
 };
@@ -55,6 +56,7 @@ const fetchParticipants = async (connection, team_id, opponent_team_id, boss_id)
         return {
             id: participant.id,
             name: participant.name,
+            team: participant.team_id,
             level: participant.level,
             character_type: participant.character_type, 
             attributes: attributes,
