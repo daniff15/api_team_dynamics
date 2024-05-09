@@ -46,8 +46,6 @@ const getBattle = async (id) => {
         }
 
         let battleDetails;
-        console.log(typeCheck[0])
-
         if (typeCheck[0].is_team_battle) {
             [battleDetails] = await pool.query(`
                 SELECT 
@@ -108,6 +106,13 @@ const createBattle = async (battle) => {
 
         const { team_id, opponent_team_id, boss_id, battle_date } = battle;
 
+        // Insert the initial battle entry
+        const [result] = await connection.query(
+            'INSERT INTO battles (team_id, boss_id, battle_date) VALUES (?, ?, NOW())',
+            [team_id, boss_id]
+        );
+        const battle_id = result.insertId;
+
         const participants = await fetchParticipants(connection, team_id, opponent_team_id, boss_id);
         
         // Deep clone the original array of participants, so this copy can change as the battle progresses
@@ -131,10 +136,12 @@ const createBattle = async (battle) => {
             
         };
 
-        while (!checkBattleEnd(deepCloneParticipants)) {
+        let battleResult;
+        while (!(battleResult = checkBattleEnd(deepCloneParticipants)).battleEnded) {
             let current = battleQueue.shift();
             let damage = 0;
             let target = null;
+            // VER O CASO DO BOSS DERROTAR UM ELE NAO PODE ATACAR VISTO Q JA FOI DERROTADO!!!
             if (current.character_type === 3 || current.character_type === 2) {
                 const availableTargets = deepCloneParticipants.filter(p => p.character_type === 1 && p.attributes.hp_battle > 0);
                 target = availableTargets[Math.floor(Math.random() * availableTargets.length)];
@@ -145,6 +152,12 @@ const createBattle = async (battle) => {
                 target = availableTargets[0];
                 damage = current.attributes.SPEED === 0 ? 0 : calculateDamage(current, target);
             }
+            if (damage !== 0) {
+                await connection.query(
+                    'INSERT INTO attacks(battle_id, attacker_id, defender_id, damage, attack_time) VALUES (?, ?, ?, ?, NOW())',
+                    [battle_id, current.id, target.id, damage]
+                )
+            }
 
             // Update the target's HP and the current character's SPEED
             updateParticipant(target, 'hp_battle', damage);
@@ -154,6 +167,14 @@ const createBattle = async (battle) => {
             if (battleQueue.length === 0) {
                 battleQueue = initializeQueue(participants);
             }
+        }
+
+        // Finish the battle and update the row with the winner
+        if (battleResult && battleResult.winnerId) {
+            await connection.query(
+                'UPDATE battles SET winner_id = ? WHERE id = ?',
+                [battleResult.winnerId, battle_id]
+            );
         }
         
         await connection.commit();

@@ -107,16 +107,17 @@ const calculateDamage = (attacker, defender) => {
 const checkBattleEnd = (participants) => {
     const boss = participants.find(p => p.character_type === 3 || p.character_type === 2);
     const players = participants.filter(p => p.character_type === 1);
-    if (boss.attributes.hp_battle <= 0) {
-        console.log("Boss has been defeated! Congratulations!");
-        return true;
-    } else if (players.every(p => p.attributes.hp_battle <= 0)) {
-        console.log("All players have been defeated! Game over!");
-        return true;
-    }
-    return false;
 
+    if (boss && boss.attributes.hp_battle <= 0) {
+        console.log("Boss has been defeated! Congratulations!");
+        return { teamId: players[0].character_type, bossId: boss.id, winnerId: players[0].team, battleEnded: true };
+    } else if (players.length > 0 && players.every(p => p.attributes.hp_battle <= 0)) {
+        console.log("All players have been defeated! Game over!");
+        return { teamId: players[0].character_type, bossId: boss.id, winnerId: boss.id, battleEnded: true };
+    }
+    return { battleEnded: false };
 }
+
 
 module.exports = {
     fetchParticipants,
