@@ -40,6 +40,32 @@ router.post('/', async (req, res) => {
     }
 });
 
+router.put('/:id/xp', async (req, res) => {
+    try {
+        const id = req.params.id;
+        const { xp } = req.body;
+        const result = await charactersService.addXPtoCharacter(id, xp);
+        res.json(result);
+    }
+    catch (err) {
+        console.error(err);
+        res.status(err.message === 'Character not found' ? 404 : 500).send({ message: err.message });
+    }
+});
+
+router.put('/:id/attributes', async (req, res) => {
+    try {
+        const id = req.params.id;
+        const attributes = req.body;
+        const result = await charactersService.updateCharacterAttributes(id, attributes);
+        res.json(result);
+    }
+    catch (err) {
+        console.error(err);
+        res.status(err.message === 'Character not found' ? 404 : 500).send({ message: err.message });
+    }
+});
+
 router.delete('/:id', async (req, res) => {
     try {
         const id = req.params.id;

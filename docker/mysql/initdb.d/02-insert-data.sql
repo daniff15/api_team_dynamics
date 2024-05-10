@@ -88,7 +88,8 @@ INSERT INTO attributes (name) VALUES
 ('DEF'), 
 ('ATK'), 
 ('SPEED'), 
-('XP');
+('XP'),
+('AVAILABLE_XTRA_POINTS');
 
 -- Insert attribute values for character 1 at level 1
 INSERT INTO character_level_attributes (character_id, level_id, attribute_id, value) VALUES
@@ -98,72 +99,76 @@ INSERT INTO character_level_attributes (character_id, level_id, attribute_id, va
 (1, 1, 3, 9),   -- ATK
 (1, 1, 4, 7),   -- SPEED
 (1, 1, 5, 0),    -- XP
+(1, 1, 6, 0),    -- AVAILABLE_XTRA_POINTS
 -- Fire TYPE
 (2, 1, 1, 9),  -- HP
 (2, 1, 2, 7),   -- DEF
 (2, 1, 3, 10),   -- ATK
 (2, 1, 4, 8),   -- SPEED
 (2, 1, 5, 0),    -- XP
+(2, 1, 6, 0),    -- AVAILABLE_XTRA_POINTS
 -- Earth TYPE
 (3, 1, 1, 8),  -- HP
 (3, 1, 2, 10),   -- DEF
 (3, 1, 3, 7),   -- ATK
 (3, 1, 4, 9),   -- SPEED
 (3, 1, 5, 0),    -- XP
+(3, 1, 6, 0),    -- AVAILABLE_XTRA_POINTS
 -- Air TYPE
 (4, 1, 1, 7),  -- HP
 (4, 1, 2, 9),   -- DEF
 (4, 1, 3, 8),   -- ATK
 (4, 1, 4, 10),   -- SPEED
 (4, 1, 5, 0),    -- XP
+(4, 1, 6, 0),    -- AVAILABLE_XTRA_POINTS
 -- Water TYPE
 (5, 1, 1, 10),  -- HP
 (5, 1, 2, 8),   -- DEF
 (5, 1, 3, 9),   -- ATK
 (5, 1, 4, 7),   -- SPEED
 (5, 1, 5, 0),    -- XP
+(5, 1, 6, 0),    -- AVAILABLE_XTRA_POINTS
 -- Fire TYPE
 (6, 1, 1, 9),  -- HP
 (6, 1, 2, 7),   -- DEF
 (6, 1, 3, 10),   -- ATK
 (6, 1, 4, 8),   -- SPEED
 (6, 1, 5, 0),    -- XP
+(6, 1, 6, 0),    -- AVAILABLE_XTRA_POINTS
 -- Earth TYPE
 (7, 1, 1, 8),  -- HP
 (7, 1, 2, 10),   -- DEF
 (7, 1, 3, 7),   -- ATK
 (7, 1, 4, 9),   -- SPEED
 (7, 1, 5, 0),    -- XP
+(7, 1, 6, 0),    -- AVAILABLE_XTRA_POINTS
 -- Air TYPE
 (8, 1, 1, 7),  -- HP
 (8, 1, 2, 9),   -- DEF
 (8, 1, 3, 8),   -- ATK
 (8, 1, 4, 10),   -- SPEED
 (8, 1, 5, 0),    -- XP
+(8, 1, 6, 0),    -- AVAILABLE_XTRA_POINTS
 -- Boss Ar
 (9, 5, 1, 65), -- HP
 (9, 5, 2, 20), -- DEF
 (9, 5, 3, 20), -- ATK
 (9, 5, 4, 20), -- SPEED
-(9, 5, 5, 0), -- XP
 -- Boss Terra 
 (10, 5, 1, 200), -- HP
 (10, 5, 2, 40), -- DEF
 (10, 5, 3, 40), -- ATK
 (10, 5, 4, 40), -- SPEED
-(10, 5, 5, 0), -- XP
 -- Boss Água
 (11, 5, 1, 400), -- HP
 (11, 5, 2, 60), -- DEF
 (11, 5, 3, 60), -- ATK
 (11, 5, 4, 60), -- SPEED
-(11, 5, 5, 0), -- XP
 -- Boss Fogo
 (12, 5, 1, 600), -- HP
 (12, 5, 2, 135), -- DEF
 (12, 5, 3, 135), -- ATK
-(12, 5, 4, 135), -- SPEED
-(12, 5, 5, 0); -- XP
+(12, 5, 4, 135); -- SPEED
 
 -- Inserting data into the 'elements' table
 INSERT INTO elements (name) VALUES 

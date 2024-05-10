@@ -1,5 +1,6 @@
 const pool = require('../config/connection');
 const { fetchParticipants, checkBattleEnd, initializeQueue, calculateDamage } = require('../utils/battles');
+const { updateParticipantBattleStatus } = require('../utils/characters');
 
 async function getAllBattles(filters = {}) {
     let query = `SELECT * FROM battles WHERE 1=1`;
@@ -104,13 +105,16 @@ const createBattle = async (battle) => {
     try {
         await connection.beginTransaction();
 
-        const { team_id, opponent_team_id, boss_id, battle_date } = battle;
+        const { team_id, opponent_team_id, boss_id } = battle;
 
-        // Insert the initial battle entry
+        const now = new Date();
+        const sqlNow = now.toISOString().slice(0, 19).replace('T', ' ');
+
         const [result] = await connection.query(
-            'INSERT INTO battles (team_id, boss_id, battle_date) VALUES (?, ?, NOW())',
-            [team_id, boss_id]
+            'INSERT INTO battles (team_id, boss_id, battle_date) VALUES (?, ?, ?)',
+            [team_id, boss_id, sqlNow]
         );
+
         const battle_id = result.insertId;
 
         const participants = await fetchParticipants(connection, team_id, opponent_team_id, boss_id);
@@ -118,23 +122,6 @@ const createBattle = async (battle) => {
         // Deep clone the original array of participants, so this copy can change as the battle progresses
         const deepCloneParticipants = JSON.parse(JSON.stringify(participants));
         let battleQueue = initializeQueue(deepCloneParticipants);
-
-        const updateParticipant = (participant, attr, value = 5) => {
-            // Directly find and update the participant in deepCloneParticipants
-            const participantIndex = deepCloneParticipants.findIndex(p => p.id === participant.id);
-            if (attr === 'SPEED') {
-                if (deepCloneParticipants[participantIndex].attributes.SPEED - value < 0) {
-                    deepCloneParticipants[participantIndex].attributes.SPEED = 0;
-                } else if (deepCloneParticipants[participantIndex].attributes.SPEED === 0) {
-                    deepCloneParticipants[participantIndex].attributes.SPEED = participants[participantIndex].attributes.SPEED;
-                } else {
-                    deepCloneParticipants[participantIndex].attributes.SPEED -= value;
-                }
-            } else if (attr === 'hp_battle') {
-                deepCloneParticipants[participantIndex].attributes.hp_battle -= value;
-            }
-            
-        };
 
         let battleResult;
         while (!(battleResult = checkBattleEnd(deepCloneParticipants)).battleEnded) {
@@ -160,8 +147,8 @@ const createBattle = async (battle) => {
             }
 
             // Update the target's HP and the current character's SPEED
-            updateParticipant(target, 'hp_battle', damage);
-            updateParticipant(current, 'SPEED');
+            updateParticipantBattleStatus(deepCloneParticipants, target, 'hp_battle', damage);
+            updateParticipantBattleStatus(deepCloneParticipants, current, 'SPEED');
 
             // After each phase of the battle, the queue is re-sorted based on the current SPEED of the participants
             if (battleQueue.length === 0) {
@@ -183,7 +170,7 @@ const createBattle = async (battle) => {
                 team_id,
                 opponent_team_id,
                 boss_id,
-                battle_date
+                battle_date: sqlNow
             },
             participants: deepCloneParticipants 
         };
