@@ -1,7 +1,7 @@
 const { CharactersModel, CharacterLevelAttributesModel, AttributesModel, LevelsModel, CharacterElementsModel, ElementsModel, ElementRelationshipsModel } = require('../models');
 
-// Utility function to include player associations
-const includePlayerAssociations = () => {
+// Utility function to include player associations inside team query
+const includePlayerAssociationsInsideTeam = () => {
     return [
         {
             model: CharactersModel,
@@ -47,6 +47,50 @@ const includePlayerAssociations = () => {
             ]
         }
     ];
+};
+
+// Utility function to include player associations outside team query
+const includePlayerAssociationsOutsideTeam = () => {
+    return [
+        {
+            model: CharacterLevelAttributesModel,
+            include: [
+                {
+                    model: AttributesModel
+                },
+                {
+                    model: LevelsModel
+                }
+            ]
+        },
+        {
+            model: CharacterElementsModel,
+            include: [
+                {
+                    model: ElementsModel,
+                    as: 'element',
+                    include: [
+                        { 
+                            model: ElementRelationshipsModel, 
+                            as: 'strengths', 
+                            include: [{ 
+                                model: ElementsModel, 
+                                as: 'element'
+                            }] 
+                        },
+                        { 
+                            model: ElementRelationshipsModel, 
+                            as: 'weaknesses', 
+                            include: [{ 
+                                model: ElementsModel, 
+                                as: 'element'
+                            }] 
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
 };
 
 // Utility function to construct player response
@@ -132,7 +176,8 @@ const calculate_xp_needed = (character) => {
 //                 self.check_level_up()
 
 module.exports = {
-    includePlayerAssociations,
+    includePlayerAssociationsInsideTeam,
+    includePlayerAssociationsOutsideTeam,
     constructPlayerResponse,
     updateParticipantBattleStatus,
     checkLevelUp

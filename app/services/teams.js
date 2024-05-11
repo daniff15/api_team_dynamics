@@ -1,6 +1,6 @@
 const pool = require('../config/connection');
 const { TeamsModel, TeamCharactersModel, CharactersModel, CharacterLevelAttributesModel, AttributesModel, CharacterElementsModel, ElementsModel, LevelsModel, ElementRelationshipsModel } = require('../models/index');
-const { includePlayerAssociations, constructPlayerResponse } = require('../utils/characters');
+const { includePlayerAssociationsInsideTeam, constructPlayerResponse } = require('../utils/characters');
 
 const getAllTeams = async (communityId) => {
     const queryOptions = {
@@ -21,7 +21,7 @@ const getTeam = async (id) => {
         include: [
             {
                 model: TeamCharactersModel,
-                include: includePlayerAssociations()
+                include: includePlayerAssociationsInsideTeam()
             }
         ]
     });

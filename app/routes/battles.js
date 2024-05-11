@@ -14,7 +14,7 @@ router.get("/", async (req, res) => {
 
         Object.keys(filters).forEach(key => filters[key] === undefined && delete filters[key]);
 
-        const [battles] = await battlesService.getAllBattles(filters);
+        const battles = await battlesService.getAllBattles(filters);
         res.json(battles);
     } catch (err) {
         console.error(err);

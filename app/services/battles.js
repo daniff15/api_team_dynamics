@@ -1,97 +1,78 @@
-const pool = require('../config/connection');
-const { fetchParticipants, checkBattleEnd, initializeQueue, calculateDamage } = require('../utils/battles');
-const { updateParticipantBattleStatus } = require('../utils/characters');
+const { Op } = require('sequelize');
+const { BattlesModel, sequelize, TeamsModel, TeamCharactersModel, AttacksModel, CharactersModel } = require('../models/index');
+const { checkBattleEnd, initializeQueue, calculateDamage } = require('../utils/battles');
+const { updateParticipantBattleStatus, includePlayerAssociationsInsideTeam, includePlayerAssociationsOutsideTeam } = require('../utils/characters');
 
-async function getAllBattles(filters = {}) {
-    let query = `SELECT * FROM battles WHERE 1=1`;
-    const params = [];
+const getAllBattles = async (filters = {}) => {
+    try {
+        let where = {};
 
-    if (filters.team_id) {
-        query += ` AND (team_id = ? OR opponent_team_id = ?)`;
-        params.push(filters.team_id, filters.team_id);
-    }
-
-    if (filters.boss_id) {
-        query += ` AND boss_id = ?`;
-        params.push(filters.boss_id);
-    }
-    
-    if (filters.winner_id) {
-        query += ` AND winner_id = ?`;
-        params.push(filters.winner_id);
-    }
-    
-    if (filters.battle_type) {
-        if (filters.battle_type === 'boss') {
-            query += ` AND boss_id IS NOT NULL`;
-        } else if (filters.battle_type === 'team') {
-            query += ` AND opponent_team_id IS NOT NULL`;
+        if (filters.team_id) {
+            where[Op.or] = [
+                { team_id: filters.team_id },
+                { opponent_team_id: filters.team_id }
+            ];
         }
-    }
 
-    return await pool.query(query, params);
-}
+        if (filters.boss_id) {
+            where.boss_id = filters.boss_id;
+        }
+
+        if (filters.winner_id) {
+            where.winner_id = filters.winner_id;
+        }
+
+        if (filters.battle_type) {
+            if (filters.battle_type === 'boss') {
+                where.boss_id = { [Op.not]: null };
+            } else if (filters.battle_type === 'team') {
+                where.opponent_team_id = { [Op.not]: null };
+            }
+        }
+
+        const battles = await BattlesModel.findAll({ where: where });
+
+        console.log(battles);
+
+        return battles;
+    } catch (error) {
+        throw error;
+    }
+};
 
 const getBattle = async (id) => {
     try {
-        const [typeCheck] = await pool.query(`
-            SELECT 
-                boss_id,
-                (boss_id IS NULL) AS is_team_battle
-            FROM battles
-            WHERE id = ?
-        `, [id]);
+        const typeCheck = await BattlesModel.findOne({
+            attributes: [
+                'boss_id',
+                [sequelize.literal('(boss_id IS NULL)'), 'is_team_battle']
+            ],
+            where: {
+                id: id
+            }
+        });
 
-        if (!typeCheck.length) {
+        if (!typeCheck) {
             throw new Error('Battle not found');
         }
 
         let battleDetails;
-        if (typeCheck[0].is_team_battle) {
-            [battleDetails] = await pool.query(`
-                SELECT 
-                    b.id AS battle_id,
-                    b.team_id,
-                    b.opponent_team_id AS opponent_id,
-                    b.battle_date,
-                    b.winner_id,
-                    t1.name AS team_name,
-                    t2.name AS opponent_team_name
-                FROM battles b
-                JOIN teams t1 ON b.team_id = t1.id
-                JOIN teams t2 ON b.opponent_team_id = t2.id
-                WHERE b.id = ?
-            `, [id]);
+        if (typeCheck.is_team_battle) {
+            battleDetails = await BattlesModel.findOne({
+                where: { id: id },
+            });
         } else {
-            [battleDetails] = await pool.query(`
-                SELECT 
-                    b.id AS battle_id,
-                    b.team_id,
-                    b.boss_id AS opponent_id,
-                    b.battle_date,
-                    b.winner_id,
-                    t.name AS team_name,
-                    c.name AS boss_name
-                FROM battles b
-                JOIN teams t ON b.team_id = t.id
-                JOIN characters c ON b.boss_id = c.id
-                WHERE b.id = ?
-            `, [id]);
+            battleDetails = await BattlesModel.findOne({
+                where: { id: id },
+            });
         }
 
-        const [attacks] = await pool.query(`
-            SELECT 
-                attacker_id,
-                defender_id,
-                damage,
-                attack_time
-            FROM attacks
-            WHERE battle_id = ?
-            ORDER BY attack_time ASC
-        `, [id]);
+        const attacks = await AttacksModel.findAll({
+            where: { battle_id: id },
+        });
 
         return {
-            battle: battleDetails[0],
+            battle: battleDetails,
             attacks: attacks
         };
     } catch (error) {
@@ -101,26 +82,104 @@ const getBattle = async (id) => {
 };
 
 const createBattle = async (battle) => {
-    const connection = await pool.getConnection();
+    let transaction;
     try {
-        await connection.beginTransaction();
+        transaction = await sequelize.transaction();
 
         const { team_id, opponent_team_id, boss_id } = battle;
 
-        const now = new Date();
-        const sqlNow = now.toISOString().slice(0, 19).replace('T', ' ');
+        const battle_date = new Date();
 
-        const [result] = await connection.query(
-            'INSERT INTO battles (team_id, boss_id, battle_date) VALUES (?, ?, ?)',
-            [team_id, boss_id, sqlNow]
-        );
+        const createdBattle = await BattlesModel.create({
+            team_id,
+            opponent_team_id,
+            boss_id,
+            battle_date
+        }, { transaction });
 
-        const battle_id = result.insertId;
+        const battle_id = createdBattle.id;
 
-        const participants = await fetchParticipants(connection, team_id, opponent_team_id, boss_id);
-        
-        // Deep clone the original array of participants, so this copy can change as the battle progresses
-        const deepCloneParticipants = JSON.parse(JSON.stringify(participants));
+        const participants = await TeamsModel.findOne({
+            where: { id: team_id },
+            include: [
+                {
+                    model: TeamCharactersModel,
+                    include: includePlayerAssociationsInsideTeam()
+                }
+            ]
+        });
+
+        if (!participants) {
+            throw new Error('Team not found');
+        }
+
+        let opponent;
+        if (opponent_team_id) {
+            opponent = await TeamsModel.findOne({
+                where: { id: opponent_team_id },
+                include: [
+                    {
+                        model: TeamCharactersModel,
+                        include: includePlayerAssociationsInsideTeam()
+                    }
+                ]
+            });
+
+            if (!opponent) {
+                throw new Error('Opponent team not found');
+            }
+        } else {
+            opponent = await CharactersModel.findOne({
+                where: { 
+                    id: boss_id, 
+                    [Op.or]: [
+                        { character_type_id: 2 },
+                        { character_type_id: 3 }
+                    ]
+                },
+                include: includePlayerAssociationsOutsideTeam()
+            });
+
+            if (!opponent) {
+                throw new Error('Boss not found');
+            }
+
+            opponent = {
+                character_id: opponent.id,
+                character_type: opponent.character_type_id,
+                character: opponent
+            };
+        }
+
+        let deepCloneParticipants = [];
+        //Transform the participants to the format required for battle
+        for (let participant of [...participants.team_characters, ...(opponent.team_characters || [opponent])]) {
+            const attributesArray = participant.character.character_level_attributes;
+            const attributes = attributesArray.reduce((acc, attribute) => {
+                acc[attribute.attribute.name] = attribute.value;
+                return acc;
+            }, {});
+            
+            attributes.hp_battle = attributes.HP * (1 + (participant.character.level_id - 1) * 0.12);
+
+            // Transform strengths and weaknesses before element transofmation
+            participant.character.character_elements.forEach(element => {
+                participant.strengths = element.element.strengths.map(strength => strength.element.id);
+                participant.weaknesses = element.element.weaknesses.map(weakness => weakness.element.id);
+            });
+
+            participant = {
+                id: participant.character.id,
+                name: participant.character.name,
+                team: participant.team_id,
+                level: participant.character.level_id,
+                character_type: participant.character.character_type_id,
+                attributes: attributes,
+            };
+
+            deepCloneParticipants.push(participant);
+        }
+
         let battleQueue = initializeQueue(deepCloneParticipants);
 
         let battleResult;
@@ -128,7 +187,6 @@ const createBattle = async (battle) => {
             let current = battleQueue.shift();
             let damage = 0;
             let target = null;
-            // VER O CASO DO BOSS DERROTAR UM ELE NAO PODE ATACAR VISTO Q JA FOI DERROTADO!!!
             if (current.character_type === 3 || current.character_type === 2) {
                 const availableTargets = deepCloneParticipants.filter(p => p.character_type === 1 && p.attributes.hp_battle > 0);
                 target = availableTargets[Math.floor(Math.random() * availableTargets.length)];
@@ -140,50 +198,45 @@ const createBattle = async (battle) => {
                 damage = current.attributes.SPEED === 0 ? 0 : calculateDamage(current, target);
             }
             if (damage !== 0) {
-                await connection.query(
-                    'INSERT INTO attacks(battle_id, attacker_id, defender_id, damage, attack_time) VALUES (?, ?, ?, ?, NOW())',
-                    [battle_id, current.id, target.id, damage]
-                )
+                await AttacksModel.create({
+                    battle_id,
+                    attacker_id: current.id,
+                    defender_id: target.id,
+                    damage,
+                    attack_time: new Date()
+                }, { transaction });
             }
 
-            // Update the target's HP and the current character's SPEED
             updateParticipantBattleStatus(deepCloneParticipants, target, 'hp_battle', damage);
             updateParticipantBattleStatus(deepCloneParticipants, current, 'SPEED');
 
-            // After each phase of the battle, the queue is re-sorted based on the current SPEED of the participants
             if (battleQueue.length === 0) {
-                battleQueue = initializeQueue(participants);
+                battleQueue = initializeQueue(deepCloneParticipants);
             }
         }
 
-        // Finish the battle and update the row with the winner
         if (battleResult && battleResult.winnerId) {
-            await connection.query(
-                'UPDATE battles SET winner_id = ? WHERE id = ?',
-                [battleResult.winnerId, battle_id]
-            );
+            await BattlesModel.update({ winner_id: battleResult.winnerId }, { where: { id: battle_id }, transaction });
         }
-        
-        await connection.commit();
+
+        await transaction.commit();
+
         return {
             battle: {
-                id: result.insertId,
+                id: battle_id,
                 team_id,
                 opponent_team_id,
                 boss_id,
-                battle_date: sqlNow
+                battle_date
             },
-            participants: deepCloneParticipants 
+            participants: deepCloneParticipants
         };
     } catch (error) {
-        await connection.rollback();
+        if (transaction) await transaction.rollback();
         console.error('Failed to create battle:', error);
         throw error;
-    } finally {
-        connection.release();
     }
 };
-
 
 module.exports = {
     getAllBattles,
