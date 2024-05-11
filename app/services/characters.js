@@ -186,123 +186,74 @@ const createCharacter = async (name, characterType, level, elements, attributes)
 // }
 
 const updateCharacterAttributes = async (characterId, increments) => {
-    const connection = await pool.getConnection();
     try {
-        await connection.beginTransaction();
+        const character = await CharactersModel.findByPk(characterId, {
+            include: includePlayerAssociationsOutsideTeam()
+        });
 
-        const [currentAttributes] = await connection.query(`
-            SELECT cla.attribute_id, a.name AS attribute_name, cla.value AS current_value
-            FROM character_level_attributes cla
-            JOIN attributes a ON cla.attribute_id = a.id
-            WHERE cla.character_id = ?
-        `, [characterId]);
+        if (!character) {
+            throw new Error('Character not found');
+        }
 
-        const [[available_xtra_points]] = await connection.query(`
-            SELECT c.att_xtra_points AS current_value
-            FROM characters c
-            WHERE c.id = ?
-        `, [characterId]);
+        if (character.character_type_id !== 1) {
+            throw new Error('Attributes can only be updated for player characters');
+        }
 
-        const attributeMap = new Map(currentAttributes.map(attr => [attr.attribute_name, attr]));
+        const currentAttributes = await CharacterLevelAttributesModel.findAll({
+            where: { character_id: characterId },
+            include: [{ model: AttributesModel, attributes: ['name'] }]
+        });
 
-        const getsumincrementsvalues = Object.values(increments).reduce((acc, increment) => acc + parseInt(increment), 0);
-        
-        if (getsumincrementsvalues > parseInt(available_xtra_points.current_value)) {
+        const availableXtraPoints = character.att_xtra_points;
+
+        const attributeMap = new Map(currentAttributes.map(attr => [attr.attribute.name, attr]));
+        const totalPointsUsed = Object.values(increments).reduce((acc, increment) => acc + parseInt(increment), 0);
+
+        if (totalPointsUsed > parseInt(availableXtraPoints)) {
             throw new Error('Insufficient extra points to update attributes');
         }
         
-        let totalPointsUsed = 0;
         for (const [key, increment] of Object.entries(increments)) {
             if (attributeMap.has(key)) {
                 const currentAttribute = attributeMap.get(key);
                 const incrementValue = parseInt(increment);
 
-                const newValue = parseInt(currentAttribute.current_value) + incrementValue;
-                await connection.query(
-                    'UPDATE character_level_attributes SET value = ? WHERE character_id = ? AND attribute_id = ?',
-                    [newValue, characterId, currentAttribute.attribute_id]
+                const newValue = parseInt(currentAttribute.value) + incrementValue;
+                await CharacterLevelAttributesModel.update(
+                    { value: newValue },
+                    { where: { character_id: characterId, attribute_id: currentAttribute.attribute_id } }
                 );
-                totalPointsUsed += incrementValue;
             } else {
                 throw new Error(`Attribute ${key} not found or not updatable`);
             }
         }
 
         // Deduct the used extra points
-        await connection.query(
-            'UPDATE characters SET att_xtra_points = ? WHERE id = ?',
-            [parseInt(available_xtra_points.current_value) - totalPointsUsed, characterId]
+        await CharactersModel.update(
+            { att_xtra_points: parseInt(availableXtraPoints) - totalPointsUsed },
+            { where: { id: characterId } }
         );
 
         // After updating attributes, fetch the updated details of the player
-        const [updatedAttributes] = await connection.query(`
-            SELECT 
-                c.id AS character_id,
-                c.name AS character_name,
-                c.character_type,
-                c.level,
-                c.xp,
-                c.att_xtra_points,
-                tc.team_id AS team_id,
-                GROUP_CONCAT(DISTINCT CONCAT(a.name, ':', cla.value) ORDER BY a.name SEPARATOR ', ') AS attributes,
-                GROUP_CONCAT(DISTINCT e.name ORDER BY e.name SEPARATOR ', ') AS elements
-            FROM characters c
-            LEFT JOIN character_level_attributes cla ON c.id = cla.character_id
-            LEFT JOIN attributes a ON cla.attribute_id = a.id
-            LEFT JOIN character_elements ce ON c.id = ce.character_id
-            LEFT JOIN elements e ON ce.element_id = e.id
-            LEFT JOIN team_characters tc ON c.id = tc.character_id  
-            WHERE c.id = ?
-            GROUP BY c.id, c.name, c.character_type, c.level, tc.team_id
-        `, [characterId]);
+        const updatedCharacter = await CharactersModel.findByPk(characterId, {
+            include: includePlayerAssociationsOutsideTeam()
+        });
 
-        await connection.commit();
-
-        const row = updatedAttributes[0];
-        const character = {
-            id: row.character_id,
-            name: row.character_name,
-            character_type: row.character_type,
-            level: row.level,
-            team_id: row.team_id,
-            xp: row.xp,
-            att_xtra_points: row.att_xtra_points,  
-            attributes: {},
-            elements: row.elements ? row.elements.split(', ') : []
-        };
-
-        if (row.attributes) {
-            character.attributes = row.attributes.split(', ').reduce((acc, attr) => {
-                const [key, value] = attr.split(':');
-                acc[key] = value;
-                return acc;
-            }, {});
+        if (!updatedCharacter) {
+            throw new Error('Character details not found after update');
         }
 
-        return character;
+        return constructPlayerResponse(updatedCharacter);
     } catch (error) {
-        await connection.rollback();
         throw error;
-    } finally {
-        connection.release();
     }
 }
 
-
-const deleteCharacter = async (id) => {
-    const [result] = await pool.query('DELETE FROM characters WHERE id = ?', [id]);
-    if (result.affectedRows === 0) {
-        throw new Error('Character not found');
-    }
-
-    return result;
-};
 
 module.exports = {
     getCharacters,
     getCharacter,
     createCharacter,
-    deleteCharacter,
     // addXPtoCharacter,
     updateCharacterAttributes
 };
