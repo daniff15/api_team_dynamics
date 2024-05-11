@@ -1,60 +1,31 @@
 const pool = require('../config/connection');
 const { baseAttributes } = require('../utils/baseAttributes');
 const { checkLevelUp } = require('../utils/characters');
+const { includePlayerAssociationsOutsideTeam, constructPlayerResponse } = require('../utils/characters');
+const { CharactersModel } = require('../models');
 
 const getCharacters = async (filters = {}) => {
-    let baseQuery = `
-        SELECT 
-            c.id AS character_id,
-            c.name AS character_name,
-            c.character_type,
-            c.level,
-            tc.team_id AS team_id,
-            GROUP_CONCAT(DISTINCT CONCAT(a.name, ':', cla.value) ORDER BY a.name SEPARATOR ', ') AS attributes,
-            GROUP_CONCAT(DISTINCT e.name ORDER BY e.name SEPARATOR ', ') AS elements
-        FROM characters c
-        LEFT JOIN character_level_attributes cla ON c.id = cla.character_id
-        LEFT JOIN attributes a ON cla.attribute_id = a.id
-        LEFT JOIN character_elements ce ON c.id = ce.character_id
-        LEFT JOIN elements e ON ce.element_id = e.id
-        LEFT JOIN team_characters tc ON c.id = tc.character_id
-    `;
+    try {
+        let where = {};
 
-    const conditions = [];
-    const params = [];
+        if (filters.character_type) {
+            where.character_type_id = filters.character_type;
+        }
 
-    if (filters.character_type) {
-        conditions.push('c.character_type = ?');
-        params.push(filters.character_type);
+        const characters = await CharactersModel.findAll({
+            where: where,
+            include: includePlayerAssociationsOutsideTeam()
+        });
+        
+        const formattedCharacters = characters.map(character => (
+            constructPlayerResponse(character)
+        ));
+
+        return formattedCharacters;
+    } catch (error) {
+        throw error;
     }
-
-    if (conditions.length) {
-        baseQuery += ' WHERE ' + conditions.join(' AND ');
-    }
-
-    // Include tc.team_id in GROUP BY to satisfy ONLY_FULL_GROUP_BY SQL mode
-    baseQuery += ' GROUP BY c.id, c.name, c.character_type, c.level, tc.team_id';
-
-    const [rows] = await pool.query(baseQuery, params);
-
-    // Process rows...
-    const characters = rows.map(row => ({
-        id: row.character_id,
-        name: row.character_name,
-        character_type: row.character_type,
-        level: row.level,
-        team_id: row.team_id || null,  // Null if not part of any team
-        attributes: row.attributes ? row.attributes.split(', ').reduce((acc, attr) => {
-            const [key, value] = attr.split(':');
-            acc[key] = value;
-            return acc;
-        }, {}) : {},
-        elements: row.elements ? row.elements.split(', ') : []
-    }));
-
-    return characters;
 };
-
 
 const getCharacter = async (id) => {
     const [rows] = await pool.query(`
