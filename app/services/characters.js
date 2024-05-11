@@ -2,7 +2,7 @@ const pool = require('../config/connection');
 const { baseAttributes } = require('../utils/baseAttributes');
 const { checkLevelUp } = require('../utils/characters');
 const { includePlayerAssociationsOutsideTeam, constructPlayerResponse } = require('../utils/characters');
-const { CharactersModel } = require('../models');
+const { CharactersModel } = require('../models/index');
 
 const getCharacters = async (filters = {}) => {
     try {
@@ -27,57 +27,23 @@ const getCharacters = async (filters = {}) => {
     }
 };
 
-const getCharacter = async (id) => {
-    const [rows] = await pool.query(`
-        SELECT 
-            c.id AS character_id,
-            c.name AS character_name,
-            c.character_type,
-            c.level,
-            c.xp,
-            c.att_xtra_points,
-            tc.team_id AS team_id,
-            GROUP_CONCAT(DISTINCT CONCAT(a.name, ':', cla.value) ORDER BY a.name SEPARATOR ', ') AS attributes,
-            GROUP_CONCAT(DISTINCT e.name ORDER BY e.name SEPARATOR ', ') AS elements
-        FROM characters c
-        LEFT JOIN character_level_attributes cla ON c.id = cla.character_id
-        LEFT JOIN attributes a ON cla.attribute_id = a.id
-        LEFT JOIN character_elements ce ON c.id = ce.character_id
-        LEFT JOIN elements e ON ce.element_id = e.id
-        LEFT JOIN team_characters tc ON c.id = tc.character_id  -- Joining with team_characters to get team_id
-        WHERE c.id = ?
-        GROUP BY c.id, c.name, c.character_type, c.level, tc.team_id  -- Including team_id in GROUP BY
-    `, [id]);
+const getCharacter = async (characterId) => {
+    try {
+        const character = await CharactersModel.findByPk(characterId, {
+            include: includePlayerAssociationsOutsideTeam()
+        });
 
-    if (!rows.length) {
-        throw new Error('Character not found');
+        if (!character) {
+            throw new Error('Character not found');
+        }
+
+        const formattedCharacter = constructPlayerResponse(character);
+
+        return formattedCharacter;
+    } catch (error) {
+        throw error;
     }
-
-    const row = rows[0];
-    const character = {
-        id: row.character_id,
-        name: row.character_name,
-        character_type: row.character_type,
-        level: row.level,
-        xp: row.xp,
-        att_xtra_points: row.att_xtra_points,
-        team_id: row.team_id,  
-        attributes: {},
-        elements: row.elements ? row.elements.split(', ') : []
-    };
-
-    // Processing attributes if any
-    if (row.attributes) {
-        character.attributes = row.attributes.split(', ').reduce((acc, attr) => {
-            const [key, value] = attr.split(':');
-            acc[key] = value;
-            return acc;
-        }, {});
-    }
-
-    return character;
-}
-
+};
 
 const createCharacter = async (name, characterType, level, elements, attributes) => {
     const connection = await pool.getConnection();
