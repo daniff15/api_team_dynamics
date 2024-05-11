@@ -20,10 +20,10 @@ module.exports = (sequelize, DataTypes) => {
     });
 
     ElementRelationshipsModel.associate = (models) => {
-        ElementRelationshipsModel.belongsTo(models.ElementsModel, { foreignKey: 'element_id' });
+        ElementRelationshipsModel.belongsTo(models.ElementsModel, { foreignKey: 'element_id', as: 'element' });
         ElementRelationshipsModel.belongsTo(models.ElementsModel, { foreignKey: 'strong_against_id', as: 'strong_against' });
         ElementRelationshipsModel.belongsTo(models.ElementsModel, { foreignKey: 'weak_against_id', as: 'weak_against' });
-    }
+    };
 
     return ElementRelationshipsModel;
 };

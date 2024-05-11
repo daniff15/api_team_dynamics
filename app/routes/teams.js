@@ -1,7 +1,64 @@
 const express = require('express');
 const teamsService = require("../services/teams");
+const { ElementsModel, ElementRelationshipsModel } = require('../models');
 
 const router = express.Router();
+
+// Router
+router.get('/teste/:id', async (req, res) => {
+    try {
+        const elementId = req.params.id;
+
+        const element = await ElementsModel.findOne({
+            where: { id: elementId },
+            include: [
+                { 
+                    model: ElementRelationshipsModel, 
+                    as: 'strengths', 
+                    include: [{ 
+                        model: ElementsModel, 
+                        as: 'element'
+                    }] 
+                },
+                { 
+                    model: ElementRelationshipsModel, 
+                    as: 'weaknesses', 
+                    include: [{ 
+                        model: ElementsModel, 
+                        as: 'element'
+                    }] 
+                }
+            ]
+        });
+
+        if (!element) {
+            return res.status(404).json({ error: 'Element not found' });
+        }
+
+        console.log(element.strengths[0].element);
+        const strengths = {
+            id: element.strengths[0].element.id,
+            name: element.strengths[0].element.name
+        };
+        const weaknesses = {
+            id: element.weaknesses[0].element.id,
+            name: element.weaknesses[0].element.name
+        };
+
+        const responseData = {
+            id: element.id,
+            name: element.name,
+            strengths: strengths,
+            weaknesses: weaknesses
+        };
+
+        res.json(responseData);
+    } catch (error) {
+        console.error('Error fetching element:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 
 router.get("/", async (req, res) => {
     try {
@@ -59,10 +116,10 @@ router.post("/:teamId/characters/:characterId", async (req, res) => {
     }
 });
 
-router.put("/", async (req, res) => {
+router.put("/:id", async (req, res) => {
     try {
         const updates = req.body;
-        const teamId = req.body.id;
+        const teamId = req.params.id;
         const result = await teamsService.updateTeam(teamId, updates);
         res.json(result);
     } catch (err) {

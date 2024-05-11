@@ -22,6 +22,7 @@ module.exports = (sequelize, DataTypes) => {
         TeamsModel.belongsTo(models.CommunitiesModel, {
             foreignKey: 'community_id'
         });
+        TeamsModel.hasMany(models.TeamCharactersModel, { foreignKey: 'team_id' });
     };
 
     return TeamsModel;

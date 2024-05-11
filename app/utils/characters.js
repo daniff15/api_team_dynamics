@@ -1,3 +1,77 @@
+const { CharactersModel, CharacterLevelAttributesModel, AttributesModel, LevelsModel, CharacterElementsModel, ElementsModel, ElementRelationshipsModel } = require('../models');
+
+// Utility function to include player associations
+const includePlayerAssociations = () => {
+    return [
+        {
+            model: CharactersModel,
+            include: [
+                {
+                    model: CharacterLevelAttributesModel,
+                    include: [
+                        {
+                            model: AttributesModel
+                        },
+                        {
+                            model: LevelsModel
+                        }
+                    ]
+                },
+                {
+                    model: CharacterElementsModel,
+                    include: [
+                        {
+                            model: ElementsModel,
+                            as: 'element',
+                            include: [
+                                { 
+                                    model: ElementRelationshipsModel, 
+                                    as: 'strengths', 
+                                    include: [{ 
+                                        model: ElementsModel, 
+                                        as: 'element'
+                                    }] 
+                                },
+                                { 
+                                    model: ElementRelationshipsModel, 
+                                    as: 'weaknesses', 
+                                    include: [{ 
+                                        model: ElementsModel, 
+                                        as: 'element'
+                                    }] 
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ];
+};
+
+// Utility function to construct player response
+const constructPlayerResponse = (character) => {
+    return {
+        id: character.id,
+        name: character.name,
+        level: character.level_id,
+        attributes: character.character_level_attributes.reduce((acc, attribute) => {
+            acc[attribute.attribute.name] = attribute.value;
+            return acc;
+        }, {}),
+        elements: character.character_elements.map(element => {
+            const elementData = {
+                id: element.element.id,
+                name: element.element.name,
+                strengths: element.element.strengths.map(strength => strength.element.name),
+                weaknesses: element.element.weaknesses.map(weakness => weakness.element.name)
+            };
+            return elementData;
+        }),
+    };
+};
+
+
 const updateParticipantBattleStatus = (deepCloneParticipants, participant, attr, value = 5) => {
     // Directly find and update the participant in deepCloneParticipants
     const participantIndex = deepCloneParticipants.findIndex(p => p.id === participant.id);
@@ -58,6 +132,8 @@ const calculate_xp_needed = (character) => {
 //                 self.check_level_up()
 
 module.exports = {
+    includePlayerAssociations,
+    constructPlayerResponse,
     updateParticipantBattleStatus,
     checkLevelUp
 };
