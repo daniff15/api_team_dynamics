@@ -1,4 +1,5 @@
 const express = require('express');
+const { sequelize } = require('./models/index');
 const communitiesRoutes = require('./routes/communities');
 const teamsRoutes = require('./routes/teams');
 const charactersRoutes = require('./routes/characters');
@@ -23,7 +24,8 @@ app.use('/teams', teamsRoutes);
 app.use('/characters', charactersRoutes);
 app.use('/battles', battlesRoutes);
 
-
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+sequelize.sync().then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server started on port ${PORT}`);
+    });
 });

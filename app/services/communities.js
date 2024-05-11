@@ -1,8 +1,10 @@
 const pool = require('../config/connection');
+const { CommunitiesModel } = require('../models/index');
+
 
 const getAllCommunities = async () => {
-    const [rows] = await pool.query('SELECT * FROM communities');
-    return rows;
+    const communities = await CommunitiesModel.findAll({});
+    return communities;
 };
 
 const getCommunity = async (id) => {
