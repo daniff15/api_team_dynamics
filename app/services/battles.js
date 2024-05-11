@@ -167,6 +167,7 @@ const createBattle = async (battle) => {
         await connection.commit();
         return {
             battle: {
+                id: result.insertId,
                 team_id,
                 opponent_team_id,
                 boss_id,

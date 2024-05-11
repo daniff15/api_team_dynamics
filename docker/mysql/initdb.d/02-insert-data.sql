@@ -57,15 +57,17 @@ INSERT INTO levels (level) VALUES
 
 -- Inserting data into the 'characters' table
 -- Se calhar XP e ATT deviam estar no character, pq a table char_level_attbr é por niveis.	
+INSERT INTO characters (name, character_type, level, xp, att_xtra_points) VALUES 
+('Jogador Viseu', 1, 1, 0, 0), 
+('Jogador Setubal', 1, 1, 0, 0), 
+('Jogador Lisboa', 1, 1, 0, 0),
+('Jogador Porto', 1, 1, 0, 0),
+('Jogador Vitoria', 1, 1, 0, 0),
+('Jogador Contomil', 1, 1, 0, 0),
+('Jogador Aveiro', 1, 1, 0, 0),
+('Jogador Vila Real', 1, 1, 0, 0);
+
 INSERT INTO characters (name, character_type, level) VALUES 
-('Jogador Viseu', 1, 1), 
-('Jogador Setubal', 1, 1), 
-('Jogador Lisboa', 1, 1),
-('Jogador Porto', 1, 1),
-('Jogador Vitoria', 1, 1),
-('Jogador Contomil', 1, 1),
-('Jogador Aveiro', 1, 1),
-('Jogador Vila Real', 1, 1),
 ('Boss Ar', 3, 5),
 ('Boss Terra', 3, 10),
 ('Boss Água', 3, 15),
@@ -87,9 +89,7 @@ INSERT INTO attributes (name) VALUES
 ('HP'), 
 ('DEF'), 
 ('ATK'), 
-('SPEED'), 
-('XP'),
-('AVAILABLE_XTRA_POINTS');
+('SPEED'); 
 
 -- Insert attribute values for character 1 at level 1
 INSERT INTO character_level_attributes (character_id, level_id, attribute_id, value) VALUES
@@ -98,57 +98,41 @@ INSERT INTO character_level_attributes (character_id, level_id, attribute_id, va
 (1, 1, 2, 8),   -- DEF
 (1, 1, 3, 9),   -- ATK
 (1, 1, 4, 7),   -- SPEED
-(1, 1, 5, 0),    -- XP
-(1, 1, 6, 0),    -- AVAILABLE_XTRA_POINTS
 -- Fire TYPE
 (2, 1, 1, 9),  -- HP
 (2, 1, 2, 7),   -- DEF
 (2, 1, 3, 10),   -- ATK
 (2, 1, 4, 8),   -- SPEED
-(2, 1, 5, 0),    -- XP
-(2, 1, 6, 0),    -- AVAILABLE_XTRA_POINTS
 -- Earth TYPE
 (3, 1, 1, 8),  -- HP
 (3, 1, 2, 10),   -- DEF
 (3, 1, 3, 7),   -- ATK
 (3, 1, 4, 9),   -- SPEED
-(3, 1, 5, 0),    -- XP
-(3, 1, 6, 0),    -- AVAILABLE_XTRA_POINTS
 -- Air TYPE
 (4, 1, 1, 7),  -- HP
 (4, 1, 2, 9),   -- DEF
 (4, 1, 3, 8),   -- ATK
 (4, 1, 4, 10),   -- SPEED
-(4, 1, 5, 0),    -- XP
-(4, 1, 6, 0),    -- AVAILABLE_XTRA_POINTS
 -- Water TYPE
 (5, 1, 1, 10),  -- HP
 (5, 1, 2, 8),   -- DEF
 (5, 1, 3, 9),   -- ATK
 (5, 1, 4, 7),   -- SPEED
-(5, 1, 5, 0),    -- XP
-(5, 1, 6, 0),    -- AVAILABLE_XTRA_POINTS
 -- Fire TYPE
 (6, 1, 1, 9),  -- HP
 (6, 1, 2, 7),   -- DEF
 (6, 1, 3, 10),   -- ATK
 (6, 1, 4, 8),   -- SPEED
-(6, 1, 5, 0),    -- XP
-(6, 1, 6, 0),    -- AVAILABLE_XTRA_POINTS
 -- Earth TYPE
 (7, 1, 1, 8),  -- HP
 (7, 1, 2, 10),   -- DEF
 (7, 1, 3, 7),   -- ATK
 (7, 1, 4, 9),   -- SPEED
-(7, 1, 5, 0),    -- XP
-(7, 1, 6, 0),    -- AVAILABLE_XTRA_POINTS
 -- Air TYPE
 (8, 1, 1, 7),  -- HP
 (8, 1, 2, 9),   -- DEF
 (8, 1, 3, 8),   -- ATK
 (8, 1, 4, 10),   -- SPEED
-(8, 1, 5, 0),    -- XP
-(8, 1, 6, 0),    -- AVAILABLE_XTRA_POINTS
 -- Boss Ar
 (9, 5, 1, 65), -- HP
 (9, 5, 2, 20), -- DEF

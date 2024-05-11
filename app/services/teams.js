@@ -13,11 +13,12 @@ const getTeam = async (id) => {
             c.id AS character_id,
             c.name AS character_name,
             c.level AS level,
+            c.xp,
+            c.att_xtra_points,
             MAX(CASE WHEN a.name = 'HP' THEN cla.value ELSE 0 END) AS HP,
             MAX(CASE WHEN a.name = 'ATK' THEN cla.value ELSE 0 END) AS ATK,
             MAX(CASE WHEN a.name = 'DEF' THEN cla.value ELSE 0 END) AS DEF,
             MAX(CASE WHEN a.name = 'SPEED' THEN cla.value ELSE 0 END) AS SPEED,
-            MAX(CASE WHEN a.name = 'XP' THEN cla.value ELSE 0 END) AS XP,
             ce.elements
         FROM teams t
         LEFT JOIN team_characters tc ON t.id = tc.team_id
@@ -52,11 +53,14 @@ const getTeam = async (id) => {
                     id: row.character_id,
                     name: row.character_name,
                     level: row.level,
-                    HP: row.HP,
-                    ATK: row.ATK,
-                    DEF: row.DEF,
-                    SPEED: row.SPEED,
-                    XP: row.XP,
+                    attributes: {
+                        HP: row.HP,
+                        ATK: row.ATK,
+                        DEF: row.DEF,
+                        SPEED: row.SPEED,
+                    },
+                    XP: row.xp,
+                    att_xtra_points: row.att_xtra_points,
                     elements: row.elements ? row.elements.split(', ') : []
                 });
             }

@@ -1,5 +1,6 @@
 const pool = require('../config/connection');
-const { baseAttributes, complementars } = require('../utils/baseAttributes');
+const { baseAttributes } = require('../utils/baseAttributes');
+const { checkLevelUp } = require('../utils/characters');
 
 const getCharacters = async (filters = {}) => {
     let baseQuery = `
@@ -62,6 +63,8 @@ const getCharacter = async (id) => {
             c.name AS character_name,
             c.character_type,
             c.level,
+            c.xp,
+            c.att_xtra_points,
             tc.team_id AS team_id,
             GROUP_CONCAT(DISTINCT CONCAT(a.name, ':', cla.value) ORDER BY a.name SEPARATOR ', ') AS attributes,
             GROUP_CONCAT(DISTINCT e.name ORDER BY e.name SEPARATOR ', ') AS elements
@@ -85,6 +88,8 @@ const getCharacter = async (id) => {
         name: row.character_name,
         character_type: row.character_type,
         level: row.level,
+        xp: row.xp,
+        att_xtra_points: row.att_xtra_points,
         team_id: row.team_id,  
         attributes: {},
         elements: row.elements ? row.elements.split(', ') : []
@@ -115,11 +120,20 @@ const createCharacter = async (name, characterType, level, elements, attributes)
 
         // Prevent creating a character with level > 1
         const finalLevel = characterType === 1 ? 1 : level;
-        const [character] = await connection.query(
-            'INSERT INTO characters (name, character_type, level) VALUES (?, ?, ?)',
-            [name, characterType, finalLevel]
-        );
+        let character;
+        if (characterType !== 1) {
+            character = await connection.query(
+                'INSERT INTO characters (name, character_type, level) VALUES (?, ?, ?)',
+                [name, characterType, finalLevel]
+            );
+        } else {
+            character = await connection.query(
+                'INSERT INTO characters (name, character_type, level, xp, att_xtra_points) VALUES (?, ?, ?, 0, 0)',
+                [name, characterType, finalLevel]
+            );
+        }
 
+        character = character[0];
         const characterId = character.insertId;
         for (const elementId of elements) {
             await connection.query(
@@ -151,19 +165,6 @@ const createCharacter = async (name, characterType, level, elements, attributes)
                 'INSERT INTO character_level_attributes (character_id, level_id, attribute_id, value) VALUES ?',
                 [attributeInserts]
             );
-
-            // Insert complementar attributes [XP, AVAILABLE_XTRA_POINTS]
-            for (const complementar of complementars) {
-                const [[{id: attributeId}]] = await connection.query(
-                    'SELECT id FROM attributes WHERE name = ?',
-                    [complementar]
-                );
-
-                await connection.query(
-                    'INSERT INTO character_level_attributes (character_id, level_id, attribute_id, value) VALUES (?, ?, ?, ?)',
-                    [characterId, finalLevel, attributeId, 0]
-                );
-            }
         } else {
             // Insert non-player character attributes
             for (const [attribute, value] of Object.entries(attributes)) {
@@ -189,6 +190,50 @@ const createCharacter = async (name, characterType, level, elements, attributes)
     }
 };
 
+// const addXPtoCharacter = async (characterId, xp) => {
+//     const [max_level] = await pool.query('SELECT MAX(level) AS max_level FROM levels');
+//     const [character] = await pool.query(`
+//         SELECT 
+//             c.id AS character_id,
+//             c.character_type,
+//             c.level,
+//             JSON_OBJECTAGG(a.name, cla.value) AS attributes
+//         FROM characters c
+//         LEFT JOIN character_level_attributes cla ON c.id = cla.character_id
+//         LEFT JOIN attributes a ON cla.attribute_id = a.id
+//         WHERE c.id = ?
+//         GROUP BY c.id, c.character_type, c.level;
+
+//     `, [characterId]);
+
+//     if (!character.length) {
+//         throw new Error('Character not found');
+//     }
+
+//     if (character[0].character_type !== 1) {
+//         throw new Error('XP can only be added to player characters');
+//     }
+
+//     const [currentLevel] = await pool.query(`
+//         SELECT MAX(level_id) AS current_level FROM character_level_attributes WHERE character_id = ?
+//     `, [characterId]);
+
+//     const leveledUp = checkLevelUp(character[0], max_level[0].max_level);
+
+//     console.log("LEVELED UP: ", leveledUp);
+//     return;
+
+//     const newLevel = currentLevel[0].current_level + 1;
+//     const [[{id: xpAttributeId}]] = await pool.query('SELECT id FROM attributes WHERE name = "XP"');
+
+//     await pool.query(`
+//         INSERT INTO character_level_attributes (character_id, level_id, attribute_id, value)
+//         VALUES (?, ?, ?, ?)
+//     `, [characterId, newLevel, xpAttributeId, xp]);
+
+//     return { message: 'XP added successfully' };
+// }
+
 const updateCharacterAttributes = async (characterId, increments) => {
     const connection = await pool.getConnection();
     try {
@@ -201,7 +246,11 @@ const updateCharacterAttributes = async (characterId, increments) => {
             WHERE cla.character_id = ?
         `, [characterId]);
 
-        const available_xtra_points = currentAttributes.find(attr => attr.attribute_name === 'AVAILABLE_XTRA_POINTS');
+        const [[available_xtra_points]] = await connection.query(`
+            SELECT c.att_xtra_points AS current_value
+            FROM characters c
+            WHERE c.id = ?
+        `, [characterId]);
 
         const attributeMap = new Map(currentAttributes.map(attr => [attr.attribute_name, attr]));
 
@@ -213,7 +262,7 @@ const updateCharacterAttributes = async (characterId, increments) => {
         
         let totalPointsUsed = 0;
         for (const [key, increment] of Object.entries(increments)) {
-            if (attributeMap.has(key) && !complementars.includes(key)) {
+            if (attributeMap.has(key)) {
                 const currentAttribute = attributeMap.get(key);
                 const incrementValue = parseInt(increment);
 
@@ -230,7 +279,7 @@ const updateCharacterAttributes = async (characterId, increments) => {
 
         // Deduct the used extra points
         await connection.query(
-            'UPDATE character_level_attributes SET `value` = ? WHERE character_id = ? AND attribute_id = (SELECT id FROM attributes WHERE name = "AVAILABLE_XTRA_POINTS")',
+            'UPDATE characters SET att_xtra_points = ? WHERE id = ?',
             [parseInt(available_xtra_points.current_value) - totalPointsUsed, characterId]
         );
 
@@ -241,6 +290,8 @@ const updateCharacterAttributes = async (characterId, increments) => {
                 c.name AS character_name,
                 c.character_type,
                 c.level,
+                c.xp,
+                c.att_xtra_points,
                 tc.team_id AS team_id,
                 GROUP_CONCAT(DISTINCT CONCAT(a.name, ':', cla.value) ORDER BY a.name SEPARATOR ', ') AS attributes,
                 GROUP_CONCAT(DISTINCT e.name ORDER BY e.name SEPARATOR ', ') AS elements
@@ -262,7 +313,9 @@ const updateCharacterAttributes = async (characterId, increments) => {
             name: row.character_name,
             character_type: row.character_type,
             level: row.level,
-            team_id: row.team_id,  
+            team_id: row.team_id,
+            xp: row.xp,
+            att_xtra_points: row.att_xtra_points,  
             attributes: {},
             elements: row.elements ? row.elements.split(', ') : []
         };
@@ -299,5 +352,6 @@ module.exports = {
     getCharacter,
     createCharacter,
     deleteCharacter,
+    // addXPtoCharacter,
     updateCharacterAttributes
 };

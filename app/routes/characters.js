@@ -43,8 +43,8 @@ router.post('/', async (req, res) => {
 router.put('/:id/xp', async (req, res) => {
     try {
         const id = req.params.id;
-        const { xp } = req.body;
-        const result = await charactersService.addXPtoCharacter(id, xp);
+        const attribute = req.body;
+        const result = await charactersService.addXPtoCharacter(id, attribute.XP);
         res.json(result);
     }
     catch (err) {

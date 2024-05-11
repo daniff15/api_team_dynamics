@@ -38,6 +38,8 @@ CREATE TABLE `characters` (
     `name` VARCHAR(256)  NOT NULL ,
     `character_type` INT NOT NULL,
     `level` INT NOT NULL,
+    `xp` INT,
+    `att_xtra_points` INT,
     PRIMARY KEY (
         `id`
     ),
