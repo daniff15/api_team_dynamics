@@ -2,7 +2,7 @@ const pool = require('../config/connection');
 const { baseAttributes } = require('../utils/baseAttributes');
 const { checkLevelUp } = require('../utils/characters');
 const { includePlayerAssociationsOutsideTeam, constructPlayerResponse } = require('../utils/characters');
-const { CharactersModel } = require('../models/index');
+const { sequelize, CharactersModel, CharacterElementsModel, ElementsModel, CharacterLevelAttributesModel, AttributesModel } = require('../models/index');
 
 const getCharacters = async (filters = {}) => {
     try {
@@ -46,84 +46,98 @@ const getCharacter = async (characterId) => {
 };
 
 const createCharacter = async (name, characterType, level, elements, attributes) => {
-    const connection = await pool.getConnection();
+    let transaction;
     try {
-        await connection.beginTransaction(); 
+        transaction = await sequelize.transaction();
 
         // Prevent creating a character with more than one element
         if (characterType === 1 && elements.length !== 1) {
             throw new Error('Players must have exactly one element.');
         }
 
-        // Prevent creating a character with level > 1
-        const finalLevel = characterType === 1 ? 1 : level;
+        // Create the character
         let character;
         if (characterType !== 1) {
-            character = await connection.query(
-                'INSERT INTO characters (name, character_type, level) VALUES (?, ?, ?)',
-                [name, characterType, finalLevel]
-            );
+            character = await CharactersModel.create({
+                name: name,
+                character_type_id: characterType,
+                level_id: level
+            }, { transaction });
         } else {
-            character = await connection.query(
-                'INSERT INTO characters (name, character_type, level, xp, att_xtra_points) VALUES (?, ?, ?, 0, 0)',
-                [name, characterType, finalLevel]
-            );
+            character = await CharactersModel.create({
+                name: name,
+                character_type_id: characterType,
+                level_id: 1,
+                xp: 0,
+                att_xtra_points: 0
+            }, { transaction });
         }
 
-        character = character[0];
-        const characterId = character.insertId;
-        for (const elementId of elements) {
-            await connection.query(
-                'INSERT INTO character_elements (character_id, element_id) VALUES (?, ?)',
-                [characterId, elementId]
-            );
-        }
-
+        const characterId = character.id;
         if (characterType === 1) {
-            const [element] = await connection.query(
-                'SELECT name FROM elements WHERE id = ?',
-                [elements[0]]
-            );
+            // Fetch attributes based on elements
+            const element = await ElementsModel.findByPk(elements[0], { transaction });
 
-            if (!element.length) {
+            if (!element) {
                 throw new Error('Element not found');
             }
 
-            const attrs = baseAttributes[element[0].name.toLowerCase()];
+            // Associate elements with the character
+            await CharacterElementsModel.bulkCreate(elements.map(elementId => ({
+                character_id: characterId,
+                element_id: elementId
+            })), { transaction });
+
+            const attrs = baseAttributes[element.name.toLowerCase()];
             if (!attrs) {
                 throw new Error('Attributes not defined for the element');
             }
 
             // Batch insert attributes for efficiency
-            const attributeInserts = attrs.map((value, index) => [
-                characterId, finalLevel, index + 1, value
-            ]);
-            await connection.query(
-                'INSERT INTO character_level_attributes (character_id, level_id, attribute_id, value) VALUES ?',
-                [attributeInserts]
-            );
+            await CharacterLevelAttributesModel.bulkCreate(attrs.map((value, index) => ({
+                character_id: characterId,
+                level_id: 1,
+                attribute_id: index + 1,
+                value: value
+            })), { transaction });
         } else {
+            for (const elementId of elements) {
+                const element = await ElementsModel.findByPk(elementId, { transaction });
+
+                if (!element) {
+                    throw new Error('Element not found');
+                }
+
+                console.log("ELEMENT: ", element);
+
+                await CharacterElementsModel.create({
+                    character_id: characterId,
+                    element_id: elementId
+                }, { transaction });
+            }
+
             // Insert non-player character attributes
             for (const [attribute, value] of Object.entries(attributes)) {
-                const [[{id: attributeId}]] = await connection.query(
-                    'SELECT id FROM attributes WHERE name = ?',
-                    [attribute]
-                );
+                const attr = await AttributesModel.findOne({ where: { name: attribute } });
 
-                await connection.query(
-                    'INSERT INTO character_level_attributes (character_id, level_id, attribute_id, value) VALUES (?, ?, ?, ?)',
-                    [characterId, finalLevel, attributeId, value]
-                );
+                if (!attr) {
+                    throw new Error(`Attribute "${attribute}" not found`);
+                }
+
+                await CharacterLevelAttributesModel.create({
+                    character_id: characterId,
+                    level_id: level,
+                    attribute_id: attr.id,
+                    value: value
+                }, { transaction });
             }
         }
 
-        await connection.commit(); 
+        await transaction.commit();
         return { id: characterId, message: "Character created successfully" };
     } catch (error) {
-        await connection.rollback(); 
+        if (transaction) await transaction.rollback();
         throw error;
-    } finally {
-        connection.release();
     }
 };
 
