@@ -1,8 +1,17 @@
 const pool = require('../config/connection');
+const { TeamsModel } = require('../models/index');
 
-const getAllTeams = async () => {
-    const [rows] = await pool.query('SELECT * FROM teams');
-    return rows;
+const getAllTeams = async (communityId) => {
+    const queryOptions = {
+        where: {}
+    };
+
+    if (communityId) {
+        queryOptions.where.community_id = communityId;
+    }
+
+    const teams = await TeamsModel.findAll(queryOptions);
+    return teams;
 };
 
 const getTeam = async (id) => {
@@ -71,12 +80,16 @@ const getTeam = async (id) => {
 }
 
 const createTeam = async (team) => {
-    const [result] = await pool.query('INSERT INTO teams SET ?', team);
-    return result;
+    const newTeam = await TeamsModel.create(team);
+    return newTeam;
 }
 
 const deleteTeam = async (id) => {
-    const [result] = await pool.query('DELETE FROM teams WHERE id = ?', id);
+    const result = await TeamsModel.destroy({
+        where: {
+            id
+        }
+    });
     return result;
 }
 

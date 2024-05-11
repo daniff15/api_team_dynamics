@@ -5,7 +5,8 @@ const router = express.Router();
 
 router.get("/", async (req, res) => {
     try {
-        const rows = await teamsService.getAllTeams();
+        const communityId = req.query.community_id;
+        const rows = await teamsService.getAllTeams(communityId);
         res.json(rows);
     } catch (err) {
         console.error(err);

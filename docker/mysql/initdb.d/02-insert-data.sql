@@ -3,7 +3,7 @@ USE team_dynamics;
 SET FOREIGN_KEY_CHECKS = 0; -- Disable foreign key checks in MySQL
 
 TRUNCATE TABLE character_elements;
-TRUNCATE TABLE element_strengths;
+TRUNCATE TABLE element_relationships;
 TRUNCATE TABLE team_characters;
 TRUNCATE TABLE characters;
 TRUNCATE TABLE teams;
@@ -33,7 +33,7 @@ INSERT INTO character_types (name) VALUES
 ('Boss');
 
 -- Inserting data into the 'levels' table
-INSERT INTO levels (level) VALUES 
+INSERT INTO levels (level_value) VALUES 
 (1), 
 (2), 
 (3), 
@@ -57,7 +57,7 @@ INSERT INTO levels (level) VALUES
 
 -- Inserting data into the 'characters' table
 -- Se calhar XP e ATT deviam estar no character, pq a table char_level_attbr é por niveis.	
-INSERT INTO characters (name, character_type, level, xp, att_xtra_points) VALUES 
+INSERT INTO characters (name, character_type_id, level_id, xp, att_xtra_points) VALUES 
 ('Jogador Viseu', 1, 1, 0, 0), 
 ('Jogador Setubal', 1, 1, 0, 0), 
 ('Jogador Lisboa', 1, 1, 0, 0),
@@ -67,7 +67,7 @@ INSERT INTO characters (name, character_type, level, xp, att_xtra_points) VALUES
 ('Jogador Aveiro', 1, 1, 0, 0),
 ('Jogador Vila Real', 1, 1, 0, 0);
 
-INSERT INTO characters (name, character_type, level) VALUES 
+INSERT INTO characters (name, character_type_id, level_id) VALUES 
 ('Boss Ar', 3, 5),
 ('Boss Terra', 3, 10),
 ('Boss Água', 3, 15),
@@ -163,11 +163,11 @@ INSERT INTO elements (name) VALUES
 
 -- Inserting data into the 'element_strengths' table
 -- Example: Water is strong against Fire, etc.
-INSERT INTO element_strengths (element_id, strong_against_id) VALUES 
-(1, 2), -- Water strong against Fire
-(2, 4), -- Fire strong against Air
-(4, 3), -- Air strong against Earth
-(3, 1); -- Earth strong against Water
+INSERT INTO element_relationships (element_id, strong_against_id, weak_against_id) VALUES 
+(1, 2, 3), -- Water strong against Fire
+(2, 4, 1), -- Fire strong against Air
+(4, 3, 2), -- Air strong against Earth
+(3, 1, 4); -- Earth strong against Water
 
 -- Inserting data into the 'character_elements' table
 INSERT INTO character_elements (character_id, element_id) VALUES 

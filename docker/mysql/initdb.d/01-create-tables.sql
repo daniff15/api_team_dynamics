@@ -19,9 +19,9 @@ CREATE TABLE `teams` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE `levels` (
-    `level` int NOT NULL ,
+    `level_value` int NOT NULL ,
     PRIMARY KEY (
-        `level`
+        `level_value`
     )
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -36,18 +36,18 @@ CREATE TABLE `character_types` (
 CREATE TABLE `characters` (
     `id` int AUTO_INCREMENT NOT NULL ,
     `name` VARCHAR(256)  NOT NULL ,
-    `character_type` INT NOT NULL,
-    `level` INT NOT NULL,
+    `character_type_id` INT NOT NULL,
+    `level_id` INT NOT NULL,
     `xp` INT,
     `att_xtra_points` INT,
     PRIMARY KEY (
         `id`
     ),
-    CONSTRAINT `fk_characters_character_types` FOREIGN KEY (`character_type`)
+    CONSTRAINT `fk_characters_character_types` FOREIGN KEY (`character_type_id`)
         REFERENCES `character_types` (`id`)
         ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT `fk_characters_levels` FOREIGN KEY (`level`)
-        REFERENCES `levels` (`level`)
+    CONSTRAINT `fk_characters_levels` FOREIGN KEY (`level_id`)
+        REFERENCES `levels` (`level_value`)
         ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -82,7 +82,7 @@ CREATE TABLE `character_level_attributes` (
         REFERENCES `characters` (`id`)
         ON DELETE CASCADE,
     CONSTRAINT `fk_character_level_attributes_levels` FOREIGN KEY (`level_id`)
-        REFERENCES `levels` (`level`)
+        REFERENCES `levels` (`level_value`)
         ON DELETE CASCADE,
     CONSTRAINT `fk_character_level_attributes_attributes` FOREIGN KEY (`attribute_id`)
         REFERENCES `attributes` (`id`)
@@ -98,14 +98,18 @@ CREATE TABLE `elements` (
     )
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE `element_strengths` ( 
+CREATE TABLE `element_relationships` (
     `element_id` INT NOT NULL,
     `strong_against_id` INT NOT NULL,
+    `weak_against_id` INT NOT NULL,
     PRIMARY KEY (`element_id`, `strong_against_id`),
     CONSTRAINT `fk_element_strengths_element` FOREIGN KEY (`element_id`)
         REFERENCES `elements` (`id`)
         ON DELETE CASCADE,
     CONSTRAINT `fk_element_strengths_strong` FOREIGN KEY (`strong_against_id`)
+        REFERENCES `elements` (`id`)
+        ON DELETE CASCADE
+    CONSTRAINT `fk_element_strengths_weak` FOREIGN KEY (`weak_against_id`)
         REFERENCES `elements` (`id`)
         ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

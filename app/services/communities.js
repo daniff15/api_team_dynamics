@@ -1,6 +1,4 @@
-const pool = require('../config/connection');
 const { CommunitiesModel } = require('../models/index');
-
 
 const getAllCommunities = async () => {
     const communities = await CommunitiesModel.findAll({});
