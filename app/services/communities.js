@@ -1,23 +1,32 @@
-const pool = require('../config/connection');
+const { CommunitiesModel } = require('../models/index');
 
 const getAllCommunities = async () => {
-    const [rows] = await pool.query('SELECT * FROM communities');
-    return rows;
+    const communities = await CommunitiesModel.findAll({});
+    return communities;
 };
 
 const getCommunity = async (id) => {
-    const [rows] = await pool.query('SELECT * FROM communities WHERE id = ?', id);
-    return rows[0];
+    const community = await CommunitiesModel.findByPk(id);
+
+    if (!community) {
+        throw new Error('Community not found');
+    }
+
+    return community;
 }
 
 const createCommunity = async (community) => {
-    const [result] = await pool.query('INSERT INTO communities SET ?', community);
-    return result
+    const newCommunity = await CommunitiesModel.create(community);
+    return newCommunity;
 }
 
 const deleteCommunity = async (id) => {
-    const [result] = await pool.query('DELETE FROM communities WHERE id = ?', id);
-    return result
+    const result = await CommunitiesModel.destroy({
+        where: {
+            id
+        }
+    });
+    return result;
 }
 
 module.exports = {
