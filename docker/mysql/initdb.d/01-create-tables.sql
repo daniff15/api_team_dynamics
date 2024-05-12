@@ -39,8 +39,9 @@ CREATE TABLE `characters` (
     `name` VARCHAR(256)  NOT NULL ,
     `character_type_id` INT NOT NULL,
     `level_id` INT NOT NULL,
-    `xp` INT,
-    `att_xtra_points` INT,
+    `xp` INT DEFAULT 0,
+    `total_xp` INT DEFAULT 0,
+    `att_xtra_points` INT DEFAULT 0,
     PRIMARY KEY (
         `id`
     ),

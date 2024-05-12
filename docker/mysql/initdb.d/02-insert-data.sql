@@ -57,17 +57,15 @@ INSERT INTO levels (level_value) VALUES
 
 -- Inserting data into the 'characters' table
 -- Se calhar XP e ATT deviam estar no character, pq a table char_level_attbr é por niveis.	
-INSERT INTO characters (name, character_type_id, level_id, xp, att_xtra_points) VALUES 
-('Jogador Viseu', 1, 1, 0, 0), 
-('Jogador Setubal', 1, 1, 0, 0), 
-('Jogador Lisboa', 1, 1, 0, 0),
-('Jogador Porto', 1, 1, 0, 0),
-('Jogador Vitoria', 1, 1, 0, 0),
-('Jogador Contomil', 1, 1, 0, 0),
-('Jogador Aveiro', 1, 1, 0, 0),
-('Jogador Vila Real', 1, 1, 0, 0);
-
 INSERT INTO characters (name, character_type_id, level_id) VALUES 
+('Jogador Viseu', 1, 1),
+('Jogador Setubal', 1, 1),
+('Jogador Lisboa', 1, 1),
+('Jogador Porto', 1, 1),
+('Jogador Vitoria', 1, 1),
+('Jogador Contomil', 1, 1),
+('Jogador Aveiro', 1, 1),
+('Jogador Vila Real', 1, 1),
 ('Boss Ar', 3, 5),
 ('Boss Terra', 3, 10),
 ('Boss Água', 3, 15),
