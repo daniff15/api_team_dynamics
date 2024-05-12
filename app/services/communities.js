@@ -7,6 +7,11 @@ const getAllCommunities = async () => {
 
 const getCommunity = async (id) => {
     const community = await CommunitiesModel.findByPk(id);
+
+    if (!community) {
+        throw new Error('Community not found');
+    }
+
     return community;
 }
 
