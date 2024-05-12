@@ -141,49 +141,24 @@ const createCharacter = async (name, characterType, level, elements, attributes)
     }
 };
 
-// const addXPtoCharacter = async (characterId, xp) => {
-//     const [max_level] = await pool.query('SELECT MAX(level) AS max_level FROM levels');
-//     const [character] = await pool.query(`
-//         SELECT 
-//             c.id AS character_id,
-//             c.character_type,
-//             c.level,
-//             JSON_OBJECTAGG(a.name, cla.value) AS attributes
-//         FROM characters c
-//         LEFT JOIN character_level_attributes cla ON c.id = cla.character_id
-//         LEFT JOIN attributes a ON cla.attribute_id = a.id
-//         WHERE c.id = ?
-//         GROUP BY c.id, c.character_type, c.level;
+const addXPtoCharacter = async (characterId, xp) => {
+    try {
+        const character = await CharactersModel.findByPk(characterId);
 
-//     `, [characterId]);
+        if (!character || character.character_type !== 1) {
+            throw new Error('Character not found or is not a player character');
+        }
 
-//     if (!character.length) {
-//         throw new Error('Character not found');
-//     }
+        character.xp += xp;
 
-//     if (character[0].character_type !== 1) {
-//         throw new Error('XP can only be added to player characters');
-//     }
+        await character.save();
 
-//     const [currentLevel] = await pool.query(`
-//         SELECT MAX(level_id) AS current_level FROM character_level_attributes WHERE character_id = ?
-//     `, [characterId]);
+        return { message: 'XP added successfully' };
+    } catch (error) {
+        throw error;
+    }
+};
 
-//     const leveledUp = checkLevelUp(character[0], max_level[0].max_level);
-
-//     console.log("LEVELED UP: ", leveledUp);
-//     return;
-
-//     const newLevel = currentLevel[0].current_level + 1;
-//     const [[{id: xpAttributeId}]] = await pool.query('SELECT id FROM attributes WHERE name = "XP"');
-
-//     await pool.query(`
-//         INSERT INTO character_level_attributes (character_id, level_id, attribute_id, value)
-//         VALUES (?, ?, ?, ?)
-//     `, [characterId, newLevel, xpAttributeId, xp]);
-
-//     return { message: 'XP added successfully' };
-// }
 
 const updateCharacterAttributes = async (characterId, increments) => {
     try {
@@ -254,6 +229,6 @@ module.exports = {
     getCharacters,
     getCharacter,
     createCharacter,
-    // addXPtoCharacter,
+    addXPtoCharacter,
     updateCharacterAttributes
 };

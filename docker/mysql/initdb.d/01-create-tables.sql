@@ -12,6 +12,7 @@ CREATE TABLE `teams` (
     `id` INT AUTO_INCREMENT NOT NULL,
     `name` VARCHAR(255) NOT NULL,
     `community_id` INT NOT NULL,
+    `total_xp` INT NOT NULL DEFAULT 0,
     PRIMARY KEY (`id`),
     CONSTRAINT `fk_teams_communities` FOREIGN KEY (`community_id`) 
         REFERENCES `communities` (`id`)
@@ -108,7 +109,7 @@ CREATE TABLE `element_relationships` (
         ON DELETE CASCADE,
     CONSTRAINT `fk_element_strengths_strong` FOREIGN KEY (`strong_against_id`)
         REFERENCES `elements` (`id`)
-        ON DELETE CASCADE
+        ON DELETE CASCADE,
     CONSTRAINT `fk_element_strengths_weak` FOREIGN KEY (`weak_against_id`)
         REFERENCES `elements` (`id`)
         ON DELETE CASCADE
