@@ -20,6 +20,9 @@ module.exports = (sequelize, DataTypes) => {
         xp: {
             type: DataTypes.INTEGER
         },
+        total_xp: {
+            type: DataTypes.INTEGER
+        },
         att_xtra_points: {
             type: DataTypes.INTEGER
         }

@@ -1,8 +1,7 @@
-const pool = require('../config/connection');
 const { baseAttributes } = require('../utils/baseAttributes');
-const { checkLevelUp } = require('../utils/characters');
+const { checkLevelUp, updateTeamTotalXP } = require('../utils/characters');
 const { includePlayerAssociationsOutsideTeam, constructPlayerResponse } = require('../utils/characters');
-const { sequelize, CharactersModel, CharacterElementsModel, ElementsModel, CharacterLevelAttributesModel, AttributesModel } = require('../models/index');
+const { sequelize, CharactersModel, CharacterElementsModel, ElementsModel, CharacterLevelAttributesModel, AttributesModel, LevelsModel } = require('../models/index');
 
 const getCharacters = async (filters = {}) => {
     try {
@@ -141,49 +140,50 @@ const createCharacter = async (name, characterType, level, elements, attributes)
     }
 };
 
-// const addXPtoCharacter = async (characterId, xp) => {
-//     const [max_level] = await pool.query('SELECT MAX(level) AS max_level FROM levels');
-//     const [character] = await pool.query(`
-//         SELECT 
-//             c.id AS character_id,
-//             c.character_type,
-//             c.level,
-//             JSON_OBJECTAGG(a.name, cla.value) AS attributes
-//         FROM characters c
-//         LEFT JOIN character_level_attributes cla ON c.id = cla.character_id
-//         LEFT JOIN attributes a ON cla.attribute_id = a.id
-//         WHERE c.id = ?
-//         GROUP BY c.id, c.character_type, c.level;
+const addXPtoCharacter = async (characterId, xp) => {
+    const t = await sequelize.transaction();
+    try {
+        const maxLevel = await LevelsModel.max('level_value', { transaction: t });
+        const character = await CharactersModel.findByPk(characterId, {
+            include: includePlayerAssociationsOutsideTeam(),
+            transaction: t
+        });
 
-//     `, [characterId]);
+        if (!character || character.character_type_id !== 1) {
+            throw new Error('Character not found or is not a player character');
+        }
 
-//     if (!character.length) {
-//         throw new Error('Character not found');
-//     }
+        if (character.level_id === maxLevel) {
+            character.xp = 0;
+            character.total_xp += xp;
+            await character.save({ transaction: t });
+            await t.commit();
+        } else {
+            character.xp += xp;
+            character.total_xp += xp;
+            await character.save({ transaction: t });
+    
+            await checkLevelUp(character, maxLevel, t);
+    
+            // Commit the transaction
+            await t.commit();
+        }
 
-//     if (character[0].character_type !== 1) {
-//         throw new Error('XP can only be added to player characters');
-//     }
+        await updateTeamTotalXP(character.id);
+        // Retrieve the updated character after the transaction is committed
+        const updatedCharacter = await CharactersModel.findByPk(characterId, {
+            include: includePlayerAssociationsOutsideTeam()
+        });
+        return constructPlayerResponse(updatedCharacter);
 
-//     const [currentLevel] = await pool.query(`
-//         SELECT MAX(level_id) AS current_level FROM character_level_attributes WHERE character_id = ?
-//     `, [characterId]);
+    } catch (error) {
+        // Rollback the transaction if an error occurs
+        await t.rollback();
+        throw error;
+    }
+};
 
-//     const leveledUp = checkLevelUp(character[0], max_level[0].max_level);
 
-//     console.log("LEVELED UP: ", leveledUp);
-//     return;
-
-//     const newLevel = currentLevel[0].current_level + 1;
-//     const [[{id: xpAttributeId}]] = await pool.query('SELECT id FROM attributes WHERE name = "XP"');
-
-//     await pool.query(`
-//         INSERT INTO character_level_attributes (character_id, level_id, attribute_id, value)
-//         VALUES (?, ?, ?, ?)
-//     `, [characterId, newLevel, xpAttributeId, xp]);
-
-//     return { message: 'XP added successfully' };
-// }
 
 const updateCharacterAttributes = async (characterId, increments) => {
     try {
@@ -254,6 +254,6 @@ module.exports = {
     getCharacters,
     getCharacter,
     createCharacter,
-    // addXPtoCharacter,
+    addXPtoCharacter,
     updateCharacterAttributes
 };

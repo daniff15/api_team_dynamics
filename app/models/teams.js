@@ -12,6 +12,11 @@ module.exports = (sequelize, DataTypes) => {
         community_id: {
             type: DataTypes.INTEGER,
             allowNull: false
+        },
+        total_xp: {
+            type: DataTypes.INTEGER,
+            defaultValue: 0,
+            allowNull: false
         }
     }, 
     {

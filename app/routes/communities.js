@@ -128,43 +128,43 @@ router.post("/", async (req, res) => {
     }
 });
 
-/**
- * @swagger
- * /communities/{id}:
- *   delete:
- *     summary: Delete a community by ID
- *     tags: [Communities]
- *     description: Delete a community by its ID
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: ID of the community to delete
- *     responses:
- *       200:
- *         description: The result of the deletion
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   description: A message indicating the result of the deletion
- *       500:
- *         description: Internal Server Error
- */
-router.delete("/:id", async (req, res) => {
-    try {
-        const id = req.params.id;
-        const result = await communitiesService.deleteCommunity(id);
-        res.json(result);
-    } catch (err) {
-        console.error(err);
-        res.sendStatus(500);
-    }
-});
+// /**
+//  * @swagger
+//  * /communities/{id}:
+//  *   delete:
+//  *     summary: Delete a community by ID
+//  *     tags: [Communities]
+//  *     description: Delete a community by its ID
+//  *     parameters:
+//  *       - in: path
+//  *         name: id
+//  *         required: true
+//  *         schema:
+//  *           type: integer
+//  *         description: ID of the community to delete
+//  *     responses:
+//  *       200:
+//  *         description: The result of the deletion
+//  *         content:
+//  *           application/json:
+//  *             schema:
+//  *               type: object
+//  *               properties:
+//  *                 message:
+//  *                   type: string
+//  *                   description: A message indicating the result of the deletion
+//  *       500:
+//  *         description: Internal Server Error
+//  */
+// router.delete("/:id", async (req, res) => {
+//     try {
+//         const id = req.params.id;
+//         const result = await communitiesService.deleteCommunity(id);
+//         res.json(result);
+//     } catch (err) {
+//         console.error(err);
+//         res.sendStatus(500);
+//     }
+// });
 
 module.exports = router;

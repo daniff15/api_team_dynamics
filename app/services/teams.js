@@ -1,14 +1,19 @@
-const pool = require('../config/connection');
-const { TeamsModel, TeamCharactersModel, CharactersModel, CharacterLevelAttributesModel, AttributesModel, CharacterElementsModel, ElementsModel, LevelsModel, ElementRelationshipsModel } = require('../models/index');
+const { TeamsModel, TeamCharactersModel, CharactersModel, CommunitiesModel } = require('../models/index');
 const { includePlayerAssociationsInsideTeam, constructPlayerResponse } = require('../utils/characters');
 
-const getAllTeams = async (communityId) => {
+const getAllTeams = async (community_id, orderByTotalXP = 'DESC') => {
+
     const queryOptions = {
-        where: {}
+        where: {},
+        order: [['total_xp', orderByTotalXP]] 
     };
 
-    if (communityId) {
-        queryOptions.where.community_id = communityId;
+    if (community_id) {
+        const community = await CommunitiesModel.findOne({ where: { id: community_id } });
+        if (!community) {
+            throw new Error('Community not found');
+        }
+        queryOptions.where.community_id = community_id;
     }
 
     const teams = await TeamsModel.findAll(queryOptions);
@@ -34,6 +39,7 @@ const getTeam = async (id) => {
         id: teamsData.id,
         community_id: teamsData.community_id,
         name: teamsData.name,
+        total_xp: teamsData.total_xp,
         members: []
     };
 

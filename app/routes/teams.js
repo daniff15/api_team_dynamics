@@ -125,6 +125,11 @@ const router = express.Router();
  *        schema:
  *          type: integer
  *        description: Optional. Filter teams by community ID.
+ *      - in: query
+ *        name: orderByTotalXP
+ *        schema:
+ *          type: string
+ *        description: Optional. Order teams by total XP. Use 'ASC' for ascending order and 'DESC' for descending order.
  *    responses:
  *      '200':
  *        description: A list of teams
@@ -144,24 +149,20 @@ const router = express.Router();
  *                  community_id:
  *                    type: integer
  *                    description: The community ID
- *      '401':
- *        description: Unauthorized
- *      '403':
- *        description: Forbidden
  *      '404':
- *        description: Not Found
+ *        description: Community not found
  *      '500':
  *        description: Internal Server Error
  */
 
-router.get("/", async (req, res) => {
+router.get('/', async (req, res) => {
     try {
-        const communityId = req.query.community_id;
-        const rows = await teamsService.getAllTeams(communityId);
-        res.json(rows);
-    } catch (err) {
-        console.error(err);
-        res.sendStatus(500);
+        const { community_id, orderByTotalXP } = req.query;
+        const teams = await teamsService.getAllTeams(community_id, orderByTotalXP);
+        res.json(teams);
+    } catch (error) {
+        console.error(error);
+        res.status(error.message === 'Community not found' ? 404 : 500).json({ error: error.message });
     }
 });
 
