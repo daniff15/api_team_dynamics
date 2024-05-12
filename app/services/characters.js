@@ -1,5 +1,5 @@
 const { baseAttributes } = require('../utils/baseAttributes');
-const { checkLevelUp } = require('../utils/characters');
+const { checkLevelUp, updateTeamTotalXP } = require('../utils/characters');
 const { includePlayerAssociationsOutsideTeam, constructPlayerResponse } = require('../utils/characters');
 const { sequelize, CharactersModel, CharacterElementsModel, ElementsModel, CharacterLevelAttributesModel, AttributesModel, LevelsModel } = require('../models/index');
 
@@ -158,10 +158,6 @@ const addXPtoCharacter = async (characterId, xp) => {
             character.total_xp += xp;
             await character.save({ transaction: t });
             await t.commit();
-            const updatedCharacter = await CharactersModel.findByPk(characterId, {
-                include: includePlayerAssociationsOutsideTeam()
-            });
-            return constructPlayerResponse(updatedCharacter);
         } else {
             character.xp += xp;
             character.total_xp += xp;
@@ -171,13 +167,15 @@ const addXPtoCharacter = async (characterId, xp) => {
     
             // Commit the transaction
             await t.commit();
-    
-            // Retrieve the updated character after the transaction is committed
-            const updatedCharacter = await CharactersModel.findByPk(characterId, {
-                include: includePlayerAssociationsOutsideTeam()
-            });
-            return constructPlayerResponse(updatedCharacter);
         }
+
+        await updateTeamTotalXP(character.id);
+        // Retrieve the updated character after the transaction is committed
+        const updatedCharacter = await CharactersModel.findByPk(characterId, {
+            include: includePlayerAssociationsOutsideTeam()
+        });
+        return constructPlayerResponse(updatedCharacter);
+
     } catch (error) {
         // Rollback the transaction if an error occurs
         await t.rollback();

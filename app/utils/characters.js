@@ -1,4 +1,4 @@
-const { CharactersModel, CharacterLevelAttributesModel, AttributesModel, LevelsModel, CharacterElementsModel, ElementsModel, ElementRelationshipsModel } = require('../models');
+const { CharactersModel, CharacterLevelAttributesModel, AttributesModel, LevelsModel, CharacterElementsModel, ElementsModel, ElementRelationshipsModel, TeamCharactersModel, TeamsModel } = require('../models');
 
 // Utility function to include player associations inside team query
 const includePlayerAssociationsInsideTeam = () => {
@@ -211,10 +211,43 @@ const calculate_xp_needed = (character) => {
     }
 }
 
+const updateTeamTotalXP = async (playerId) => {
+    try {
+        // Find the team ID associated with the given player ID
+        const teamCharacter = await TeamCharactersModel.findOne({ where: { character_id: playerId } });
+        if (!teamCharacter) {
+            throw new Error('Player not found in any team');
+        }
+
+        const teamId = teamCharacter.team_id;
+
+        const characters = await TeamCharactersModel.findAll({
+            where: { team_id: teamId },
+            include: [{ model: CharactersModel }]
+        });
+
+        let totalXP = 0;
+        for (const character of characters) {
+            totalXP += character.character.total_xp;
+        }
+
+        const team = await TeamsModel.findByPk(teamId);
+        team.total_xp = totalXP;
+        await team.save();
+
+        return team;
+    } catch (error) {
+        console.error('Error updating team total XP:', error);
+        throw error;
+    }
+};
+
+
 module.exports = {
     includePlayerAssociationsInsideTeam,
     includePlayerAssociationsOutsideTeam,
     constructPlayerResponse,
     updateParticipantBattleStatus,
-    checkLevelUp
+    checkLevelUp,
+    updateTeamTotalXP   
 };
