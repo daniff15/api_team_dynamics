@@ -1,7 +1,7 @@
 const { baseAttributes } = require('../utils/baseAttributes');
 const { checkLevelUp } = require('../utils/characters');
 const { includePlayerAssociationsOutsideTeam, constructPlayerResponse } = require('../utils/characters');
-const { sequelize, CharactersModel, CharacterElementsModel, ElementsModel, CharacterLevelAttributesModel, AttributesModel } = require('../models/index');
+const { sequelize, CharactersModel, CharacterElementsModel, ElementsModel, CharacterLevelAttributesModel, AttributesModel, LevelsModel } = require('../models/index');
 
 const getCharacters = async (filters = {}) => {
     try {
@@ -141,22 +141,50 @@ const createCharacter = async (name, characterType, level, elements, attributes)
 };
 
 const addXPtoCharacter = async (characterId, xp) => {
+    const t = await sequelize.transaction();
     try {
-        const character = await CharactersModel.findByPk(characterId);
+        const maxLevel = await LevelsModel.max('level_value', { transaction: t });
+        const character = await CharactersModel.findByPk(characterId, {
+            include: includePlayerAssociationsOutsideTeam(),
+            transaction: t
+        });
 
-        if (!character || character.character_type !== 1) {
+        if (!character || character.character_type_id !== 1) {
             throw new Error('Character not found or is not a player character');
         }
 
-        character.xp += xp;
-
-        await character.save();
-
-        return { message: 'XP added successfully' };
+        if (character.level_id === maxLevel) {
+            character.xp = 0;
+            character.total_xp += xp;
+            await character.save({ transaction: t });
+            await t.commit();
+            const updatedCharacter = await CharactersModel.findByPk(characterId, {
+                include: includePlayerAssociationsOutsideTeam()
+            });
+            return constructPlayerResponse(updatedCharacter);
+        } else {
+            character.xp += xp;
+            character.total_xp += xp;
+            await character.save({ transaction: t });
+    
+            await checkLevelUp(character, maxLevel, t);
+    
+            // Commit the transaction
+            await t.commit();
+    
+            // Retrieve the updated character after the transaction is committed
+            const updatedCharacter = await CharactersModel.findByPk(characterId, {
+                include: includePlayerAssociationsOutsideTeam()
+            });
+            return constructPlayerResponse(updatedCharacter);
+        }
     } catch (error) {
+        // Rollback the transaction if an error occurs
+        await t.rollback();
         throw error;
     }
 };
+
 
 
 const updateCharacterAttributes = async (characterId, increments) => {

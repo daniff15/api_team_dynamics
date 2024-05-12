@@ -100,6 +100,7 @@ const constructPlayerResponse = (character) => {
         name: character.name,
         level: character.level_id,
         xp: character.xp,
+        total_xp: character.total_xp,
         extra_points: character.att_xtra_points,
         attributes: character.character_level_attributes.reduce((acc, attribute) => {
             acc[attribute.attribute.name] = attribute.value;
@@ -135,19 +136,66 @@ const updateParticipantBattleStatus = (deepCloneParticipants, participant, attr,
     
 };
 
-const checkLevelUp = (character, max_level) => {
-    if (character.level < max_level) {
+const checkLevelUp = async (character, max_level, t) => {
+    if (character.level_id < max_level) {
         const xp_needed = calculate_xp_needed(character);
 
-
-        //FAZER ESTA PARTE ANTES DE CONTINUAR!
         if (character.xp >= xp_needed) {
-            character.level += 1;
+            character.level_id += 1;
             character.xp -= xp_needed;
-            update_stats(character);
-            checkLevelUp(character);
+
+            await character.save({ transaction: t });
+
+            // Update character attributes and insert into character_level_attributes table within the same transaction
+            await updateStatsAndAttributes(character, t);
+
+            // Recursive call to check for further level ups
+            await checkLevelUp(character, max_level, t);
         }
     }
+};
+
+const updateStatsAndAttributes = async (character, t) => {
+    try {
+        const currentAttributes = await CharacterLevelAttributesModel.findAll({
+            where: { character_id: character.id, level_id: parseInt(character.level_id) - 1 },
+            transaction: t
+        });
+
+        // Calculate new attribute values
+        const newAttributes = calculateNewAttributes(currentAttributes);
+
+        // Insert the new attribute values into the database
+        await CharacterLevelAttributesModel.bulkCreate([
+            { character_id: character.id, level_id: character.level_id, attribute_id: 1, value: currentAttributes[0].value + newAttributes.hp },
+            { character_id: character.id, level_id: character.level_id, attribute_id: 2, value: currentAttributes[1].value + newAttributes.def },
+            { character_id: character.id, level_id: character.level_id, attribute_id: 3, value: currentAttributes[2].value + newAttributes.atk },
+            { character_id: character.id, level_id: character.level_id, attribute_id: 4, value: currentAttributes[3].value + newAttributes.speed }
+        ], { transaction: t });
+
+        return character;
+    } catch (error) {
+        console.error('Error updating character attributes:', error);
+        throw error;
+    }
+};
+
+const calculateNewAttributes = (currentAttributes, scaling_factor = 0.11) => {
+    let newAttributes = { hp: 0, def: 0, atk: 0, speed: 0 };
+
+    for (const attribute of currentAttributes) {
+        if (attribute.attribute_id === 1) {
+            newAttributes.hp += Math.ceil(attribute.value * scaling_factor * (Math.random() * (1.1 - 1) + 1));
+        } else if (attribute.attribute_id === 2) {
+            newAttributes.def += Math.ceil(attribute.value * scaling_factor * (Math.random() * (1.1 - 1) + 1));
+        } else if (attribute.attribute_id === 3) {
+            newAttributes.atk += Math.ceil(attribute.value * scaling_factor * (Math.random() * (1.1 - 1) + 1));
+        } else if (attribute.attribute_id === 4) {
+            newAttributes.speed += Math.ceil(attribute.value * scaling_factor * (Math.random() * (1.1 - 1) + 1));
+        }
+    }
+
+    return newAttributes;
 };
 
 const MAX_FIRST_FORMULA_LEVEL = 9;
@@ -156,26 +204,12 @@ const INCREMENT = 50;
 const SEC_FORMULA_INCREMENT = 500;
 const calculate_xp_needed = (character) => {
     // METER ISTO A IR BUSCAR A UM FICHEIRO DE CONFIGURACAO
-    if (character.level < MAX_FIRST_FORMULA_LEVEL) {
-        return BASE_XP + ((character.level - 1) * INCREMENT);
+    if (character.level_id < MAX_FIRST_FORMULA_LEVEL) {
+        return BASE_XP + ((character.level_id - 1) * INCREMENT);
     } else {
         return SEC_FORMULA_INCREMENT;
     }
 }
-
-// if self.level < self.MAX_LEVEL:
-//             xp_needed = self.calculate_xp_needed()
-            
-//             if self.xp >= xp_needed:
-//                 self.level += 1
-//                 self.xp -= xp_needed
-//                 self.update_stats()
-                
-//                 # # Generate extra points with a 30% probability
-//                 # if random.random() < 0.3:
-//                 #     self.extra_points += 1
-                
-//                 self.check_level_up()
 
 module.exports = {
     includePlayerAssociationsInsideTeam,
