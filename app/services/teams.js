@@ -1,5 +1,4 @@
-const pool = require('../config/connection');
-const { TeamsModel, TeamCharactersModel, CharactersModel, CharacterLevelAttributesModel, AttributesModel, CharacterElementsModel, ElementsModel, LevelsModel, ElementRelationshipsModel } = require('../models/index');
+const { TeamsModel, TeamCharactersModel, CharactersModel } = require('../models/index');
 const { includePlayerAssociationsInsideTeam, constructPlayerResponse } = require('../utils/characters');
 
 const getAllTeams = async (communityId) => {
@@ -34,6 +33,7 @@ const getTeam = async (id) => {
         id: teamsData.id,
         community_id: teamsData.community_id,
         name: teamsData.name,
+        total_xp: teamsData.total_xp,
         members: []
     };
 

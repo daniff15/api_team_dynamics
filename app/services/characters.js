@@ -1,4 +1,3 @@
-const pool = require('../config/connection');
 const { baseAttributes } = require('../utils/baseAttributes');
 const { checkLevelUp } = require('../utils/characters');
 const { includePlayerAssociationsOutsideTeam, constructPlayerResponse } = require('../utils/characters');
