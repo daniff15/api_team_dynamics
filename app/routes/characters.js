@@ -220,38 +220,5 @@ router.put('/:id/attributes', async (req, res) => {
     }
 });
 
-/**
- * @swagger
- * /characters/{id}:
- *   delete:
- *     summary: Delete a character by ID
- *     tags: [Characters]
- *     description: Delete a character by its ID
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: ID of the character to delete
- *     responses:
- *       204:
- *         description: Successfully deleted the character
- *       404:
- *         description: Not Found - The character with the specified ID does not exist
- *       500:
- *         description: Internal Server Error
- */
-router.delete('/:id', async (req, res) => {
-    try {
-        const id = req.params.id;
-        const result = await charactersService.deleteCharacter(id);
-        res.status(204).send(result);
-    } catch (err) {
-        console.error(err);
-        res.status(err.message === 'Character not found' ? 404 : 500).send({ message: err.message });
-    }
-});
-
 module.exports = router;
 
