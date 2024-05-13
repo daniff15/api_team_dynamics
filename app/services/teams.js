@@ -1,5 +1,6 @@
 const { TeamsModel, TeamCharactersModel, CharactersModel, CommunitiesModel } = require('../models/index');
 const { includePlayerAssociationsInsideTeam, constructPlayerResponse } = require('../utils/characters');
+const { BadRequestError, NotFoundError, ServerError } = require('../utils/errors');
 
 const getAllTeams = async (community_id, orderByTotalXP = 'DESC') => {
 
@@ -11,7 +12,7 @@ const getAllTeams = async (community_id, orderByTotalXP = 'DESC') => {
     if (community_id) {
         const community = await CommunitiesModel.findOne({ where: { id: community_id } });
         if (!community) {
-            throw new Error('Community not found');
+            return NotFoundError('Community not found');
         }
         queryOptions.where.community_id = community_id;
     }
@@ -32,7 +33,7 @@ const getTeam = async (id) => {
     });
 
     if (!teamsData) {
-        throw new Error('Team not found');
+        return NotFoundError('Team not found');
     }
 
     const teamData = {
@@ -70,7 +71,7 @@ const addCharacterToTeam = async (teamId, characterId) => {
     try {
         const team = await TeamsModel.findByPk(teamId);
         if (!team) {
-            throw new Error('Team not found');
+            return NotFoundError('Team not found');
         }
 
         const teamInSameCommunity = await TeamsModel.findOne({
@@ -78,35 +79,35 @@ const addCharacterToTeam = async (teamId, characterId) => {
             include: [{ model: TeamCharactersModel, where: { character_id: characterId } }]
         });
         if (teamInSameCommunity) {
-            throw new Error('This character is already part of another team in the same community');
+            return BadRequestError('Character is already a member of a team in the same community');
         }
 
         const currentMembersCount = await TeamCharactersModel.count({ where: { team_id: teamId } });
         if (currentMembersCount >= 4) {
-            throw new Error('Team already has 4 members');
+            return BadRequestError('Team is already full (4 members max)');
         }
 
         const existingMember = await TeamCharactersModel.findOne({ where: { team_id: teamId, character_id: characterId } });
         if (existingMember) {
-            throw new Error('This character is already a member of the team');
+            return BadRequestError('Character is already a member of the team');
         }
 
         const character = await CharactersModel.findByPk(characterId);
         if (!character) {
-            throw new Error('Character not found');
+            return NotFoundError('Character not found');
         }
         
         const result = await TeamCharactersModel.create({ team_id: teamId, character_id: characterId });
         return result;
     } catch (error) {
-        throw error;
+        return ServerError(error.message);
     }
 };
 
 const updateTeam = async (teamId, updates) => {
     const team = await TeamsModel.findByPk(teamId);
     if (!team) {
-        throw new Error('Team not found');
+        return NotFoundError('Team not found');
     }
 
     const allowedUpdates = {
@@ -122,14 +123,14 @@ const updateTeam = async (teamId, updates) => {
 
 
     if (Object.keys(updatedFields).length === 0) {
-        throw new Error('No valid fields provided for update');
+        return BadRequestError('No valid fields to update');
     }
 
     await TeamsModel.update(updatedFields, { where: { id: teamId } });
 
     const updatedTeam = await TeamsModel.findByPk(teamId);
     if (!updatedTeam) {
-        throw new Error('Updated team not found');
+        return NotFoundError('Team not found');
     }
 
     return updatedTeam;

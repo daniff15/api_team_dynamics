@@ -1,4 +1,5 @@
 const { CommunitiesModel } = require('../models/index');
+const { NotFoundError } = require('../utils/errors');
 
 const getAllCommunities = async () => {
     const communities = await CommunitiesModel.findAll({});
@@ -9,7 +10,7 @@ const getCommunity = async (id) => {
     const community = await CommunitiesModel.findByPk(id);
 
     if (!community) {
-        throw new Error('Community not found');
+        return NotFoundError('Community not found');
     }
 
     return community;
