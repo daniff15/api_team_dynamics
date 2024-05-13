@@ -1,4 +1,5 @@
 const { CharactersModel, CharacterLevelAttributesModel, AttributesModel, LevelsModel, CharacterElementsModel, ElementsModel, ElementRelationshipsModel, TeamCharactersModel, TeamsModel } = require('../models');
+const { NotFoundError, ServerError } = require('../utils/errors');
 
 // Utility function to include player associations inside team query
 const includePlayerAssociationsInsideTeam = () => {
@@ -175,8 +176,7 @@ const updateStatsAndAttributes = async (character, t) => {
 
         return character;
     } catch (error) {
-        console.error('Error updating character attributes:', error);
-        throw error;
+        return ServerError(error.message);
     }
 };
 
@@ -216,7 +216,7 @@ const updateTeamTotalXP = async (playerId) => {
         // Find the team ID associated with the given player ID
         const teamCharacter = await TeamCharactersModel.findOne({ where: { character_id: playerId } });
         if (!teamCharacter) {
-            throw new Error('Player not found in any team');
+            return NotFoundError('Player not found in any team');
         }
 
         const teamId = teamCharacter.team_id;
@@ -237,8 +237,7 @@ const updateTeamTotalXP = async (playerId) => {
 
         return team;
     } catch (error) {
-        console.error('Error updating team total XP:', error);
-        throw error;
+        return ServerError(error.message);
     }
 };
 

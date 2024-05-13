@@ -2,6 +2,8 @@ const { Op } = require('sequelize');
 const { BattlesModel, sequelize, TeamsModel, TeamCharactersModel, AttacksModel, CharactersModel } = require('../models/index');
 const { checkBattleEnd, initializeQueue, calculateDamage } = require('../utils/battles');
 const { updateParticipantBattleStatus, includePlayerAssociationsInsideTeam, includePlayerAssociationsOutsideTeam } = require('../utils/characters');
+const { NotFoundError, ServerError } = require('../utils/errors');
+const { success } = require('../utils/apiResponse');
 
 const getAllBattles = async (filters = {}) => {
     try {
@@ -31,9 +33,9 @@ const getAllBattles = async (filters = {}) => {
         }
 
         const battles = await BattlesModel.findAll({ where: where });
-        return battles;
+        return success(battles);
     } catch (error) {
-        throw error;
+        return ServerError(error.message);
     }
 };
 
@@ -50,7 +52,7 @@ const getBattle = async (id) => {
         });
 
         if (!typeCheck) {
-            throw new Error('Battle not found');
+            return NotFoundError('Battle not found');
         }
 
         let battleDetails;
@@ -68,13 +70,12 @@ const getBattle = async (id) => {
             where: { battle_id: id },
         });
 
-        return {
+        return success({
             battle: battleDetails,
             attacks: attacks
-        };
+        });
     } catch (error) {
-        console.error(error);
-        throw error;
+        return ServerError(error.message);
     }
 };
 
@@ -107,7 +108,7 @@ const createBattle = async (battle) => {
         });
 
         if (!participants) {
-            throw new Error('Team not found');
+            return NotFoundError('Team not found');
         }
 
         let opponent;
@@ -123,7 +124,7 @@ const createBattle = async (battle) => {
             });
 
             if (!opponent) {
-                throw new Error('Opponent team not found');
+                return NotFoundError('Opponent team not found');
             }
         } else {
             opponent = await CharactersModel.findOne({
@@ -138,7 +139,7 @@ const createBattle = async (battle) => {
             });
 
             if (!opponent) {
-                throw new Error('Boss not found');
+                return NotFoundError('Boss not found');
             }
 
             opponent = {
@@ -226,7 +227,7 @@ const createBattle = async (battle) => {
 
         await transaction.commit();
 
-        return {
+        return success({
             battle: {
                 id: battle_id,
                 team_id,
@@ -236,11 +237,10 @@ const createBattle = async (battle) => {
                 winner_id: battleResult.winnerId || null
             },
             participants: deepCloneParticipants
-        };
+        });
     } catch (error) {
         if (transaction) await transaction.rollback();
-        console.error('Failed to create battle:', error);
-        throw error;
+        return ServerError(error.message);
     }
 };
 

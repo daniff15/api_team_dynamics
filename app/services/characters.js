@@ -2,6 +2,8 @@ const { baseAttributes } = require('../utils/baseAttributes');
 const { checkLevelUp, updateTeamTotalXP } = require('../utils/characters');
 const { includePlayerAssociationsOutsideTeam, constructPlayerResponse } = require('../utils/characters');
 const { sequelize, CharactersModel, CharacterElementsModel, ElementsModel, CharacterLevelAttributesModel, AttributesModel, LevelsModel } = require('../models/index');
+const { BadRequestError, NotFoundError, ServerError } = require('../utils/errors');
+const { success } = require('../utils/apiResponse');
 
 const getCharacters = async (filters = {}) => {
     try {
@@ -20,9 +22,9 @@ const getCharacters = async (filters = {}) => {
             constructPlayerResponse(character)
         ));
 
-        return formattedCharacters;
+        return success(formattedCharacters);
     } catch (error) {
-        throw error;
+        return ServerError(error.message);
     }
 };
 
@@ -33,14 +35,14 @@ const getCharacter = async (characterId) => {
         });
 
         if (!character) {
-            throw new Error('Character not found');
+            return NotFoundError('Character not found');
         }
 
         const formattedCharacter = constructPlayerResponse(character);
 
-        return formattedCharacter;
+        return success(formattedCharacter);
     } catch (error) {
-        throw error;
+        return ServerError(error.message);
     }
 };
 
@@ -51,7 +53,7 @@ const createCharacter = async (name, characterType, level, elements, attributes)
 
         // Prevent creating a character with more than one element
         if (characterType === 1 && elements.length !== 1) {
-            throw new Error('Players must have exactly one element.');
+            return BadRequestError('Player characters can only have one element');
         }
 
         // Create the character
@@ -78,7 +80,7 @@ const createCharacter = async (name, characterType, level, elements, attributes)
             const element = await ElementsModel.findByPk(elements[0], { transaction });
 
             if (!element) {
-                throw new Error('Element not found');
+                return NotFoundError('Element not found');
             }
 
             // Associate elements with the character
@@ -89,7 +91,7 @@ const createCharacter = async (name, characterType, level, elements, attributes)
 
             const attrs = baseAttributes[element.name.toLowerCase()];
             if (!attrs) {
-                throw new Error('Attributes not defined for the element');
+                return NotFoundError('Attributes not found for element');
             }
 
             // Batch insert attributes for efficiency
@@ -104,7 +106,7 @@ const createCharacter = async (name, characterType, level, elements, attributes)
                 const element = await ElementsModel.findByPk(elementId, { transaction });
 
                 if (!element) {
-                    throw new Error('Element not found');
+                    return NotFoundError('Element not found');
                 }
 
                 await CharacterElementsModel.create({
@@ -118,7 +120,7 @@ const createCharacter = async (name, characterType, level, elements, attributes)
                 const attr = await AttributesModel.findOne({ where: { name: attribute } });
 
                 if (!attr) {
-                    throw new Error(`Attribute "${attribute}" not found`);
+                    return NotFoundError(`Attribute "${attribute}" not found`);
                 }
 
                 await CharacterLevelAttributesModel.create({
@@ -131,10 +133,10 @@ const createCharacter = async (name, characterType, level, elements, attributes)
         }
 
         await transaction.commit();
-        return { id: characterId, message: "Character created successfully" };
+        return success({ id: characterId}, message = 'Character created successfully');
     } catch (error) {
         if (transaction) await transaction.rollback();
-        throw error;
+        return ServerError(error.message);
     }
 };
 
@@ -148,7 +150,11 @@ const addXPtoCharacter = async (characterId, xp) => {
         });
 
         if (!character || character.character_type_id !== 1) {
-            throw new Error('Character not found or is not a player character');
+            if (!character) {
+                return NotFoundError('Player character not found');
+            } else {
+                return BadRequestError('Character is not a player character');
+            }
         }
 
         if (character.level_id === maxLevel) {
@@ -172,16 +178,14 @@ const addXPtoCharacter = async (characterId, xp) => {
         const updatedCharacter = await CharactersModel.findByPk(characterId, {
             include: includePlayerAssociationsOutsideTeam()
         });
-        return constructPlayerResponse(updatedCharacter);
+        return success(constructPlayerResponse(updatedCharacter), message = 'XP added successfully');
 
     } catch (error) {
         // Rollback the transaction if an error occurs
         await t.rollback();
-        throw error;
+        return ServerError(error.message);
     }
 };
-
-
 
 const updateCharacterAttributes = async (characterId, increments) => {
     try {
@@ -190,11 +194,11 @@ const updateCharacterAttributes = async (characterId, increments) => {
         });
 
         if (!character) {
-            throw new Error('Character not found');
+            return NotFoundError('Character not found');
         }
 
         if (character.character_type_id !== 1) {
-            throw new Error('Attributes can only be updated for player characters');
+            return BadRequestError('Attributes can only be updated for player characters');
         }
 
         const currentAttributes = await CharacterLevelAttributesModel.findAll({
@@ -208,7 +212,7 @@ const updateCharacterAttributes = async (characterId, increments) => {
         const totalPointsUsed = Object.values(increments).reduce((acc, increment) => acc + parseInt(increment), 0);
 
         if (totalPointsUsed > parseInt(availableXtraPoints)) {
-            throw new Error('Insufficient extra points to update attributes');
+            return BadRequestError('Insufficient extra points to update attributes');
         }
         
         for (const [key, increment] of Object.entries(increments)) {
@@ -222,7 +226,7 @@ const updateCharacterAttributes = async (characterId, increments) => {
                     { where: { character_id: characterId, attribute_id: currentAttribute.attribute_id } }
                 );
             } else {
-                throw new Error(`Attribute ${key} not found or not updatable`);
+                return NotFoundError(`Attribute ${key} not found or not updatable`);
             }
         }
 
@@ -238,12 +242,12 @@ const updateCharacterAttributes = async (characterId, increments) => {
         });
 
         if (!updatedCharacter) {
-            throw new Error('Character details not found after update');
+            return NotFoundError('Character not found');
         }
 
-        return constructPlayerResponse(updatedCharacter);
+        return success(constructPlayerResponse(updatedCharacter), message = 'Attributes updated successfully');
     } catch (error) {
-        throw error;
+        return ServerError(error.message);
     }
 }
 

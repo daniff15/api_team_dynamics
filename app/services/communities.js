@@ -1,4 +1,6 @@
 const { CommunitiesModel } = require('../models/index');
+const { NotFoundError } = require('../utils/errors');
+const { success } = require('../utils/apiResponse');
 
 const getAllCommunities = async () => {
     const communities = await CommunitiesModel.findAll({});
@@ -9,15 +11,15 @@ const getCommunity = async (id) => {
     const community = await CommunitiesModel.findByPk(id);
 
     if (!community) {
-        throw new Error('Community not found');
+        return NotFoundError('Community not found');
     }
 
-    return community;
+    return success(community);
 }
 
 const createCommunity = async (community) => {
     const newCommunity = await CommunitiesModel.create(community);
-    return newCommunity;
+    return success(newCommunity);
 }
 
 const deleteCommunity = async (id) => {
