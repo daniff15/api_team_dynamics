@@ -1,22 +1,20 @@
-function success(data, meta = {}, message = "OK", statusCode = 200) {
+function success(data, message = "OK", statusCode = 200) {
   return {
     message,
-    data,
+    statusCode,
     meta: {
-      ...meta,
-      statusCode,
-      error: false,
+        error: false,
     },
+    data,
   };
 }
 
-function error(message = "Server error", statusCode = 500, errors = []) {
+function error(message = "Server error", statusCode = 500) {
   return {
     message,
+    statusCode,
     meta: {
-      statusCode,
       error: true,
-      errors,
     },
   };
 }

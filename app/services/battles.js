@@ -3,6 +3,7 @@ const { BattlesModel, sequelize, TeamsModel, TeamCharactersModel, AttacksModel, 
 const { checkBattleEnd, initializeQueue, calculateDamage } = require('../utils/battles');
 const { updateParticipantBattleStatus, includePlayerAssociationsInsideTeam, includePlayerAssociationsOutsideTeam } = require('../utils/characters');
 const { NotFoundError, ServerError } = require('../utils/errors');
+const { success } = require('../utils/apiResponse');
 
 const getAllBattles = async (filters = {}) => {
     try {
@@ -32,7 +33,7 @@ const getAllBattles = async (filters = {}) => {
         }
 
         const battles = await BattlesModel.findAll({ where: where });
-        return battles;
+        return success(battles);
     } catch (error) {
         return ServerError(error.message);
     }
@@ -69,10 +70,10 @@ const getBattle = async (id) => {
             where: { battle_id: id },
         });
 
-        return {
+        return success({
             battle: battleDetails,
             attacks: attacks
-        };
+        });
     } catch (error) {
         return ServerError(error.message);
     }
@@ -226,7 +227,7 @@ const createBattle = async (battle) => {
 
         await transaction.commit();
 
-        return {
+        return success({
             battle: {
                 id: battle_id,
                 team_id,
@@ -236,7 +237,7 @@ const createBattle = async (battle) => {
                 winner_id: battleResult.winnerId || null
             },
             participants: deepCloneParticipants
-        };
+        });
     } catch (error) {
         if (transaction) await transaction.rollback();
         return ServerError(error.message);

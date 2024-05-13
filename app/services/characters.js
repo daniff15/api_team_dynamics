@@ -3,6 +3,7 @@ const { checkLevelUp, updateTeamTotalXP } = require('../utils/characters');
 const { includePlayerAssociationsOutsideTeam, constructPlayerResponse } = require('../utils/characters');
 const { sequelize, CharactersModel, CharacterElementsModel, ElementsModel, CharacterLevelAttributesModel, AttributesModel, LevelsModel } = require('../models/index');
 const { BadRequestError, NotFoundError, ServerError } = require('../utils/errors');
+const { success } = require('../utils/apiResponse');
 
 const getCharacters = async (filters = {}) => {
     try {
@@ -21,7 +22,7 @@ const getCharacters = async (filters = {}) => {
             constructPlayerResponse(character)
         ));
 
-        return formattedCharacters;
+        return success(formattedCharacters);
     } catch (error) {
         return ServerError(error.message);
     }
@@ -39,7 +40,7 @@ const getCharacter = async (characterId) => {
 
         const formattedCharacter = constructPlayerResponse(character);
 
-        return formattedCharacter;
+        return success(formattedCharacter);
     } catch (error) {
         return ServerError(error.message);
     }
@@ -132,7 +133,7 @@ const createCharacter = async (name, characterType, level, elements, attributes)
         }
 
         await transaction.commit();
-        return { id: characterId, message: "Character created successfully" };
+        return success({ id: characterId}, message = 'Character created successfully');
     } catch (error) {
         if (transaction) await transaction.rollback();
         return ServerError(error.message);
@@ -177,7 +178,7 @@ const addXPtoCharacter = async (characterId, xp) => {
         const updatedCharacter = await CharactersModel.findByPk(characterId, {
             include: includePlayerAssociationsOutsideTeam()
         });
-        return constructPlayerResponse(updatedCharacter);
+        return success(constructPlayerResponse(updatedCharacter), message = 'XP added successfully');
 
     } catch (error) {
         // Rollback the transaction if an error occurs
@@ -185,8 +186,6 @@ const addXPtoCharacter = async (characterId, xp) => {
         return ServerError(error.message);
     }
 };
-
-
 
 const updateCharacterAttributes = async (characterId, increments) => {
     try {
@@ -246,7 +245,7 @@ const updateCharacterAttributes = async (characterId, increments) => {
             return NotFoundError('Character not found');
         }
 
-        return constructPlayerResponse(updatedCharacter);
+        return success(constructPlayerResponse(updatedCharacter), message = 'Attributes updated successfully');
     } catch (error) {
         return ServerError(error.message);
     }

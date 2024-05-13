@@ -1,6 +1,7 @@
 const { TeamsModel, TeamCharactersModel, CharactersModel, CommunitiesModel } = require('../models/index');
 const { includePlayerAssociationsInsideTeam, constructPlayerResponse } = require('../utils/characters');
 const { BadRequestError, NotFoundError, ServerError } = require('../utils/errors');
+const { success } = require('../utils/apiResponse');
 
 const getAllTeams = async (community_id, orderByTotalXP = 'DESC') => {
 
@@ -18,7 +19,7 @@ const getAllTeams = async (community_id, orderByTotalXP = 'DESC') => {
     }
 
     const teams = await TeamsModel.findAll(queryOptions);
-    return teams;
+    return success(teams);
 };
 
 const getTeam = async (id) => {
@@ -49,13 +50,13 @@ const getTeam = async (id) => {
         teamData.members.push(constructPlayerResponse(character));
     });
 
-    return teamData;
+    return success(teamData);
 };
 
 
 const createTeam = async (team) => {
     const newTeam = await TeamsModel.create(team);
-    return newTeam;
+    return success(newTeam);
 }
 
 const deleteTeam = async (id) => {
@@ -98,7 +99,7 @@ const addCharacterToTeam = async (teamId, characterId) => {
         }
         
         const result = await TeamCharactersModel.create({ team_id: teamId, character_id: characterId });
-        return result;
+        return success(result, message = 'Character added to team');
     } catch (error) {
         return ServerError(error.message);
     }
@@ -133,11 +134,8 @@ const updateTeam = async (teamId, updates) => {
         return NotFoundError('Team not found');
     }
 
-    return updatedTeam;
+    return success(updatedTeam, message = 'Team updated successfully');
 };
-
-
-
 
 module.exports = {
     getAllTeams,
