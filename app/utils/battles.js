@@ -30,16 +30,26 @@ const calculateDamage = (attacker, defender) => {
     return totalDamage;
 };
 
-const checkBattleEnd = (participants) => {
-    const boss = participants.find(p => p.character_type === 3 || p.character_type === 2);
-    const players = participants.filter(p => p.character_type === 1);
+const checkBattleEnd = (participants, boss_fight) => {
+    if (!boss_fight) {
+        const boss = participants.find(p => p.character_type !== 1);
+        const players = participants.filter(p => p.character_type === 1);
 
-    if (boss && boss.attributes.hp_battle <= 0) {
-        console.log("Boss has been defeated! Congratulations!");
-        return { teamId: players[0].character_type, bossId: boss.id, winnerId: players[0].team, battleEnded: true };
-    } else if (players.length > 0 && players.every(p => p.attributes.hp_battle <= 0)) {
-        console.log("All players have been defeated! Game over!");
-        return { teamId: players[0].character_type, bossId: boss.id, winnerId: boss.id, battleEnded: true };
+        if (boss.attributes.hp_battle <= 0) {
+            return { teamId: players[0].character_type, bossId: boss.id, winnerId: players[0].team, battleEnded: true };
+        } else if (players.length > 0 && players.every(p => p.attributes.hp_battle <= 0)) {
+            return { teamId: players[0].character_type, bossId: boss.id, winnerId: boss.id, battleEnded: true };
+        }
+    } else {
+        const teamIds = [...new Set(participants.map(p => p.team))];
+        const team1 = participants.filter(p => p.team === teamIds[0]);
+        const team2 = participants.filter(p => p.team === teamIds[1]);
+
+        if (team1.length > 0 && team1.every(p => p.attributes.hp_battle <= 0)) {
+            return { teamId: teamIds[0], opponent_team_id: teamIds[1], winnerId: teamIds[1], battleEnded: true };
+        } else if (team2.length > 0 && team2.every(p => p.attributes.hp_battle <= 0)) {
+            return { teamId: teamIds[0], opponent_team_id: teamIds[1], winnerId: teamIds[0], battleEnded: true };
+        }
     }
     return { battleEnded: false };
 }

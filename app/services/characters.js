@@ -107,8 +107,6 @@ const createCharacter = async (name, characterType, level, elements, attributes)
                     throw new Error('Element not found');
                 }
 
-                console.log("ELEMENT: ", element);
-
                 await CharacterElementsModel.create({
                     character_id: characterId,
                     element_id: elementId
