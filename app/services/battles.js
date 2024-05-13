@@ -31,9 +31,6 @@ const getAllBattles = async (filters = {}) => {
         }
 
         const battles = await BattlesModel.findAll({ where: where });
-
-        console.log(battles);
-
         return battles;
     } catch (error) {
         throw error;
@@ -175,6 +172,7 @@ const createBattle = async (battle) => {
                 level: participant.character.level_id,
                 character_type: participant.character.character_type_id,
                 attributes: attributes,
+                real_speed: attributes.SPEED,
             };
 
             deepCloneParticipants.push(participant);
@@ -183,18 +181,25 @@ const createBattle = async (battle) => {
         let battleQueue = initializeQueue(deepCloneParticipants);
 
         let battleResult;
-        while (!(battleResult = checkBattleEnd(deepCloneParticipants)).battleEnded) {
+        while (!(battleResult = checkBattleEnd(deepCloneParticipants, opponent_team_id)).battleEnded) {
             let current = battleQueue.shift();
             let damage = 0;
             let target = null;
-            if (current.character_type === 3 || current.character_type === 2) {
-                const availableTargets = deepCloneParticipants.filter(p => p.character_type === 1 && p.attributes.hp_battle > 0);
-                target = availableTargets[Math.floor(Math.random() * availableTargets.length)];
-                damage = current.attributes.SPEED === 0 ? 0 : calculateDamage(current, target);
+            if (!opponent_team_id) {
+                if (current.character_type === 3 || current.character_type === 2) {
+                    const availableTargets = deepCloneParticipants.filter(p => p.character_type === 1 && p.attributes.hp_battle > 0);
+                    target = availableTargets[Math.floor(Math.random() * availableTargets.length)];
+                    damage = current.attributes.SPEED === 0 ? 0 : calculateDamage(current, target);
+                }
+                else {
+                    const availableTargets = deepCloneParticipants.filter(p => p.character_type === 3 && p.attributes.hp_battle > 0);
+                    target = availableTargets[0];
+                    damage = current.attributes.SPEED === 0 ? 0 : calculateDamage(current, target);
+                }
             }
             else {
-                const availableTargets = deepCloneParticipants.filter(p => p.character_type === 3 && p.attributes.hp_battle > 0);
-                target = availableTargets[0];
+                const availableTargets = deepCloneParticipants.filter(p => p.team !== current.team && p.attributes.hp_battle > 0);
+                target = availableTargets[Math.floor(Math.random() * availableTargets.length)];
                 damage = current.attributes.SPEED === 0 ? 0 : calculateDamage(current, target);
             }
             if (damage !== 0) {
@@ -227,7 +232,8 @@ const createBattle = async (battle) => {
                 team_id,
                 opponent_team_id,
                 boss_id,
-                battle_date
+                battle_date,
+                winner_id: battleResult.winnerId || null
             },
             participants: deepCloneParticipants
         };
