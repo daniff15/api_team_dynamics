@@ -88,7 +88,7 @@ const router = express.Router();
  *         name: battle_type
  *         schema:
  *           type: string
- *         description: Type of battles to filter
+ *         description: Type of battles to filter [boss, team]
  *     responses:
  *       200:
  *         description: A list of battles
@@ -255,9 +255,21 @@ router.get("/:id", async (req, res) => {
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Battle'
+ *             type: object
+ *             properties:
+ *               team_id:
+ *                 type: integer
+ *                 description: The ID of the team initiating the battle
+ *               opponent_team_id:
+ *                 type: integer
+ *                 nullable: true
+ *                 description: The ID of the opposing team (required for team battle)
+ *               boss_id:
+ *                 type: integer
+ *                 nullable: true
+ *                 description: The ID of the boss being battled (required for boss battle)
  *     responses:
- *       200:
+ *       201:
  *         description: Successfully created a new battle
  *         content:
  *           application/json:
@@ -278,6 +290,48 @@ router.get("/:id", async (req, res) => {
  *                       type: boolean
  *                       description: Indicates if an error occurred
  *                       example: false
+ *       400:
+ *         description: Bad Request - The request body is invalid
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 400
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
+ *       404:
+ *         description: Not Found - The battle with the specified ID does not exist
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 404
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
  *       500:
  *         description: Internal Server Error
  *         content:

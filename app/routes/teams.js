@@ -151,48 +151,47 @@ const router = express.Router();
  *                    description: The community ID
  *      '404':
  *        description: Community not found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   description: A message indicating the error
- *                 statusCode:
- *                   type: integer
- *                   description: The status code of the response
- *                   example: 404
- *                 meta:
- *                   type: object
- *                   properties:
- *                     error:
- *                       type: boolean
- *                       description: Indicates if an error occurred
- *                       example: true
- *       500:
- *         description: Internal Server Error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   description: A message indicating the error
- *                 statusCode:
- *                   type: integer
- *                   description: The status code of the response
- *                   example: 500
- *                 meta:
- *                   type: object
- *                   properties:
- *                     error:
- *                       type: boolean
- *                       description: Indicates if an error occurred
- *                       example: true
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                message:
+ *                  type: string
+ *                  description: A message indicating the error
+ *                statusCode:
+ *                  type: integer
+ *                  description: The status code of the response
+ *                  example: 404
+ *                meta:
+ *                  type: object
+ *                  properties:
+ *                    error:
+ *                      type: boolean
+ *                      description: Indicates if an error occurred
+ *                      example: true
+ *      '500':
+ *        description: Internal Server Error
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                message:
+ *                  type: string
+ *                  description: A message indicating the error
+ *                statusCode:
+ *                  type: integer
+ *                  description: The status code of the response
+ *                  example: 500
+ *                meta:
+ *                  type: object
+ *                  properties:
+ *                    error:
+ *                      type: boolean
+ *                      description: Indicates if an error occurred
+ *                      example: true
  */
-
 router.get('/', async (req, res) => {
     try {
         const { community_id, orderByTotalXP } = req.query;
@@ -344,7 +343,49 @@ router.get("/:id", async (req, res) => {
  *                       type: boolean
  *                       description: Indicates if an error occurred
  *                       example: false
- *       500:
+ *       '404':
+ *         description: Community not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 404
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
+ *       '409':
+ *         description: Conflict - Team with the same name already exists in the community
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 409
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
+ *       '500':
  *         description: Internal Server Error
  *         content:
  *           application/json:
@@ -392,7 +433,7 @@ router.delete("/:id", async (req, res) => {
 
 /**
  * @swagger
- * /teams/{teamId}/characters/{characterId}:
+ * /teams/{teamId}/characters:
  *   post:
  *     summary: Add a character to a team
  *     tags: [Teams]
@@ -401,14 +442,18 @@ router.delete("/:id", async (req, res) => {
  *       - in: path
  *         name: teamId
  *         required: true
- *         schema:
- *           type: integer
+ *         type: integer
  *         description: The ID of the team
- *       - in: path
- *         name: characterId
- *         required: true
- *         schema:
- *              $ref: '#/components/schemas/Team'
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               characterId:
+ *                 type: integer
+ *                 description: The ID of the character to add to the team
  *     responses:
  *       '200':
  *         description: Character added to the team successfully
@@ -460,6 +505,48 @@ router.delete("/:id", async (req, res) => {
  *                       type: boolean
  *                       description: Indicates if an error occurred
  *                       example: true
+ *       '404':
+ *         description: Team or Character not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 404
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
+ *       '409':
+ *         description: Conflict - Character is already a member of a team in the same community or Character is already on the team
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 409
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
  *       500:
  *         description: Internal Server Error
  *         content:
@@ -483,10 +570,10 @@ router.delete("/:id", async (req, res) => {
  *                       example: true
  */
 
-router.post("/:teamId/characters/:characterId", async (req, res) => {
+router.post("/:teamId/characters", async (req, res) => {
     try {
         const teamId = req.params.teamId;
-        const characterId = req.params.characterId;
+        const characterId = req.body.characterId;
         const result = await teamsService.addCharacterToTeam(teamId, characterId);
         res.json(result);
     } catch (err) {
@@ -494,6 +581,7 @@ router.post("/:teamId/characters/:characterId", async (req, res) => {
         res.status(err.message === 'Team already has 4 members' || err.message === 'This character is already a member of the team' ? 400 : 500).json({ error: err.message });
     }
 });
+
 
 /**
  * @swagger
@@ -539,6 +627,27 @@ router.post("/:teamId/characters/:characterId", async (req, res) => {
  *                       type: boolean
  *                       description: Indicates if an error occurred
  *                       example: false
+ *       '409':
+ *         description: Conflict - Team with the same name already exists in the community
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 409
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
  *       500:
  *         description: Internal Server Error
  *         content:

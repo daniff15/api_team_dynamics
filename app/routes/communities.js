@@ -118,6 +118,27 @@ router.get("/", async (req, res) => {
  *                       type: boolean
  *                       description: Indicates if an error occurred
  *                       example: false
+ *       404:
+ *         description: Community not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 404
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
  *       500:
  *         description: Internal Server Error
  *         content:
@@ -162,13 +183,17 @@ router.get("/:id", async (req, res) => {
  *   post:
  *     summary: Create a new community
  *     tags: [Communities]
- *     description: Create a new community
+ *     description: Create a new community with the provided name
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Community'
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: The name of the community
  *     responses:
  *       200:
  *         description: The created community object
@@ -189,6 +214,27 @@ router.get("/:id", async (req, res) => {
  *                       type: boolean
  *                       description: Indicates if an error occurred
  *                       example: false
+ *       409:
+ *         description: Conflict - Can't create a community with the same name
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 409
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
  *       500:
  *         description: Internal Server Error
  *         content:

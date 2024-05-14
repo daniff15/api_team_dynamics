@@ -2,7 +2,7 @@ const { Op } = require('sequelize');
 const { BattlesModel, sequelize, TeamsModel, TeamCharactersModel, AttacksModel, CharactersModel } = require('../models/index');
 const { checkBattleEnd, initializeQueue, calculateDamage } = require('../utils/battles');
 const { updateParticipantBattleStatus, includePlayerAssociationsInsideTeam, includePlayerAssociationsOutsideTeam } = require('../utils/characters');
-const { NotFoundError, ServerError } = require('../utils/errors');
+const { NotFoundError, ServerError, BadRequestError } = require('../utils/errors');
 const { success } = require('../utils/apiResponse');
 
 const getAllBattles = async (filters = {}) => {
@@ -83,19 +83,7 @@ const createBattle = async (battle) => {
     let transaction;
     try {
         transaction = await sequelize.transaction();
-
         const { team_id, opponent_team_id, boss_id } = battle;
-
-        const battle_date = new Date();
-
-        const createdBattle = await BattlesModel.create({
-            team_id,
-            opponent_team_id,
-            boss_id,
-            battle_date
-        }, { transaction });
-
-        const battle_id = createdBattle.id;
 
         const participants = await TeamsModel.findOne({
             where: { id: team_id },
@@ -112,6 +100,21 @@ const createBattle = async (battle) => {
         }
 
         let opponent;
+        if(opponent_team_id !== null && boss_id !== null) {
+            return BadRequestError('You can only have one opponent');
+        }
+
+        const battle_date = new Date();
+
+        const createdBattle = await BattlesModel.create({
+            team_id,
+            opponent_team_id,
+            boss_id,
+            battle_date
+        }, { transaction });
+
+        const battle_id = createdBattle.id;
+
         if (opponent_team_id) {
             opponent = await TeamsModel.findOne({
                 where: { id: opponent_team_id },
