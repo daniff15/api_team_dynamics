@@ -1,6 +1,6 @@
 const { TeamsModel, TeamCharactersModel, CharactersModel, CommunitiesModel } = require('../models/index');
 const { includePlayerAssociationsInsideTeam, constructPlayerResponse } = require('../utils/characters');
-const { BadRequestError, NotFoundError, ServerError } = require('../utils/errors');
+const { BadRequestError, NotFoundError, ServerError, ConflictError } = require('../utils/errors');
 const { success } = require('../utils/apiResponse');
 
 const getAllTeams = async (community_id, orderByTotalXP = 'DESC') => {
@@ -55,6 +55,22 @@ const getTeam = async (id) => {
 
 
 const createTeam = async (team) => {
+    const community = await CommunitiesModel.findByPk(team.community_id);
+    if (!community) {
+        return NotFoundError('Community not found');
+    }
+
+    const existingTeam = await TeamsModel.findOne({
+        where: {
+            name: team.name,
+            community_id: team.community_id
+        }
+    });
+
+    if (existingTeam) {
+        return ConflictError('A Team with the same name already exists in the community');
+    }
+    
     const newTeam = await TeamsModel.create(team);
     return success(newTeam);
 }
@@ -80,7 +96,7 @@ const addCharacterToTeam = async (teamId, characterId) => {
             include: [{ model: TeamCharactersModel, where: { character_id: characterId } }]
         });
         if (teamInSameCommunity) {
-            return BadRequestError('Character is already a member of a team in the same community');
+            return ConflictError('Character is already a member of a team in the same community');
         }
 
         const currentMembersCount = await TeamCharactersModel.count({ where: { team_id: teamId } });
@@ -90,13 +106,14 @@ const addCharacterToTeam = async (teamId, characterId) => {
 
         const existingMember = await TeamCharactersModel.findOne({ where: { team_id: teamId, character_id: characterId } });
         if (existingMember) {
-            return BadRequestError('Character is already a member of the team');
+            return ConflictError('Character is already a member of the team');
         }
 
         const character = await CharactersModel.findByPk(characterId);
         if (!character) {
             return NotFoundError('Character not found');
         }
+
         
         const result = await TeamCharactersModel.create({ team_id: teamId, character_id: characterId });
         return success(result, message = 'Character added to team');

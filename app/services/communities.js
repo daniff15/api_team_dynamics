@@ -1,5 +1,5 @@
 const { CommunitiesModel } = require('../models/index');
-const { NotFoundError } = require('../utils/errors');
+const { NotFoundError, ConflictError } = require('../utils/errors');
 const { success } = require('../utils/apiResponse');
 
 const getAllCommunities = async () => {
@@ -18,6 +18,17 @@ const getCommunity = async (id) => {
 }
 
 const createCommunity = async (community) => {
+
+    const existingCommunity = await CommunitiesModel.findOne({
+        where: {
+            name: community.name
+        }
+    });
+
+    if (existingCommunity) {
+        return ConflictError('Community already exists');
+    }
+
     const newCommunity = await CommunitiesModel.create(community);
     return success(newCommunity);
 }

@@ -151,18 +151,58 @@ const router = express.Router();
  *                    description: The community ID
  *      '404':
  *        description: Community not found
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                message:
+ *                  type: string
+ *                  description: A message indicating the error
+ *                statusCode:
+ *                  type: integer
+ *                  description: The status code of the response
+ *                  example: 404
+ *                meta:
+ *                  type: object
+ *                  properties:
+ *                    error:
+ *                      type: boolean
+ *                      description: Indicates if an error occurred
+ *                      example: true
  *      '500':
  *        description: Internal Server Error
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                message:
+ *                  type: string
+ *                  description: A message indicating the error
+ *                statusCode:
+ *                  type: integer
+ *                  description: The status code of the response
+ *                  example: 500
+ *                meta:
+ *                  type: object
+ *                  properties:
+ *                    error:
+ *                      type: boolean
+ *                      description: Indicates if an error occurred
+ *                      example: true
  */
-
 router.get('/', async (req, res) => {
     try {
         const { community_id, orderByTotalXP } = req.query;
         const teams = await teamsService.getAllTeams(community_id, orderByTotalXP);
+        if (teams.meta.error) {
+            return res.status(teams.statusCode).json(teams);
+        }
         res.json(teams);
     } catch (error) {
-        console.error(error);
-        res.status(error.message === 'Community not found' ? 404 : 500).json({ error: error.message });
+        console.error(err);
+        res.sendStatus(500);
     }
 });
 
@@ -186,21 +226,75 @@ router.get('/', async (req, res) => {
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Team'
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the result of the operation
+ *                 data:
+ *                   $ref: '#/components/schemas/Team'
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: false
  *       '404':
  *         description: Team not found
- *       '500':
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 404
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
+ *       500:
  *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 500
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
  */
 
 router.get("/:id", async (req, res) => {
     try {
         const id = req.params.id;
         const team = await teamsService.getTeam(id);
+        if (team.meta.error) {
+            return res.status(team.statusCode).json(team);
+        }
         res.json(team);
     } catch (err) {
         console.error(err);
-        res.status(err.message === 'Team not found' ? 404 : 500).json({ error: err.message });
+        res.sendStatus(500);
     }
 });
 
@@ -226,31 +320,108 @@ router.get("/:id", async (req, res) => {
  *                 type: integer
  *                 description: The ID of the community the team belongs to
  *     responses:
- *       '200':
+ *       '201':
  *         description: Team created successfully
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 id:
- *                   type: integer
- *                   description: The ID of the created team
- *                 community_id:
- *                   type: integer
- *                   description: The ID of the community the team belongs to
- *                 name:
+ *                 message:
  *                   type: string
- *                   description: The name of the created team
+ *                   description: A message indicating the result of the operation
+ *                 data:
+ *                   type: object    
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       description: The ID of the created team
+ *                     community_id:
+ *                       type: integer
+ *                       description: The ID of the community the team belongs to
+ *                     name:
+ *                       type: string
+ *                       description: The name of the created team
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: false
+ *       '404':
+ *         description: Community not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 404
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
+ *       '409':
+ *         description: Conflict - Team with the same name already exists in the community
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 409
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
  *       '500':
  *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 500
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
  */
 
 router.post("/", async (req, res) => {
     try {
         const team = req.body;
         const result = await teamsService.createTeam(team);
-        res.json(result);
+        if (result.meta.error) {
+            return res.status(result.statusCode).json(result);
+        }
+        res.status(201).json(result);
     } catch (err) {
         console.error(err);
         res.sendStatus(500);
@@ -262,6 +433,9 @@ router.delete("/:id", async (req, res) => {
     try {
         const id = req.params.id;
         const result = await teamsService.deleteTeam(id);
+        if (result.meta.error) {
+            return res.status(result.statusCode).json(result);
+        }
         res.json(result);
     } catch (err) {
         console.error(err);
@@ -271,7 +445,7 @@ router.delete("/:id", async (req, res) => {
 
 /**
  * @swagger
- * /teams/{teamId}/characters/{characterId}:
+ * /teams/{teamId}/characters:
  *   post:
  *     summary: Add a character to a team
  *     tags: [Teams]
@@ -280,38 +454,149 @@ router.delete("/:id", async (req, res) => {
  *       - in: path
  *         name: teamId
  *         required: true
- *         schema:
- *           type: integer
+ *         type: integer
  *         description: The ID of the team
- *       - in: path
- *         name: characterId
- *         required: true
- *         schema:
- *              $ref: '#/components/schemas/Team'
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               characterId:
+ *                 type: integer
+ *                 description: The ID of the character to add to the team
  *     responses:
  *       '200':
  *         description: Character added to the team successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Team'
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the result of the operation
+ *                 data:
+ *                   type: object    
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       description: The ID of the created team
+ *                     community_id:
+ *                       type: integer
+ *                       description: The ID of the community the team belongs to
+ *                     name:
+ *                       type: string
+ *                       description: The name of the created team
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: false
  *       '400':
  *         description: Bad Request - Team already has 4 members or character is already a member of the team
- *       '500':
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 400
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
+ *       '404':
+ *         description: Team or Character not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 404
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
+ *       '409':
+ *         description: Conflict - Character is already a member of a team in the same community or Character is already on the team
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 409
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
+ *       500:
  *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 500
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
  */
 
-router.post("/:teamId/characters/:characterId", async (req, res) => {
+router.post("/:teamId/characters", async (req, res) => {
     try {
         const teamId = req.params.teamId;
-        const characterId = req.params.characterId;
+        const characterId = req.body.characterId;
         const result = await teamsService.addCharacterToTeam(teamId, characterId);
+        if (result.meta.error) {
+            return res.status(result.statusCode).json(result);
+        }
         res.json(result);
     } catch (err) {
         console.error(err);
-        res.status(err.message === 'Team already has 4 members' || err.message === 'This character is already a member of the team' ? 400 : 500).json({ error: err.message });
+        res.sendStatus(500);
     }
 });
+
 
 /**
  * @swagger
@@ -343,9 +628,62 @@ router.post("/:teamId/characters/:characterId", async (req, res) => {
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Team'
- *       '500':
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the result of the operation
+ *                 data:
+ *                   $ref: '#/components/schemas/Team'
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: false
+ *       '409':
+ *         description: Conflict - Team with the same name already exists in the community
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 409
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
+ *       500:
  *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 500
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
  */
 
 router.put("/:id", async (req, res) => {
@@ -353,10 +691,13 @@ router.put("/:id", async (req, res) => {
         const updates = req.body;
         const teamId = req.params.id;
         const result = await teamsService.updateTeam(teamId, updates);
+        if (result.meta.error) {
+            return res.status(result.statusCode).json(result);
+        }
         res.json(result);
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: err.message });
+        res.sendStatus(500);
     }
 });
 
