@@ -77,6 +77,9 @@ const router = express.Router();
 router.get("/", async (req, res) => {
     try {
         const rows = await communitiesService.getAllCommunities();
+        if (rows.meta.error) {
+            return res.status(rows.statusCode).json(rows);
+        }
         res.json(rows);
     } catch (err) {
         console.error(err);
@@ -165,15 +168,13 @@ router.get("/:id", async (req, res) => {
     try {
         const id = req.params.id;
         const community = await communitiesService.getCommunity(id);
+        if (community.meta.error) {
+            return res.status(community.statusCode).json(community);
+        }
         res.json(community);
     } catch (err) {
-        // Community not found
-        if (err.message === "Community not found") {
-            res.sendStatus(404);
-        } else {
-            console.error(err);
-            res.sendStatus(500);
-        }
+        console.error(err);
+        res.sendStatus(500);
     }
 });
 
@@ -195,7 +196,7 @@ router.get("/:id", async (req, res) => {
  *                 type: string
  *                 description: The name of the community
  *     responses:
- *       200:
+ *       201:
  *         description: The created community object
  *         content:
  *           application/json:
@@ -261,7 +262,10 @@ router.post("/", async (req, res) => {
     try {
         const community = req.body;
         const result = await communitiesService.createCommunity(community);
-        res.json(result);
+        if (result.meta.error) {
+            return res.status(result.statusCode).json(result);
+        }
+        res.status(201).json(result);
     } catch (err) {
         console.error(err);
         res.sendStatus(500);

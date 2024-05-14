@@ -196,10 +196,13 @@ router.get('/', async (req, res) => {
     try {
         const { community_id, orderByTotalXP } = req.query;
         const teams = await teamsService.getAllTeams(community_id, orderByTotalXP);
+        if (teams.meta.error) {
+            return res.status(teams.statusCode).json(teams);
+        }
         res.json(teams);
     } catch (error) {
-        console.error(error);
-        res.status(error.message === 'Community not found' ? 404 : 500).json({ error: error.message });
+        console.error(err);
+        res.sendStatus(500);
     }
 });
 
@@ -285,10 +288,13 @@ router.get("/:id", async (req, res) => {
     try {
         const id = req.params.id;
         const team = await teamsService.getTeam(id);
+        if (team.meta.error) {
+            return res.status(team.statusCode).json(team);
+        }
         res.json(team);
     } catch (err) {
         console.error(err);
-        res.status(err.message === 'Team not found' ? 404 : 500).json({ error: err.message });
+        res.sendStatus(500);
     }
 });
 
@@ -314,7 +320,7 @@ router.get("/:id", async (req, res) => {
  *                 type: integer
  *                 description: The ID of the community the team belongs to
  *     responses:
- *       '200':
+ *       '201':
  *         description: Team created successfully
  *         content:
  *           application/json:
@@ -412,7 +418,10 @@ router.post("/", async (req, res) => {
     try {
         const team = req.body;
         const result = await teamsService.createTeam(team);
-        res.json(result);
+        if (result.meta.error) {
+            return res.status(result.statusCode).json(result);
+        }
+        res.status(201).json(result);
     } catch (err) {
         console.error(err);
         res.sendStatus(500);
@@ -424,6 +433,9 @@ router.delete("/:id", async (req, res) => {
     try {
         const id = req.params.id;
         const result = await teamsService.deleteTeam(id);
+        if (result.meta.error) {
+            return res.status(result.statusCode).json(result);
+        }
         res.json(result);
     } catch (err) {
         console.error(err);
@@ -575,10 +587,13 @@ router.post("/:teamId/characters", async (req, res) => {
         const teamId = req.params.teamId;
         const characterId = req.body.characterId;
         const result = await teamsService.addCharacterToTeam(teamId, characterId);
+        if (result.meta.error) {
+            return res.status(result.statusCode).json(result);
+        }
         res.json(result);
     } catch (err) {
         console.error(err);
-        res.status(err.message === 'Team already has 4 members' || err.message === 'This character is already a member of the team' ? 400 : 500).json({ error: err.message });
+        res.sendStatus(500);
     }
 });
 
@@ -676,10 +691,13 @@ router.put("/:id", async (req, res) => {
         const updates = req.body;
         const teamId = req.params.id;
         const result = await teamsService.updateTeam(teamId, updates);
+        if (result.meta.error) {
+            return res.status(result.statusCode).json(result);
+        }
         res.json(result);
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: err.message });
+        res.sendStatus(500);
     }
 });
 

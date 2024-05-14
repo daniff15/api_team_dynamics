@@ -108,8 +108,6 @@ const addCharacterToTeam = async (teamId, characterId) => {
         if (existingMember) {
             return ConflictError('Character is already a member of the team');
         }
-        console.log('teamId', teamId);
-        console.log(characterId);
 
         const character = await CharactersModel.findByPk(characterId);
         if (!character) {

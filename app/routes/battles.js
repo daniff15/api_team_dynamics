@@ -145,10 +145,13 @@ router.get("/", async (req, res) => {
         Object.keys(filters).forEach(key => filters[key] === undefined && delete filters[key]);
 
         const battles = await battlesService.getAllBattles(filters);
+        if (battles.meta.error) {
+            return res.status(battles.statusCode).json(battles);
+        }
         res.json(battles);
     } catch (err) {
         console.error(err);
-        res.status(500).send({ error: err.message });
+        res.sendStatus(500);
     }
 });
 
@@ -236,10 +239,13 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
     try {
         const battleDetails = await battlesService.getBattle(req.params.id);
+        if (battleDetails.meta.error) {
+            return res.status(battleDetails.statusCode).json(battleDetails);
+        }
         res.json(battleDetails);
     } catch (err) {
         console.error(err);
-        res.status(404).json({ error: err.message });
+        res.sendStatus(500);
     }
 });
 
@@ -357,10 +363,13 @@ router.get("/:id", async (req, res) => {
 router.post("/", async (req, res) => {
     try {
         const battle = await battlesService.createBattle(req.body);
-        res.json(battle);
+        if (battle.meta.error) {
+            return res.status(battle.statusCode).json(battle);
+        }
+        res.status(201).json(battle);
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: err.message });
+        res.sendStatus(500);
     }
 });
 

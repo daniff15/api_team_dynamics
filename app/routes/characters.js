@@ -75,10 +75,13 @@ router.get('/', async (req, res) => {
         }
 
         const characters = await charactersService.getCharacters(filters);
+        if (characters.meta.error) {
+            return res.status(characters.statusCode).json(characters);
+        }
         res.json(characters);
     } catch (err) {
         console.error(err);
-        res.status(500).send({ message: 'Server error occurred.' });
+        res.sendStatus(500);
     }
 });
 
@@ -163,10 +166,13 @@ router.get('/:id', async (req, res) => {
     try {
         const id = req.params.id;
         const character = await charactersService.getCharacter(id);
+        if (character.meta.error) {
+            return res.status(character.statusCode).json(character);
+        }
         res.json(character);
     } catch (err) {
         console.error(err);
-        res.status(err.message === 'Character not found' ? 404 : 500).send({ message: err.message });
+        res.sendStatus(500);
     }
 });
 
@@ -309,10 +315,13 @@ router.post('/', async (req, res) => {
     try {
         const { name, characterType, level, elements, attributes } = req.body;
         const result = await charactersService.createCharacter(name, characterType, level, elements, attributes);
+        if (result.meta.error) {
+            return res.status(result.statusCode).json(result);
+        }
         res.status(201).send(result);
     } catch (error) {
         console.error(error);
-        res.status(500).send({ message: error.message });
+        res.sendStatus(500);
     }
 });
 
@@ -429,11 +438,14 @@ router.put('/:id/xp', async (req, res) => {
         const id = req.params.id;
         const attribute = req.body;
         const result = await charactersService.addXPtoCharacter(id, attribute.XP);
+        if (result.meta.error) {
+            return res.status(result.statusCode).json(result);
+        }
         res.json(result);
     }
     catch (err) {
         console.error(err);
-        res.status(err.message === 'Character not found' ? 404 : 500).send({ message: err.message });
+        res.sendStatus(500);
     }
 });
 
@@ -573,11 +585,14 @@ router.put('/:id/attributes', async (req, res) => {
         const id = req.params.id;
         const attributes = req.body;
         const result = await charactersService.updateCharacterAttributes(id, attributes);
+        if (result.meta.error) {
+            return res.status(result.statusCode).json(result);
+        }
         res.json(result);
     }
     catch (err) {
         console.error(err);
-        res.status(err.message === 'Character not found' ? 404 : 500).send({ message: err.message });
+        res.sendStatus(500);
     }
 });
 
