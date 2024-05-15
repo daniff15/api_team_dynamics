@@ -132,7 +132,7 @@ const updateParticipantBattleStatus = (deepCloneParticipants, participant, attr,
             deepCloneParticipants[participantIndex].attributes.SPEED -= value;
         }
     } else if (attr === 'hp_battle') {
-        deepCloneParticipants[participantIndex].attributes.hp_battle -= value;
+        deepCloneParticipants[participantIndex].attributes.hp_battle = parseInt((deepCloneParticipants[participantIndex].attributes.hp_battle - value));
     }
     
 };
