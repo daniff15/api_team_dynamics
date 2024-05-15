@@ -111,8 +111,8 @@ const constructPlayerResponse = (character) => {
             const elementData = {
                 id: element.element.id,
                 name: element.element.name,
-                strengths: element.element.strengths.map(strength => strength.element.name),
-                weaknesses: element.element.weaknesses.map(weakness => weakness.element.name)
+                strengths: element.element.strengths.map(strength => ({ id: strength.element.id, name: strength.element.name })),
+                weaknesses: element.element.weaknesses.map(weakness => ({ id: weakness.element.id, name: weakness.element.name }))
             };
             return elementData;
         }),
