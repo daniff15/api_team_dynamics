@@ -99,6 +99,10 @@ const createBattle = async (battle) => {
             return NotFoundError('Team not found');
         }
 
+        if (participants.team_characters.length !== 4) {
+            return BadRequestError('Team must have 4 characters');
+        }
+
         let opponent;
         if(opponent_team_id !== null && boss_id !== null) {
             return BadRequestError('You can only have one opponent');
@@ -128,6 +132,10 @@ const createBattle = async (battle) => {
 
             if (!opponent) {
                 return NotFoundError('Opponent team not found');
+            }
+
+            if (opponent.team_characters.length !== 4) {
+                return BadRequestError('Opponent team must have 4 characters');
             }
         } else {
             opponent = await CharactersModel.findOne({
