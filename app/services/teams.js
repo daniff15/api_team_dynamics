@@ -42,6 +42,7 @@ const getTeam = async (id) => {
         community_id: teamsData.community_id,
         name: teamsData.name,
         total_xp: teamsData.total_xp,
+        team_image_path: teamsData.team_image_path,
         members: []
     };
 

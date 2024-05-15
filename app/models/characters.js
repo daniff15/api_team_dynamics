@@ -25,7 +25,10 @@ module.exports = (sequelize, DataTypes) => {
         },
         att_xtra_points: {
             type: DataTypes.INTEGER
-        }
+        },
+        image_path: {
+            type: DataTypes.STRING
+        },
     }, {
         timestamps: false
     });

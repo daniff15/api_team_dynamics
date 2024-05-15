@@ -1,7 +1,7 @@
 const { baseAttributes } = require('../utils/baseAttributes');
 const { checkLevelUp, updateTeamTotalXP } = require('../utils/characters');
 const { includePlayerAssociationsOutsideTeam, constructPlayerResponse } = require('../utils/characters');
-const { sequelize, CharactersModel, CharacterElementsModel, ElementsModel, CharacterLevelAttributesModel, AttributesModel, LevelsModel } = require('../models/index');
+const { sequelize, CharactersModel, CharacterElementsModel, ElementsModel, CharacterLevelAttributesModel, AttributesModel, LevelsModel, TeamCharactersModel } = require('../models/index');
 const { BadRequestError, NotFoundError, ServerError } = require('../utils/errors');
 const { success } = require('../utils/apiResponse');
 
@@ -51,6 +51,10 @@ const createCharacter = async (name, characterType, level, elements, attributes)
     try {
         transaction = await sequelize.transaction();
 
+        if (characterType === 0) {
+            return BadRequestError('Character type must be specified');
+        }
+
         // Prevent creating a character with more than one element
         if (characterType === 1 && elements.length !== 1) {
             return BadRequestError('Player characters can only have one element');
@@ -58,7 +62,7 @@ const createCharacter = async (name, characterType, level, elements, attributes)
 
         // Create the character
         let character;
-        if (characterType !== 1) {
+        if (characterType === 2 || characterType === 3) {
             character = await CharactersModel.create({
                 name: name,
                 character_type_id: characterType,
@@ -157,6 +161,15 @@ const addXPtoCharacter = async (characterId, xp) => {
             }
         }
 
+        const teamMembership = await TeamCharactersModel.findOne({
+            where: { character_id: characterId },
+            transaction: t
+        });
+
+        if (!teamMembership) {
+            return BadRequestError('Character is not a member of any team');
+        }
+
         if (character.level_id === maxLevel) {
             character.xp = 0;
             character.total_xp += xp;
@@ -199,6 +212,14 @@ const updateCharacterAttributes = async (characterId, increments) => {
 
         if (character.character_type_id !== 1) {
             return BadRequestError('Attributes can only be updated for player characters');
+        }
+
+        const teamMembership = await TeamCharactersModel.findOne({
+            where: { character_id: characterId }
+        });
+
+        if (!teamMembership) {
+            return BadRequestError('Character is not a member of any team');
         }
 
         const currentAttributes = await CharacterLevelAttributesModel.findAll({

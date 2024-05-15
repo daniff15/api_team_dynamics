@@ -13,6 +13,7 @@ CREATE TABLE `teams` (
     `name` VARCHAR(255) NOT NULL,
     `community_id` INT NOT NULL,
     `total_xp` INT NOT NULL DEFAULT 0,
+    `team_image_path` VARCHAR(256),
     PRIMARY KEY (`id`),
     CONSTRAINT `fk_teams_communities` FOREIGN KEY (`community_id`) 
         REFERENCES `communities` (`id`)
@@ -42,6 +43,7 @@ CREATE TABLE `characters` (
     `xp` INT DEFAULT 0,
     `total_xp` INT DEFAULT 0,
     `att_xtra_points` INT DEFAULT 0,
+    `image_path` VARCHAR(256),
     PRIMARY KEY (
         `id`
     ),

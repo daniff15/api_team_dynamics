@@ -1,3 +1,4 @@
+// Should have the same name as the elements in the database
 const baseAttributes = {
     water: [10, 8, 9, 7],
     fire: [9, 7, 10, 8],

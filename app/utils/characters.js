@@ -103,6 +103,7 @@ const constructPlayerResponse = (character) => {
         xp: character.xp,
         total_xp: character.total_xp,
         extra_points: character.att_xtra_points,
+        image_path: character.image_path,
         attributes: character.character_level_attributes.reduce((acc, attribute) => {
             acc[attribute.attribute.name] = attribute.value;
             return acc;
