@@ -12,11 +12,13 @@ const ElementsModel = require("./elements");
 const LevelsModel = require("./levels");
 const TeamCharactersModel = require("./teamCharacters");
 const TeamsModel = require("./teams");
+const env = process.env.NODE_ENV || 'development';
+const config = require('./config/config')[env];
 
-const sequelize = new Sequelize("team_dynamics", "root", "root", {
-  dialect: "mysql",
-  host: "127.0.0.1",
-  port: 3307
+const sequelize = new Sequelize(config.database, config.username, config.password, {
+  dialect: config.dialect,
+  host: config.host,
+  port: config.port
 });
 
 const db = {
