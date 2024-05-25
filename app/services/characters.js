@@ -1,7 +1,7 @@
 const { baseAttributes } = require('../utils/baseAttributes');
 const { checkLevelUp, updateTeamTotalXP } = require('../utils/characters');
 const { includePlayerAssociationsOutsideTeam, constructPlayerResponse } = require('../utils/characters');
-const { sequelize, CharactersModel, CharacterElementsModel, ElementsModel, CharacterLevelAttributesModel, AttributesModel, LevelsModel, TeamCharactersModel } = require('../models/index');
+const { sequelize, CharactersModel, CharacterElementsModel, ElementsModel, CharacterLevelAttributesModel, AttributesModel, LevelsModel, TeamPlayersModel } = require('../models/index');
 const { BadRequestError, NotFoundError, ServerError } = require('../utils/errors');
 const { success } = require('../utils/apiResponse');
 
@@ -161,7 +161,7 @@ const addXPtoCharacter = async (characterId, xp) => {
             }
         }
 
-        const teamMembership = await TeamCharactersModel.findOne({
+        const teamMembership = await TeamPlayersModel.findOne({
             where: { character_id: characterId },
             transaction: t
         });
@@ -214,7 +214,7 @@ const updateCharacterAttributes = async (characterId, increments) => {
             return BadRequestError('Attributes can only be updated for player characters');
         }
 
-        const teamMembership = await TeamCharactersModel.findOne({
+        const teamMembership = await TeamPlayersModel.findOne({
             where: { character_id: characterId }
         });
 

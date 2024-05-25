@@ -9,7 +9,7 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING,
             allowNull: false
         },
-        community_id: {
+        game_id: {
             type: DataTypes.INTEGER,
             allowNull: false
         },
@@ -27,10 +27,10 @@ module.exports = (sequelize, DataTypes) => {
     });
 
     TeamsModel.associate = (models) => {
-        TeamsModel.belongsTo(models.CommunitiesModel, {
-            foreignKey: 'community_id'
+        TeamsModel.belongsTo(models.GamesModel, {
+            foreignKey: 'game_id'
         });
-        TeamsModel.hasMany(models.TeamCharactersModel, { foreignKey: 'team_id' });
+        TeamsModel.hasMany(models.TeamPlayersModel, { foreignKey: 'team_id' });
     };
 
     return TeamsModel;

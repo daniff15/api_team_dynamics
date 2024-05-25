@@ -17,15 +17,6 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.INTEGER,
             allowNull: false
         },
-        xp: {
-            type: DataTypes.INTEGER
-        },
-        total_xp: {
-            type: DataTypes.INTEGER
-        },
-        att_xtra_points: {
-            type: DataTypes.INTEGER
-        },
         image_path: {
             type: DataTypes.STRING
         },

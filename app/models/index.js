@@ -6,14 +6,17 @@ const CharacterElementsModel = require("./characterElements");
 const CharacterLevelAttributesModel = require("./characterLevelAttributes");
 const CharactersModel = require("./characters");
 const CharacterTypesModel = require("./characterTypes");
-const CommunitiesModel = require("./communities");
 const ElementRelationshipsModel = require("./elementRelationships");
 const ElementsModel = require("./elements");
 const LevelsModel = require("./levels");
-const TeamCharactersModel = require("./teamCharacters");
+const TeamPlayersModel = require("./teamPlayers");
 const TeamsModel = require("./teams");
-const env = process.env.NODE_ENV || 'development';
-const config = require('./config/config')[env];
+const PlayersModel = require("./players");
+const BossesModel = require("./bosses");
+const GamesModel = require("./games");
+const GameBossesModel = require("./gamesBosses");
+const env = process.env.NODE_ENV || 'local';
+const config = require('./../config/config')[env];
 
 const sequelize = new Sequelize(config.database, config.username, config.password, {
   dialect: config.dialect,
@@ -23,7 +26,6 @@ const sequelize = new Sequelize(config.database, config.username, config.passwor
 
 const db = {
   sequelize,
-  CommunitiesModel: CommunitiesModel(sequelize, Sequelize),
   ElementsModel: ElementsModel(sequelize, Sequelize),
   AttributesModel: AttributesModel(sequelize, Sequelize),
   CharacterTypesModel: CharacterTypesModel(sequelize, Sequelize),
@@ -35,7 +37,11 @@ const db = {
   CharacterElementsModel: CharacterElementsModel(sequelize, Sequelize),
   CharacterLevelAttributesModel: CharacterLevelAttributesModel(sequelize, Sequelize),
   ElementRelationshipsModel: ElementRelationshipsModel(sequelize, Sequelize),
-  TeamCharactersModel: TeamCharactersModel(sequelize, Sequelize),
+  TeamPlayersModel: TeamPlayersModel(sequelize, Sequelize),
+  PlayersModel: PlayersModel(sequelize, Sequelize),
+  BossesModel: BossesModel(sequelize, Sequelize),
+  GameBossesModel: GameBossesModel(sequelize, Sequelize),
+  GamesModel: GamesModel(sequelize, Sequelize)
 };
 
 Object.keys(db).forEach((modelName) => {
@@ -53,10 +59,13 @@ module.exports = {
   CharacterLevelAttributesModel: db.CharacterLevelAttributesModel,
   CharactersModel: db.CharactersModel,
   CharacterTypesModel: db.CharacterTypesModel,
-  CommunitiesModel: db.CommunitiesModel,
   ElementRelationshipsModel: db.ElementRelationshipsModel,
   ElementsModel: db.ElementsModel,
   LevelsModel: db.LevelsModel,
-  TeamCharactersModel: db.TeamCharactersModel,
-  TeamsModel: db.TeamsModel
+  TeamPlayersModel: db.TeamPlayersModel,
+  TeamsModel: db.TeamsModel,
+  PlayersModel: db.PlayersModel,
+  BossesModel: db.BossesModel,
+  GameBossesModel: db.GameBossesModel,
+  GamesModel: db.GamesModel
 };

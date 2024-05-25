@@ -1,5 +1,5 @@
 module.exports = (sequelize, DataTypes) => {
-    const CommunitiesModel = sequelize.define('community', {
+    const GamesModel = sequelize.define('game', {
         id: {
             type: DataTypes.INTEGER,
             autoIncrement: true,
@@ -14,5 +14,5 @@ module.exports = (sequelize, DataTypes) => {
         timestamps: false
     });
 
-    return CommunitiesModel;
+    return GamesModel;
 };

@@ -1,5 +1,5 @@
 const { Op } = require('sequelize');
-const { BattlesModel, sequelize, TeamsModel, TeamCharactersModel, AttacksModel, CharactersModel } = require('../models/index');
+const { BattlesModel, sequelize, TeamsModel, TeamPlayersModel, AttacksModel, CharactersModel } = require('../models/index');
 const { checkBattleEnd, initializeQueue, calculateDamage } = require('../utils/battles');
 const { updateParticipantBattleStatus, includePlayerAssociationsInsideTeam, includePlayerAssociationsOutsideTeam } = require('../utils/characters');
 const { NotFoundError, ServerError, BadRequestError } = require('../utils/errors');
@@ -89,7 +89,7 @@ const createBattle = async (battle) => {
             where: { id: team_id },
             include: [
                 {
-                    model: TeamCharactersModel,
+                    model: TeamPlayersModel,
                     include: includePlayerAssociationsInsideTeam()
                 }
             ]
@@ -124,7 +124,7 @@ const createBattle = async (battle) => {
                 where: { id: opponent_team_id },
                 include: [
                     {
-                        model: TeamCharactersModel,
+                        model: TeamPlayersModel,
                         include: includePlayerAssociationsInsideTeam()
                     }
                 ]

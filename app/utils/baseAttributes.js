@@ -1,4 +1,5 @@
 // Should have the same name as the elements in the database
+// HP, DEF, ATK, SPD 
 const baseAttributes = {
     water: [10, 8, 9, 7],
     fire: [9, 7, 10, 8],

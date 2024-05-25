@@ -1,6 +1,6 @@
 const express = require('express');
 const { sequelize } = require('./models/index');
-const communitiesRoutes = require('./routes/communities');
+const gamesRoutes = require('./routes/games');
 const teamsRoutes = require('./routes/teams');
 const charactersRoutes = require('./routes/characters');
 const battlesRoutes = require('./routes/battles');
@@ -22,7 +22,7 @@ app.get('/', (req, res) => {
     }
 });
 
-app.use('/communities', communitiesRoutes);
+app.use('/games', gamesRoutes);
 app.use('/teams', teamsRoutes);
 app.use('/characters', charactersRoutes);
 app.use('/battles', battlesRoutes);

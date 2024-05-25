@@ -1,40 +1,40 @@
 const express = require('express');
-const communitiesService = require("../services/communities");
+const gamesService = require("../services/games");
 
 const router = express.Router();
 
 /**
  * @swagger
  * tags:
- *   name: Communities
- *   description: API endpoints for communities
+ *   name: Games
+ *   description: API endpoints for games
  */
 
 /**
  * @swagger
  * components:
  *   schemas:
- *     Community:
+ *     Game:
  *       type: object
  *       properties:
  *         id:
  *           type: integer
- *           description: The ID of the community
+ *           description: The ID of the game
  *         name:
  *           type: string
- *           description: The name of the community
+ *           description: The name of the game
  */
 
 /**
  * @swagger
- * /communities:
+ * /games:
  *   get:
- *     summary: Get all communities
- *     tags: [Communities]
- *     description: Get all communities
+ *     summary: Get all games
+ *     tags: [Games]
+ *     description: Get all games
  *     responses:
  *       200:
- *         description: A list of communities
+ *         description: A list of games
  *         content:
  *           application/json:
  *             schema:
@@ -44,7 +44,7 @@ const router = express.Router();
  *                   type: string
  *                   description: A message indicating the result of the operation
  *                 data:
- *                   $ref: '#/components/schemas/Community'
+ *                   $ref: '#/components/schemas/Game'
  *                 meta:
  *                   type: object
  *                   properties:
@@ -76,7 +76,8 @@ const router = express.Router();
  */
 router.get("/", async (req, res) => {
     try {
-        const rows = await communitiesService.getAllCommunities();
+        const rows = await gamesService.getAllGames();
+        console.log(rows);
         if (rows.meta.error) {
             return res.status(rows.statusCode).json(rows);
         }
@@ -89,21 +90,21 @@ router.get("/", async (req, res) => {
 
 /**
  * @swagger
- * /communities/{id}:
+ * /games/{id}:
  *   get:
- *     summary: Get a community by ID
- *     tags: [Communities]
- *     description: Get a community by its ID
+ *     summary: Get a game narrative by ID
+ *     tags: [Games]
+ *     description: Get a game narrative by its ID
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: integer
- *         description: ID of the community to retrieve
+ *         description: ID of the game to retrieve
  *     responses:
  *       200:
- *         description: A single community object
+ *         description: A single game object
  *         content:
  *           application/json:
  *             schema:
@@ -113,7 +114,7 @@ router.get("/", async (req, res) => {
  *                   type: string
  *                   description: A message indicating the result of the operation
  *                 data:
- *                   $ref: '#/components/schemas/Community'
+ *                   $ref: '#/components/schemas/Game'
  *                 meta:
  *                   type: object
  *                   properties:
@@ -122,7 +123,7 @@ router.get("/", async (req, res) => {
  *                       description: Indicates if an error occurred
  *                       example: false
  *       404:
- *         description: Community not found
+ *         description: Game Narrative not found
  *         content:
  *           application/json:
  *             schema:
@@ -167,11 +168,11 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
     try {
         const id = req.params.id;
-        const community = await communitiesService.getCommunity(id);
-        if (community.meta.error) {
-            return res.status(community.statusCode).json(community);
+        const game = await gamesService.getGame(id);
+        if (game.meta.error) {
+            return res.status(game.statusCode).json(game);
         }
-        res.json(community);
+        res.json(game);
     } catch (err) {
         console.error(err);
         res.sendStatus(500);
@@ -180,11 +181,11 @@ router.get("/:id", async (req, res) => {
 
 /**
  * @swagger
- * /communities:
+ * /games:
  *   post:
- *     summary: Create a new community
- *     tags: [Communities]
- *     description: Create a new community with the provided name
+ *     summary: Create a new game narrative
+ *     tags: [Games]
+ *     description: Create a new game narrative with the provided name
  *     requestBody:
  *       required: true
  *       content:
@@ -194,10 +195,10 @@ router.get("/:id", async (req, res) => {
  *             properties:
  *               name:
  *                 type: string
- *                 description: The name of the community
+ *                 description: The name of the game narrative
  *     responses:
  *       201:
- *         description: The created community object
+ *         description: The created game narrative object
  *         content:
  *           application/json:
  *             schema:
@@ -207,7 +208,7 @@ router.get("/:id", async (req, res) => {
  *                   type: string
  *                   description: A message indicating the result of the operation
  *                 data:
- *                   $ref: '#/components/schemas/Community'
+ *                   $ref: '#/components/schemas/Game'
  *                 meta:
  *                   type: object
  *                   properties:
@@ -215,27 +216,6 @@ router.get("/:id", async (req, res) => {
  *                       type: boolean
  *                       description: Indicates if an error occurred
  *                       example: false
- *       409:
- *         description: Conflict - Can't create a community with the same name
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   description: A message indicating the error
- *                 statusCode:
- *                   type: integer
- *                   description: The status code of the response
- *                   example: 409
- *                 meta:
- *                   type: object
- *                   properties:
- *                     error:
- *                       type: boolean
- *                       description: Indicates if an error occurred
- *                       example: true
  *       500:
  *         description: Internal Server Error
  *         content:
@@ -260,8 +240,8 @@ router.get("/:id", async (req, res) => {
  */
 router.post("/", async (req, res) => {
     try {
-        const community = req.body;
-        const result = await communitiesService.createCommunity(community);
+        const game = req.body;
+        const result = await gamesService.gamesService(game);
         if (result.meta.error) {
             return res.status(result.statusCode).json(result);
         }
@@ -274,18 +254,18 @@ router.post("/", async (req, res) => {
 
 // /**
 //  * @swagger
-//  * /communities/{id}:
+//  * /games/{id}:
 //  *   delete:
-//  *     summary: Delete a community by ID
-//  *     tags: [Communities]
-//  *     description: Delete a community by its ID
+//  *     summary: Delete a game narrative by ID
+//  *     tags: [Games]
+//  *     description: Delete a game narrative by its ID
 //  *     parameters:
 //  *       - in: path
 //  *         name: id
 //  *         required: true
 //  *         schema:
 //  *           type: integer
-//  *         description: ID of the community to delete
+//  *         description: ID of the game to delete
 //  *     responses:
 //  *       200:
 //  *         description: The result of the deletion
@@ -303,7 +283,7 @@ router.post("/", async (req, res) => {
 // router.delete("/:id", async (req, res) => {
 //     try {
 //         const id = req.params.id;
-//         const result = await communitiesService.deleteCommunity(id);
+//         const result = await gamesService.deleteGame(id);
 //         res.json(result);
 //     } catch (err) {
 //         console.error(err);

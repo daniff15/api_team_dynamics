@@ -1,4 +1,4 @@
-const { TeamsModel, TeamCharactersModel, CharactersModel, CommunitiesModel } = require('../models/index');
+const { TeamsModel, TeamPlayersModel, CharactersModel, CommunitiesModel } = require('../models/index');
 const { includePlayerAssociationsInsideTeam, constructPlayerResponse } = require('../utils/characters');
 const { BadRequestError, NotFoundError, ServerError, ConflictError } = require('../utils/errors');
 const { success } = require('../utils/apiResponse');
@@ -27,7 +27,7 @@ const getTeam = async (id) => {
         where: { id: id },
         include: [
             {
-                model: TeamCharactersModel,
+                model: TeamPlayersModel,
                 include: includePlayerAssociationsInsideTeam()
             }
         ]
@@ -94,18 +94,18 @@ const addCharacterToTeam = async (teamId, characterId) => {
 
         const teamInSameCommunity = await TeamsModel.findOne({
             where: { community_id: team.community_id },
-            include: [{ model: TeamCharactersModel, where: { character_id: characterId } }]
+            include: [{ model: TeamPlayersModel, where: { character_id: characterId } }]
         });
         if (teamInSameCommunity) {
             return ConflictError('Character is already a member of a team in the same community');
         }
 
-        const currentMembersCount = await TeamCharactersModel.count({ where: { team_id: teamId } });
+        const currentMembersCount = await TeamPlayersModel.count({ where: { team_id: teamId } });
         if (currentMembersCount >= 4) {
             return BadRequestError('Team is already full (4 members max)');
         }
 
-        const existingMember = await TeamCharactersModel.findOne({ where: { team_id: teamId, character_id: characterId } });
+        const existingMember = await TeamPlayersModel.findOne({ where: { team_id: teamId, character_id: characterId } });
         if (existingMember) {
             return ConflictError('Character is already a member of the team');
         }
@@ -116,7 +116,7 @@ const addCharacterToTeam = async (teamId, characterId) => {
         }
 
         
-        const result = await TeamCharactersModel.create({ team_id: teamId, character_id: characterId });
+        const result = await TeamPlayersModel.create({ team_id: teamId, character_id: characterId });
         return success(result, message = 'Character added to team');
     } catch (error) {
         return ServerError(error.message);

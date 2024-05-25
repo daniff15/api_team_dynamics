@@ -29,7 +29,7 @@ module.exports = (sequelize, DataTypes) => {
     BattlesModel.associate = (models) => {
         BattlesModel.belongsTo(models.TeamsModel, { foreignKey: 'team_id' });
         BattlesModel.belongsTo(models.TeamsModel, { foreignKey: 'opponent_team_id', as: 'opponent_team' });
-        BattlesModel.belongsTo(models.CharactersModel, { foreignKey: 'boss_id', as: 'boss' });
+        BattlesModel.belongsTo(models.BossesModel, { foreignKey: 'boss_id', as: 'boss' });
     }
 
     return BattlesModel;

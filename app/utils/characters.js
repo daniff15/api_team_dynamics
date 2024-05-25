@@ -1,4 +1,4 @@
-const { CharactersModel, CharacterLevelAttributesModel, AttributesModel, LevelsModel, CharacterElementsModel, ElementsModel, ElementRelationshipsModel, TeamCharactersModel, TeamsModel } = require('../models');
+const { CharactersModel, CharacterLevelAttributesModel, AttributesModel, LevelsModel, CharacterElementsModel, ElementsModel, ElementRelationshipsModel, TeamPlayersModel, TeamsModel } = require('../models');
 const { NotFoundError, ServerError } = require('../utils/errors');
 
 // Utility function to include player associations inside team query
@@ -215,14 +215,14 @@ const calculate_xp_needed = (character) => {
 const updateTeamTotalXP = async (playerId) => {
     try {
         // Find the team ID associated with the given player ID
-        const teamCharacter = await TeamCharactersModel.findOne({ where: { character_id: playerId } });
+        const teamCharacter = await TeamPlayersModel.findOne({ where: { character_id: playerId } });
         if (!teamCharacter) {
             return NotFoundError('Player not found in any team');
         }
 
         const teamId = teamCharacter.team_id;
 
-        const characters = await TeamCharactersModel.findAll({
+        const characters = await TeamPlayersModel.findAll({
             where: { team_id: teamId },
             include: [{ model: CharactersModel }]
         });
