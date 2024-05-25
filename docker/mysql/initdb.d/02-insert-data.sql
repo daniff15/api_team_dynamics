@@ -87,10 +87,10 @@ INSERT INTO players(id, ext_id) VALUES
 (8,'jogador_vila_real');
 
 INSERT INTO bosses(id, before_defeat_phrase, after_defeat_phrase) VALUES
-(9,'ainda nao morri 1', 'ja morri 1'),
-(10,'ainda nao morri 2', 'ja morri 2'),
-(11,'ainda nao morri 3', 'ja morri 3'),
-(12,'ainda nao morri 4', 'ja morri 4');
+(9, 'ainda nao morri 1', 'ja morri 1'),
+(10, 'ainda nao morri 2', 'ja morri 2'),
+(11, 'ainda nao morri 3', 'ja morri 3'),
+(12, 'ainda nao morri 4', 'ja morri 4');
 
 INSERT INTO games_bosses(game_id, boss_id) VALUES 
 (1,9),

@@ -56,7 +56,7 @@ const includePlayerAssociationsInsideTeam = () => {
 };
 
 // Utility function to include player associations outside team query
-const includePlayerAssociationsOutsideTeam = () => {
+const includeCharacterAssociationsOutsideTeam = () => {
     return [
         {
             model: CharacterLevelAttributesModel,
@@ -99,22 +99,76 @@ const includePlayerAssociationsOutsideTeam = () => {
     ]
 };
 
+const includePlayerAssociationsOutsideTeamPlayer = () => {
+    return [
+        {
+            model: CharactersModel,
+            include: [
+                {
+                    model: CharacterLevelAttributesModel,
+                    include: [
+                        {
+                            model: AttributesModel
+                        },
+                        {
+                            model: LevelsModel
+                        }
+                    ]
+                },
+                {
+                    model: CharacterElementsModel,
+                    include: [
+                        {
+                            model: ElementsModel,
+                            as: 'element',
+                            include: [
+                                { 
+                                    model: ElementRelationshipsModel, 
+                                    as: 'strengths', 
+                                    include: [{ 
+                                        model: ElementsModel, 
+                                        as: 'element'
+                                    }] 
+                                },
+                                { 
+                                    model: ElementRelationshipsModel, 
+                                    as: 'weaknesses', 
+                                    include: [{ 
+                                        model: ElementsModel, 
+                                        as: 'element'
+                                    }] 
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+};
+
 // Utility function to construct player response
 const constructPlayerResponse = (player) => {
     return {
         id: player.id,
         ext_id: player.ext_id,
-        name: player.name,
+        name: player?.character ? player.character.name : player.name,
         level: player.level_id,
         xp: player.xp,
         total_xp: player.total_xp,
         extra_points: player.att_xtra_points,
         image_path: player.image_path,
-        attributes: player.character.character_level_attributes.reduce((acc, attribute) => {
+        before_defeat_phrase: player.before_defeat_phrase,
+        after_defeat_phrase: player.after_defeat_phrase,
+        attributes: player?.character ? player.character.character_level_attributes.reduce((acc, attribute) => {
+            acc[attribute.attribute.name] = attribute.value;
+            return acc;
+        }, {}) :
+        player.character_level_attributes.reduce((acc, attribute) => {
             acc[attribute.attribute.name] = attribute.value;
             return acc;
         }, {}),
-        elements: player.character.character_elements.map(element => {
+        elements: player?.character ? player.character.character_elements.map(element => {
             const elementData = {
                 id: element.element.id,
                 name: element.element.name,
@@ -122,7 +176,15 @@ const constructPlayerResponse = (player) => {
                 weaknesses: element.element.weaknesses.map(weakness => ({ id: weakness.element.id, name: weakness.element.name }))
             };
             return elementData;
-        }),
+        }) : player.character_elements.map(element => {
+            const elementData = {
+                id: element.element.id,
+                name: element.element.name,
+                strengths: element.element.strengths.map(strength => ({ id: strength.element.id, name: strength.element.name })),
+                weaknesses: element.element.weaknesses.map(weakness => ({ id: weakness.element.id, name: weakness.element.name }))
+            };
+            return elementData;
+        })
     };
 };
 
@@ -251,7 +313,8 @@ const updateTeamTotalXP = async (playerId) => {
 
 module.exports = {
     includePlayerAssociationsInsideTeam,
-    includePlayerAssociationsOutsideTeam,
+    includeCharacterAssociationsOutsideTeam,
+    includePlayerAssociationsOutsideTeamPlayer,
     constructPlayerResponse,
     updateParticipantBattleStatus,
     checkLevelUp,

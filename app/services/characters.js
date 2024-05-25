@@ -1,22 +1,34 @@
 const { baseAttributes } = require('../utils/baseAttributes');
-const { checkLevelUp, updateTeamTotalXP } = require('../utils/characters');
-const { includePlayerAssociationsOutsideTeam, constructPlayerResponse } = require('../utils/characters');
-const { sequelize, CharactersModel, CharacterElementsModel, ElementsModel, CharacterLevelAttributesModel, AttributesModel, LevelsModel, TeamPlayersModel } = require('../models/index');
+const { checkLevelUp, updateTeamTotalXP, includePlayerAssociationsOutsideTeamPlayer } = require('../utils/characters');
+const { includeCharacterAssociationsOutsideTeam, constructPlayerResponse } = require('../utils/characters');
+const { sequelize, CharactersModel, CharacterElementsModel, ElementsModel, CharacterLevelAttributesModel, AttributesModel, LevelsModel, TeamPlayersModel, PlayersModel, BossesModel } = require('../models/index');
 const { BadRequestError, NotFoundError, ServerError } = require('../utils/errors');
 const { success } = require('../utils/apiResponse');
 
 const getCharacters = async (filters = {}) => {
     try {
         let where = {};
+        let characters = [];
 
         if (filters.character_type) {
             where.character_type_id = filters.character_type;
+            
+            if (where.character_type_id !== 1) {
+                characters = await BossesModel.findAll({
+                    include: includePlayerAssociationsOutsideTeamPlayer()
+                });
+            } else {
+                characters = await PlayersModel.findAll({
+                    include: includePlayerAssociationsOutsideTeamPlayer()
+                });
+            }
         }
 
-        const characters = await CharactersModel.findAll({
+        characters = await CharactersModel.findAll({
             where: where,
-            include: includePlayerAssociationsOutsideTeam()
+            include: includeCharacterAssociationsOutsideTeam()
         });
+
         
         const formattedCharacters = characters.map(character => (
             constructPlayerResponse(character)
@@ -30,9 +42,25 @@ const getCharacters = async (filters = {}) => {
 
 const getCharacter = async (characterId) => {
     try {
-        const character = await CharactersModel.findByPk(characterId, {
-            include: includePlayerAssociationsOutsideTeam()
+        let character = null;
+        const characterType = await CharactersModel.findOne({
+            where: { id: characterId },
+            attributes: ['character_type_id']
         });
+
+        if (!characterType) {
+            return NotFoundError('Character not found');
+        }
+
+        if (characterType.character_type_id !== 1) {
+            character = await BossesModel.findByPk(characterId, {
+                include: includePlayerAssociationsOutsideTeamPlayer()
+            });
+        } else {
+            character = await PlayersModel.findByPk(characterId, {
+                include: includePlayerAssociationsOutsideTeamPlayer()
+            });
+        }
 
         if (!character) {
             return NotFoundError('Character not found');
@@ -149,7 +177,7 @@ const addXPtoCharacter = async (characterId, xp) => {
     try {
         const maxLevel = await LevelsModel.max('level_value', { transaction: t });
         const character = await CharactersModel.findByPk(characterId, {
-            include: includePlayerAssociationsOutsideTeam(),
+            include: includeCharacterAssociationsOutsideTeam(),
             transaction: t
         });
 
@@ -189,7 +217,7 @@ const addXPtoCharacter = async (characterId, xp) => {
         await updateTeamTotalXP(character.id);
         // Retrieve the updated character after the transaction is committed
         const updatedCharacter = await CharactersModel.findByPk(characterId, {
-            include: includePlayerAssociationsOutsideTeam()
+            include: includeCharacterAssociationsOutsideTeam()
         });
         return success(constructPlayerResponse(updatedCharacter), message = 'XP added successfully');
 
@@ -203,7 +231,7 @@ const addXPtoCharacter = async (characterId, xp) => {
 const updateCharacterAttributes = async (characterId, increments) => {
     try {
         const character = await CharactersModel.findByPk(characterId, {
-            include: includePlayerAssociationsOutsideTeam()
+            include: includeCharacterAssociationsOutsideTeam()
         });
 
         if (!character) {
@@ -259,7 +287,7 @@ const updateCharacterAttributes = async (characterId, increments) => {
 
         // After updating attributes, fetch the updated details of the player
         const updatedCharacter = await CharactersModel.findByPk(characterId, {
-            include: includePlayerAssociationsOutsideTeam()
+            include: includeCharacterAssociationsOutsideTeam()
         });
 
         if (!updatedCharacter) {

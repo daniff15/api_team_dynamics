@@ -1,7 +1,7 @@
 const { Op } = require('sequelize');
 const { BattlesModel, sequelize, TeamsModel, TeamPlayersModel, AttacksModel, CharactersModel } = require('../models/index');
 const { checkBattleEnd, initializeQueue, calculateDamage } = require('../utils/battles');
-const { updateParticipantBattleStatus, includePlayerAssociationsInsideTeam, includePlayerAssociationsOutsideTeam } = require('../utils/characters');
+const { updateParticipantBattleStatus, includePlayerAssociationsInsideTeam, includeCharacterAssociationsOutsideTeam } = require('../utils/characters');
 const { NotFoundError, ServerError, BadRequestError } = require('../utils/errors');
 const { success } = require('../utils/apiResponse');
 
@@ -146,7 +146,7 @@ const createBattle = async (battle) => {
                         { character_type_id: 3 }
                     ]
                 },
-                include: includePlayerAssociationsOutsideTeam()
+                include: includeCharacterAssociationsOutsideTeam()
             });
 
             if (!opponent) {
