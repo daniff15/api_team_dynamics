@@ -4,25 +4,30 @@ SET FOREIGN_KEY_CHECKS = 0; -- Disable foreign key checks in MySQL
 
 TRUNCATE TABLE character_elements;
 TRUNCATE TABLE element_relationships;
-TRUNCATE TABLE team_characters;
+TRUNCATE TABLE team_players;
 TRUNCATE TABLE characters;
+TRUNCATE TABLE players;
+TRUNCATE TABLE bosses;
 TRUNCATE TABLE teams;
 TRUNCATE TABLE character_level_attributes;
 TRUNCATE TABLE attributes;
 TRUNCATE TABLE character_types;
 TRUNCATE TABLE levels;
 TRUNCATE TABLE elements;
-TRUNCATE TABLE communities;
+TRUNCATE TABLE games;
+TRUNCATE TABLE attacks;
+TRUNCATE TABLE battles;
+TRUNCATE TABLE games_bosses;
 
 SET FOREIGN_KEY_CHECKS = 1; -- Re-enable foreign key checks
 
--- Inserting data into the 'communities' table
-INSERT INTO communities (name) VALUES 
-('Community One'), 
-('Community Two');
+-- Inserting data into the 'games' table
+INSERT INTO games (name) VALUES 
+('Narrativa One'), 
+('Narrativa Two');
 
 -- Inserting data into the 'teams' table
-INSERT INTO teams (name, community_id) VALUES 
+INSERT INTO teams (name, game_id) VALUES 
 ('Alpha Team', 1), 
 ('Beta Team', 2);
 
@@ -71,8 +76,32 @@ INSERT INTO characters (name, character_type_id, level_id) VALUES
 ('Boss Água', 3, 15),
 ('Boss Fogo', 3, 20);
 
+INSERT INTO players(id, ext_id) VALUES
+(1,'jogador_viseu'),
+(2,'jogador_setubal'),
+(3,'jogador_lisboa'),
+(4,'jogador_porto'),
+(5,'jogador_vitoria'),
+(6,'jogador_contomil'),
+(7,'jogador_aveiro'),
+(8,'jogador_vila_real');
+
+INSERT INTO bosses(id, before_defeat_phrase, after_defeat_phrase) VALUES
+(9,'ainda nao morri 1', 'ja morri 1'),
+(10,'ainda nao morri 2', 'ja morri 2'),
+(11,'ainda nao morri 3', 'ja morri 3'),
+(12,'ainda nao morri 4', 'ja morri 4');
+
+INSERT INTO games_bosses(game_id, boss_id) VALUES 
+(1,9),
+(1,10),
+(1,11),
+(1,12),
+(2,10),
+(2,12);
+
 -- Inserting data into the 'team_characters' table
-INSERT INTO team_characters (team_id, character_id) VALUES 
+INSERT INTO team_players (team_id, player_id) VALUES 
 (1, 1), 
 (1, 2), 
 (1, 3), 
@@ -189,8 +218,6 @@ INSERT INTO battles (team_id, opponent_team_id, battle_date, winner_id) VALUES (
 -- Inserting data into the 'battles' table - boss battle
 INSERT INTO battles (team_id, boss_id, battle_date, winner_id) VALUES (1, 9, NOW(), 1);
 INSERT INTO battles (team_id, boss_id, battle_date, winner_id) VALUES (2, 10, NOW(), 10);
-
-
 
 -- Inserting data into the 'attacks' table - simulate the attacks between characters and bosses
 INSERT INTO attacks (battle_id, attacker_id, defender_id, damage, attack_time) VALUES 
