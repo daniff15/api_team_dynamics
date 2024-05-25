@@ -176,12 +176,12 @@ const addXPtoCharacter = async (characterId, xp) => {
     const t = await sequelize.transaction();
     try {
         const maxLevel = await LevelsModel.max('level_value', { transaction: t });
-        const character = await CharactersModel.findByPk(characterId, {
-            include: includeCharacterAssociationsOutsideTeam(),
+        const character = await PlayersModel.findByPk(characterId, {
+            include: includePlayerAssociationsOutsideTeamPlayer(),
             transaction: t
         });
 
-        if (!character || character.character_type_id !== 1) {
+        if (!character || character.character.character_type_id !== 1) {
             if (!character) {
                 return NotFoundError('Player character not found');
             } else {
@@ -190,7 +190,7 @@ const addXPtoCharacter = async (characterId, xp) => {
         }
 
         const teamMembership = await TeamPlayersModel.findOne({
-            where: { character_id: characterId },
+            where: { player_id: characterId },
             transaction: t
         });
 
@@ -198,7 +198,7 @@ const addXPtoCharacter = async (characterId, xp) => {
             return BadRequestError('Character is not a member of any team');
         }
 
-        if (character.level_id === maxLevel) {
+        if (character.character.level_id === maxLevel) {
             character.xp = 0;
             character.total_xp += xp;
             await character.save({ transaction: t });
@@ -216,8 +216,8 @@ const addXPtoCharacter = async (characterId, xp) => {
 
         await updateTeamTotalXP(character.id);
         // Retrieve the updated character after the transaction is committed
-        const updatedCharacter = await CharactersModel.findByPk(characterId, {
-            include: includeCharacterAssociationsOutsideTeam()
+        const updatedCharacter = await PlayersModel.findByPk(characterId, {
+            include: includePlayerAssociationsOutsideTeamPlayer()
         });
         return success(constructPlayerResponse(updatedCharacter), message = 'XP added successfully');
 

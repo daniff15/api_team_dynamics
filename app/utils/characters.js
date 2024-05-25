@@ -153,7 +153,7 @@ const constructPlayerResponse = (player) => {
         id: player.id,
         ext_id: player.ext_id,
         name: player?.character ? player.character.name : player.name,
-        level: player.level_id,
+        level: player?.character.level_id,
         xp: player.xp,
         total_xp: player.total_xp,
         extra_points: player.att_xtra_points,
@@ -207,13 +207,14 @@ const updateParticipantBattleStatus = (deepCloneParticipants, participant, attr,
 };
 
 const checkLevelUp = async (character, max_level, t) => {
-    if (character.level_id < max_level) {
+    if (character.character.level_id < max_level) {
         const xp_needed = calculate_xp_needed(character);
 
         if (character.xp >= xp_needed) {
-            character.level_id += 1;
+            character.character.level_id += 1;
             character.xp -= xp_needed;
 
+            await character.character.save({ transaction: t });
             await character.save({ transaction: t });
 
             // Update character attributes and insert into character_level_attributes table within the same transaction
@@ -228,7 +229,7 @@ const checkLevelUp = async (character, max_level, t) => {
 const updateStatsAndAttributes = async (character, t) => {
     try {
         const currentAttributes = await CharacterLevelAttributesModel.findAll({
-            where: { character_id: character.id, level_id: parseInt(character.level_id) - 1 },
+            where: { character_id: character.id, level_id: parseInt(character.character.level_id) - 1 },
             transaction: t
         });
 
@@ -237,10 +238,10 @@ const updateStatsAndAttributes = async (character, t) => {
 
         // Insert the new attribute values into the database
         await CharacterLevelAttributesModel.bulkCreate([
-            { character_id: character.id, level_id: character.level_id, attribute_id: 1, value: currentAttributes[0].value + newAttributes.hp },
-            { character_id: character.id, level_id: character.level_id, attribute_id: 2, value: currentAttributes[1].value + newAttributes.def },
-            { character_id: character.id, level_id: character.level_id, attribute_id: 3, value: currentAttributes[2].value + newAttributes.atk },
-            { character_id: character.id, level_id: character.level_id, attribute_id: 4, value: currentAttributes[3].value + newAttributes.speed }
+            { character_id: character.id, level_id: character.character.level_id, attribute_id: 1, value: currentAttributes[0].value + newAttributes.hp },
+            { character_id: character.id, level_id: character.character.level_id, attribute_id: 2, value: currentAttributes[1].value + newAttributes.def },
+            { character_id: character.id, level_id: character.character.level_id, attribute_id: 3, value: currentAttributes[2].value + newAttributes.atk },
+            { character_id: character.id, level_id: character.character.level_id, attribute_id: 4, value: currentAttributes[3].value + newAttributes.speed }
         ], { transaction: t });
 
         return character;
@@ -273,8 +274,8 @@ const INCREMENT = 50;
 const SEC_FORMULA_INCREMENT = 500;
 const calculate_xp_needed = (character) => {
     // METER ISTO A IR BUSCAR A UM FICHEIRO DE CONFIGURACAO
-    if (character.level_id < MAX_FIRST_FORMULA_LEVEL) {
-        return BASE_XP + ((character.level_id - 1) * INCREMENT);
+    if (character.character.level_id < MAX_FIRST_FORMULA_LEVEL) {
+        return BASE_XP + ((character.character.level_id - 1) * INCREMENT);
     } else {
         return SEC_FORMULA_INCREMENT;
     }
