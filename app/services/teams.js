@@ -46,9 +46,9 @@ const getTeam = async (id) => {
         members: []
     };
 
-    teamsData.team_characters.forEach(teamCharacter => {
-        const character = teamCharacter.character;
-        teamData.members.push(constructPlayerResponse(character));
+    teamsData.team_players.forEach(teamPlayer => {
+        const player = teamPlayer.player;
+        teamData.members.push(constructPlayerResponse(player));
     });
 
     return success(teamData);

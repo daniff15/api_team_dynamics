@@ -1,45 +1,50 @@
-const { CharactersModel, CharacterLevelAttributesModel, AttributesModel, LevelsModel, CharacterElementsModel, ElementsModel, ElementRelationshipsModel, TeamPlayersModel, TeamsModel } = require('../models');
+const { PlayersModel, CharactersModel, CharacterLevelAttributesModel, AttributesModel, LevelsModel, CharacterElementsModel, ElementsModel, ElementRelationshipsModel, TeamPlayersModel, TeamsModel } = require('../models');
 const { NotFoundError, ServerError } = require('../utils/errors');
 
 // Utility function to include player associations inside team query
 const includePlayerAssociationsInsideTeam = () => {
     return [
         {
-            model: CharactersModel,
+            model: PlayersModel,
             include: [
                 {
-                    model: CharacterLevelAttributesModel,
+                    model: CharactersModel,
                     include: [
                         {
-                            model: AttributesModel
+                            model: CharacterLevelAttributesModel,
+                            include: [
+                                {
+                                    model: AttributesModel
+                                },
+                                {
+                                    model: LevelsModel
+                                }
+                            ]
                         },
                         {
-                            model: LevelsModel
-                        }
-                    ]
-                },
-                {
-                    model: CharacterElementsModel,
-                    include: [
-                        {
-                            model: ElementsModel,
-                            as: 'element',
+                            model: CharacterElementsModel,
                             include: [
-                                { 
-                                    model: ElementRelationshipsModel, 
-                                    as: 'strengths', 
-                                    include: [{ 
-                                        model: ElementsModel, 
-                                        as: 'element'
-                                    }] 
-                                },
-                                { 
-                                    model: ElementRelationshipsModel, 
-                                    as: 'weaknesses', 
-                                    include: [{ 
-                                        model: ElementsModel, 
-                                        as: 'element'
-                                    }] 
+                                {
+                                    model: ElementsModel,
+                                    as: 'element',
+                                    include: [
+                                        { 
+                                            model: ElementRelationshipsModel, 
+                                            as: 'strengths', 
+                                            include: [{ 
+                                                model: ElementsModel, 
+                                                as: 'element'
+                                            }] 
+                                        },
+                                        { 
+                                            model: ElementRelationshipsModel, 
+                                            as: 'weaknesses', 
+                                            include: [{ 
+                                                model: ElementsModel, 
+                                                as: 'element'
+                                            }] 
+                                        }
+                                    ]
                                 }
                             ]
                         }
@@ -95,20 +100,21 @@ const includePlayerAssociationsOutsideTeam = () => {
 };
 
 // Utility function to construct player response
-const constructPlayerResponse = (character) => {
+const constructPlayerResponse = (player) => {
     return {
-        id: character.id,
-        name: character.name,
-        level: character.level_id,
-        xp: character.xp,
-        total_xp: character.total_xp,
-        extra_points: character.att_xtra_points,
-        image_path: character.image_path,
-        attributes: character.character_level_attributes.reduce((acc, attribute) => {
+        id: player.id,
+        ext_id: player.ext_id,
+        name: player.name,
+        level: player.level_id,
+        xp: player.xp,
+        total_xp: player.total_xp,
+        extra_points: player.att_xtra_points,
+        image_path: player.image_path,
+        attributes: player.character.character_level_attributes.reduce((acc, attribute) => {
             acc[attribute.attribute.name] = attribute.value;
             return acc;
         }, {}),
-        elements: character.character_elements.map(element => {
+        elements: player.character.character_elements.map(element => {
             const elementData = {
                 id: element.element.id,
                 name: element.element.name,

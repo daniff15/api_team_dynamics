@@ -77,7 +77,6 @@ const router = express.Router();
 router.get("/", async (req, res) => {
     try {
         const rows = await gamesService.getAllGames();
-        console.log(rows);
         if (rows.meta.error) {
             return res.status(rows.statusCode).json(rows);
         }
@@ -241,7 +240,7 @@ router.get("/:id", async (req, res) => {
 router.post("/", async (req, res) => {
     try {
         const game = req.body;
-        const result = await gamesService.gamesService(game);
+        const result = await gamesService.createGame(game);
         if (result.meta.error) {
             return res.status(result.statusCode).json(result);
         }
