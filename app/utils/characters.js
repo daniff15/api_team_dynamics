@@ -153,7 +153,7 @@ const constructPlayerResponse = (player) => {
         id: player.id,
         ext_id: player.ext_id,
         name: player?.character ? player.character.name : player.name,
-        level: player?.character.level_id,
+        level: player?.character ? player.character.level_id : player.level,
         xp: player.xp,
         total_xp: player.total_xp,
         extra_points: player.att_xtra_points,

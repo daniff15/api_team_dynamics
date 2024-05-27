@@ -1,21 +1,21 @@
-const { TeamsModel, TeamPlayersModel, CharactersModel, CommunitiesModel } = require('../models/index');
+const { TeamsModel, TeamPlayersModel, CharactersModel, CommunitiesModel, GamesModel } = require('../models/index');
 const { includePlayerAssociationsInsideTeam, constructPlayerResponse } = require('../utils/characters');
 const { BadRequestError, NotFoundError, ServerError, ConflictError } = require('../utils/errors');
 const { success } = require('../utils/apiResponse');
 
-const getAllTeams = async (community_id, orderByTotalXP = 'DESC') => {
+const getAllTeams = async (game_id, orderByTotalXP = 'DESC') => {
 
     const queryOptions = {
         where: {},
         order: [['total_xp', orderByTotalXP]] 
     };
 
-    if (community_id) {
-        const community = await CommunitiesModel.findOne({ where: { id: community_id } });
-        if (!community) {
-            return NotFoundError('Community not found');
+    if (game_id) {
+        const game = await GamesModel.findOne({ where: { id: game_id } });
+        if (!game) {
+            return NotFoundError('Game Narrative not found');
         }
-        queryOptions.where.community_id = community_id;
+        queryOptions.where.game_id = game_id;
     }
 
     const teams = await TeamsModel.findAll(queryOptions);
@@ -39,7 +39,7 @@ const getTeam = async (id) => {
 
     const teamData = {
         id: teamsData.id,
-        community_id: teamsData.community_id,
+        game_id: teamsData.game_id,
         name: teamsData.name,
         total_xp: teamsData.total_xp,
         team_image_path: teamsData.team_image_path,
@@ -56,20 +56,20 @@ const getTeam = async (id) => {
 
 
 const createTeam = async (team) => {
-    const community = await CommunitiesModel.findByPk(team.community_id);
-    if (!community) {
-        return NotFoundError('Community not found');
+    const game = await GamesModel.findByPk(team.game_id);
+    if (!game) {
+        return NotFoundError('Game Narrative not found');
     }
 
     const existingTeam = await TeamsModel.findOne({
         where: {
             name: team.name,
-            community_id: team.community_id
+            game_id: team.game_id
         }
     });
 
     if (existingTeam) {
-        return ConflictError('A Team with the same name already exists in the community');
+        return ConflictError('A Team with the same name already exists in this game!');
     }
     
     const newTeam = await TeamsModel.create(team);
@@ -77,12 +77,21 @@ const createTeam = async (team) => {
 }
 
 const deleteTeam = async (id) => {
+    if (!id) {
+        return BadRequestError('Team ID is required');
+    }
+
+    const team = await TeamsModel.findByPk(id);
+    if (!team) {
+        return NotFoundError('Team not found');
+    }
+
     const result = await TeamsModel.destroy({
         where: {
             id
         }
     });
-    return result;
+    return success(result, message = 'Team deleted successfully');
 }
 
 const addCharacterToTeam = async (teamId, characterId) => {
@@ -93,7 +102,7 @@ const addCharacterToTeam = async (teamId, characterId) => {
         }
 
         const teamInSameCommunity = await TeamsModel.findOne({
-            where: { community_id: team.community_id },
+            where: { game_id: team.game_id },
             include: [{ model: TeamPlayersModel, where: { character_id: characterId } }]
         });
         if (teamInSameCommunity) {

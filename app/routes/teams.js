@@ -115,87 +115,88 @@ const router = express.Router();
 /**
  * @swagger
  * /teams:
- *  get:
- *    summary: Get all teams
- *    tags: [Teams]
- *    description: Get all teams
- *    parameters:
- *      - in: query
- *        name: community_id
- *        schema:
- *          type: integer
- *        description: Optional. Filter teams by community ID.
- *      - in: query
- *        name: orderByTotalXP
- *        schema:
- *          type: string
- *        description: Optional. Order teams by total XP. Use 'ASC' for ascending order and 'DESC' for descending order.
- *    responses:
- *      '200':
- *        description: A list of teams
- *        content:
- *          application/json:
- *            schema:
- *              type: array
- *              items:
- *                type: object
- *                properties:
- *                  id:
- *                    type: integer
- *                    description: The team ID
- *                  name:
- *                    type: string
- *                    description: The team name
- *                  community_id:
- *                    type: integer
- *                    description: The community ID
- *      '404':
- *        description: Community not found
- *        content:
- *          application/json:
- *            schema:
- *              type: object
- *              properties:
- *                message:
- *                  type: string
- *                  description: A message indicating the error
- *                statusCode:
- *                  type: integer
- *                  description: The status code of the response
- *                  example: 404
- *                meta:
- *                  type: object
- *                  properties:
- *                    error:
- *                      type: boolean
- *                      description: Indicates if an error occurred
- *                      example: true
- *      '500':
- *        description: Internal Server Error
- *        content:
- *          application/json:
- *            schema:
- *              type: object
- *              properties:
- *                message:
- *                  type: string
- *                  description: A message indicating the error
- *                statusCode:
- *                  type: integer
- *                  description: The status code of the response
- *                  example: 500
- *                meta:
- *                  type: object
- *                  properties:
- *                    error:
- *                      type: boolean
- *                      description: Indicates if an error occurred
- *                      example: true
+ *   get:
+ *     summary: Get all teams
+ *     tags: [Teams]
+ *     description: Get all teams. The `orderByTotalXP` parameter can be used to order teams by total XP in ascending or descending order.
+ *     parameters:
+ *       - in: query
+ *         name: game_id
+ *         schema:
+ *           type: integer
+ *         description: Optional. Filter teams by game narrative ID.
+ *       - in: query
+ *         name: orderByTotalXP
+ *         schema:
+ *           type: string
+ *           enum: [ASC, DESC]
+ *         description: Optional. Order teams by total XP. Use 'ASC' for ascending order and 'DESC' for descending order.
+ *     responses:
+ *       200:
+ *         description: A list of teams
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                     description: The team ID
+ *                   name:
+ *                     type: string
+ *                     description: The team name
+ *                   game_id:
+ *                     type: integer
+ *                     description: The game ID
+ *       404:
+ *         description: Game not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 404
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 500
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
  */
 router.get('/', async (req, res) => {
     try {
-        const { community_id, orderByTotalXP } = req.query;
-        const teams = await teamsService.getAllTeams(community_id, orderByTotalXP);
+        const { game_id, orderByTotalXP } = req.query;
+        const teams = await teamsService.getAllTeams(game_id, orderByTotalXP);
         if (teams.meta.error) {
             return res.status(teams.statusCode).json(teams);
         }
@@ -316,9 +317,9 @@ router.get("/:id", async (req, res) => {
  *               name:
  *                 type: string
  *                 description: The name of the team
- *               community_id:
+ *               game_id:
  *                 type: integer
- *                 description: The ID of the community the team belongs to
+ *                 description: The ID of the game the team belongs to
  *     responses:
  *       '201':
  *         description: Team created successfully
@@ -336,9 +337,9 @@ router.get("/:id", async (req, res) => {
  *                     id:
  *                       type: integer
  *                       description: The ID of the created team
- *                     community_id:
+ *                     game_id:
  *                       type: integer
- *                       description: The ID of the community the team belongs to
+ *                       description: The ID of the game the team belongs to
  *                     name:
  *                       type: string
  *                       description: The name of the created team
@@ -350,7 +351,7 @@ router.get("/:id", async (req, res) => {
  *                       description: Indicates if an error occurred
  *                       example: false
  *       '404':
- *         description: Community not found
+ *         description: Game not found
  *         content:
  *           application/json:
  *             schema:
@@ -371,7 +372,7 @@ router.get("/:id", async (req, res) => {
  *                       description: Indicates if an error occurred
  *                       example: true
  *       '409':
- *         description: Conflict - Team with the same name already exists in the community
+ *         description: Conflict - Team with the same name already exists in the game
  *         content:
  *           application/json:
  *             schema:
@@ -428,7 +429,108 @@ router.post("/", async (req, res) => {
     }
 });
 
-// Faz sentido ter um endpoint para remover um personagem de um equipa?
+/**
+ * @swagger
+ * /teams/{id}:
+ *   delete:
+ *     summary: Delete a team
+ *     tags: [Teams]
+ *     description: Remove the team with the specified ID
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The ID of the team to delete
+ *     responses:
+ *       '200':
+ *         description: Team deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the result of the operation
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       description: The ID of the deleted team
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: false
+ *       '400':
+ *         description: Bad Request - Invalid team ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 400
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
+ *       '404':
+ *         description: Team not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 404
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 500
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
+ */
 router.delete("/:id", async (req, res) => {
     try {
         const id = req.params.id;
@@ -483,9 +585,9 @@ router.delete("/:id", async (req, res) => {
  *                     id:
  *                       type: integer
  *                       description: The ID of the created team
- *                     community_id:
+ *                     game_id:
  *                       type: integer
- *                       description: The ID of the community the team belongs to
+ *                       description: The ID of the game the team belongs to
  *                     name:
  *                       type: string
  *                       description: The name of the created team
@@ -539,7 +641,7 @@ router.delete("/:id", async (req, res) => {
  *                       description: Indicates if an error occurred
  *                       example: true
  *       '409':
- *         description: Conflict - Character is already a member of a team in the same community or Character is already on the team
+ *         description: Conflict - Character is already a member of a team in the same game or Character is already on the team
  *         content:
  *           application/json:
  *             schema:
@@ -643,7 +745,7 @@ router.post("/:teamId/characters", async (req, res) => {
  *                       description: Indicates if an error occurred
  *                       example: false
  *       '409':
- *         description: Conflict - Team with the same name already exists in the community
+ *         description: Conflict - Team with the same name already exists in the game
  *         content:
  *           application/json:
  *             schema:

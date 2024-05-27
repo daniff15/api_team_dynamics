@@ -9,27 +9,33 @@ const getCharacters = async (filters = {}) => {
     try {
         let where = {};
         let characters = [];
+        let order = [];
 
         if (filters.character_type) {
             where.character_type_id = filters.character_type;
             
-            if (where.character_type_id !== 1) {
+            if (where.character_type_id === 1) {
+                console.log(filters.order_by_xp);
+                if (filters.order_by_xp) {
+                    const sortOrder = filters.order_by_xp.toLowerCase() === 'asc' ? 'ASC' : 'DESC';
+                    order = [['total_xp', sortOrder]];
+                }
+                characters = await PlayersModel.findAll({
+                    include: includePlayerAssociationsOutsideTeamPlayer(),
+                    order: order
+                });
+            } else {
                 characters = await BossesModel.findAll({
                     include: includePlayerAssociationsOutsideTeamPlayer()
                 });
-            } else {
-                characters = await PlayersModel.findAll({
-                    include: includePlayerAssociationsOutsideTeamPlayer()
-                });
             }
+        } else {
+            characters = await CharactersModel.findAll({
+                where: where,
+                include: includeCharacterAssociationsOutsideTeam()
+            });
         }
 
-        characters = await CharactersModel.findAll({
-            where: where,
-            include: includeCharacterAssociationsOutsideTeam()
-        });
-
-        
         const formattedCharacters = characters.map(character => (
             constructPlayerResponse(character)
         ));
@@ -39,6 +45,7 @@ const getCharacters = async (filters = {}) => {
         return ServerError(error.message);
     }
 };
+
 
 const getCharacter = async (characterId) => {
     try {
