@@ -86,7 +86,7 @@ const router = express.Router();
  *         xp:
  *           type: integer
  *           description: The experience points of the character
- *         extra_points:
+ *         att_xtra_points:
  *           type: integer
  *           description: The extra points of the character
  *         attributes:

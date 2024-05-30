@@ -156,7 +156,7 @@ const constructPlayerResponse = (player) => {
         level: player?.character ? player.character.level_id : player.level,
         xp: player.xp,
         total_xp: player.total_xp,
-        extra_points: player.att_xtra_points,
+        att_xtra_points: player.att_xtra_points,
         image_path: player.image_path,
         before_defeat_phrase: player.before_defeat_phrase,
         after_defeat_phrase: player.after_defeat_phrase,
@@ -213,6 +213,10 @@ const checkLevelUp = async (character, max_level, t) => {
         if (character.xp >= xp_needed) {
             character.character.level_id += 1;
             character.xp -= xp_needed;
+
+            if (Math.random() < 0.65) {
+                character.att_xtra_points += 1;
+            }
 
             await character.character.save({ transaction: t });
             await character.save({ transaction: t });

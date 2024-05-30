@@ -226,6 +226,7 @@ const addXPtoCharacter = async (characterId, xp) => {
         } else {
             character.xp += xp;
             character.total_xp += xp;
+
             await character.save({ transaction: t });
     
             await checkLevelUp(character, maxLevel, t);
@@ -254,6 +255,8 @@ const updateCharacterAttributes = async (characterId, increments) => {
             include: includeCharacterAssociationsOutsideTeam()
         });
 
+        const player = await PlayersModel.findByPk(characterId);
+
         if (!character) {
             return NotFoundError('Character not found');
         }
@@ -263,7 +266,7 @@ const updateCharacterAttributes = async (characterId, increments) => {
         }
 
         const teamMembership = await TeamPlayersModel.findOne({
-            where: { character_id: characterId }
+            where: { player_id: characterId }
         });
 
         if (!teamMembership) {
@@ -275,7 +278,7 @@ const updateCharacterAttributes = async (characterId, increments) => {
             include: [{ model: AttributesModel, attributes: ['name'] }]
         });
 
-        const availableXtraPoints = character.att_xtra_points;
+        const availableXtraPoints = player.att_xtra_points;
 
         const attributeMap = new Map(currentAttributes.map(attr => [attr.attribute.name, attr]));
         const totalPointsUsed = Object.values(increments).reduce((acc, increment) => acc + parseInt(increment), 0);
@@ -300,14 +303,14 @@ const updateCharacterAttributes = async (characterId, increments) => {
         }
 
         // Deduct the used extra points
-        await CharactersModel.update(
+        await PlayersModel.update(
             { att_xtra_points: parseInt(availableXtraPoints) - totalPointsUsed },
             { where: { id: characterId } }
         );
 
         // After updating attributes, fetch the updated details of the player
-        const updatedCharacter = await CharactersModel.findByPk(characterId, {
-            include: includeCharacterAssociationsOutsideTeam()
+        const updatedCharacter = await PlayersModel.findByPk(characterId, {
+            include: includePlayerAssociationsOutsideTeamPlayer()
         });
 
         if (!updatedCharacter) {
@@ -319,7 +322,6 @@ const updateCharacterAttributes = async (characterId, increments) => {
         return ServerError(error.message);
     }
 }
-
 
 module.exports = {
     getCharacters,
