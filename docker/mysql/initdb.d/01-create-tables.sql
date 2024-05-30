@@ -79,7 +79,7 @@ CREATE TABLE IF NOT EXISTS `team_dynamics`.`bosses` (
   CONSTRAINT `fk_characters_copy1_1`
     FOREIGN KEY (`id`)
     REFERENCES `team_dynamics`.`characters` (`id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 AUTO_INCREMENT = 13
@@ -289,7 +289,7 @@ CREATE TABLE IF NOT EXISTS `team_dynamics`.`players` (
   CONSTRAINT `fk_players_1`
     FOREIGN KEY (`id`)
     REFERENCES `team_dynamics`.`characters` (`id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 AUTO_INCREMENT = 13
@@ -327,12 +327,12 @@ CREATE TABLE IF NOT EXISTS `team_dynamics`.`games_bosses` (
   CONSTRAINT `fk_games_bosses_1`
     FOREIGN KEY (`boss_id`)
     REFERENCES `team_dynamics`.`bosses` (`id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_games_bosses_2`
     FOREIGN KEY (`game_id`)
     REFERENCES `team_dynamics`.`games` (`id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 AUTO_INCREMENT = 3
