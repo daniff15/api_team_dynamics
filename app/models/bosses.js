@@ -2,7 +2,6 @@ module.exports = (sequelize, DataTypes) => {
     const BossesModel = sequelize.define('boss', {
         id: {
             type: DataTypes.INTEGER,
-            autoIncrement: true,
             primaryKey: true
         },
         before_defeat_phrase: {

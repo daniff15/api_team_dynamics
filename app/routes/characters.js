@@ -319,8 +319,8 @@ router.get('/:id', async (req, res) => {
  */
 router.post('/', async (req, res) => {
     try {
-        const { name, characterType, level, elements, attributes } = req.body;
-        const result = await charactersService.createCharacter(name, characterType, level, elements, attributes);
+        const { name, ext_id, characterType, level, elements, attributes, image_path, before_defeat_phrase, after_defeat_phrase } = req.body;
+        const result = await charactersService.createCharacter(name, ext_id, characterType, level, elements, attributes, image_path, before_defeat_phrase, after_defeat_phrase);
         if (result.meta.error) {
             return res.status(result.statusCode).json(result);
         }

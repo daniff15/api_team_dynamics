@@ -2,7 +2,6 @@ module.exports = (sequelize, DataTypes) => {
     const PlayersModel = sequelize.define('player', {
         id: {
             type: DataTypes.INTEGER,
-            autoIncrement: true,
             primaryKey: true
         },
         xp: {

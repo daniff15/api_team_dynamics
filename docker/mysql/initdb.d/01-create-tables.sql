@@ -72,7 +72,7 @@ DEFAULT CHARACTER SET = utf8mb4;
 -- Table `team_dynamics`.`bosses`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `team_dynamics`.`bosses` (
-  `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `id` INT(11) NOT NULL,
   `before_defeat_phrase` VARCHAR(256) NULL,
   `after_defeat_phrase` VARCHAR(256) NULL,
   PRIMARY KEY (`id`),
@@ -280,7 +280,7 @@ DEFAULT CHARACTER SET = utf8mb4;
 -- Table `team_dynamics`.`players`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `team_dynamics`.`players` (
-  `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `id` INT(11) NOT NULL,
   `xp` INT(11) NULL DEFAULT '0',
   `total_xp` INT(11) NULL DEFAULT '0',
   `att_xtra_points` INT(11) NULL DEFAULT '0',

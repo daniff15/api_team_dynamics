@@ -81,7 +81,7 @@ const getCharacter = async (characterId) => {
     }
 };
 
-const createCharacter = async (name, characterType, level, elements, attributes) => {
+const createCharacter = async (name, ext_id='', characterType, level, elements, attributes, image_path='', before_defeat_phrase='', after_defeat_phrase='') => {
     let transaction;
     try {
         transaction = await sequelize.transaction();
@@ -101,20 +101,28 @@ const createCharacter = async (name, characterType, level, elements, attributes)
             character = await CharactersModel.create({
                 name: name,
                 character_type_id: characterType,
-                level_id: level
+                level_id: level,
+                image_path
             }, { transaction });
         } else {
             character = await CharactersModel.create({
                 name: name,
                 character_type_id: characterType,
                 level_id: 1,
-                xp: 0,
-                att_xtra_points: 0
+                image_path
             }, { transaction });
         }
 
         const characterId = character.id;
         if (characterType === 1) {
+            await PlayersModel.create({
+                id: characterId,
+                total_xp: 0,
+                xp: 0,
+                att_xtra_points: 0,
+                ext_id
+            }, { transaction });
+
             // Fetch attributes based on elements
             const element = await ElementsModel.findByPk(elements[0], { transaction });
 
@@ -141,6 +149,11 @@ const createCharacter = async (name, characterType, level, elements, attributes)
                 value: value
             })), { transaction });
         } else {
+            await BossesModel.create({
+                id: characterId,
+                before_defeat_phrase,
+                after_defeat_phrase
+            }, { transaction });
             for (const elementId of elements) {
                 const element = await ElementsModel.findByPk(elementId, { transaction });
 
