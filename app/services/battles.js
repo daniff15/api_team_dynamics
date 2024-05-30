@@ -85,6 +85,14 @@ const createBattle = async (battle) => {
         transaction = await sequelize.transaction();
         const { team_id, opponent_team_id, boss_id } = battle;
 
+        if (opponent_team_id && boss_id) {
+            return BadRequestError('You can only have one opponent');
+        }
+
+        if (!opponent_team_id && !boss_id) {
+            return BadRequestError('You must have an opponent');
+        }
+
         const participants = await TeamsModel.findOne({
             where: { id: team_id },
             include: [
@@ -99,15 +107,11 @@ const createBattle = async (battle) => {
             return NotFoundError('Team not found');
         }
 
-        if (participants.team_characters.length !== 4) {
+        if (participants.team_players.length !== 4) {
             return BadRequestError('Team must have 4 characters');
         }
 
         let opponent;
-        if(opponent_team_id !== null && boss_id !== null) {
-            return BadRequestError('You can only have one opponent');
-        }
-
         const battle_date = new Date();
 
         const createdBattle = await BattlesModel.create({
@@ -134,7 +138,7 @@ const createBattle = async (battle) => {
                 return NotFoundError('Opponent team not found');
             }
 
-            if (opponent.team_characters.length !== 4) {
+            if (opponent.team_players.length !== 4) {
                 return BadRequestError('Opponent team must have 4 characters');
             }
         } else {
@@ -162,27 +166,35 @@ const createBattle = async (battle) => {
 
         let deepCloneParticipants = [];
         //Transform the participants to the format required for battle
-        for (let participant of [...participants.team_characters, ...(opponent.team_characters || [opponent])]) {
-            const attributesArray = participant.character.character_level_attributes;
+        for (let participant of [...participants.team_players, ...(opponent.team_players || [opponent])]) {
+            const attributesArray = participant?.player ? participant.player.character.character_level_attributes : participant.character.character_level_attributes;
             const attributes = attributesArray.reduce((acc, attribute) => {
                 acc[attribute.attribute.name] = attribute.value;
                 return acc;
             }, {});
+            const level = participant?.player ? participant.player.character.level_id : participant.character.level_id;
             
-            attributes.hp_battle = attributes.HP * (1 + (participant.character.level_id - 1) * 0.12);
+            attributes.hp_battle = attributes.HP * (1 + (level - 1) * 0.12);
 
             // Transform strengths and weaknesses before element transofmation
-            participant.character.character_elements.forEach(element => {
-                participant.strengths = element.element.strengths.map(strength => strength.element.id);
-                participant.weaknesses = element.element.weaknesses.map(weakness => weakness.element.id);
-            });
-
+            if (participant?.player) {
+                participant.player.character.character_elements.forEach(element => {
+                    participant.strengths = element.element.strengths.map(strength => strength.element.id);
+                    participant.weaknesses = element.element.weaknesses.map(weakness => weakness.element.id);
+                });
+            } else {
+                participant.character.character_elements.forEach(element => {
+                    participant.strengths = element.element.strengths.map(strength => strength.element.id);
+                    participant.weaknesses = element.element.weaknesses.map(weakness => weakness.element.id);
+                });
+            }
+                
             participant = {
-                id: participant.character.id,
-                name: participant.character.name,
+                id: participant?.player ? participant.player.id : participant.character.id,
+                name: participant?.player ? participant.player.character.name : participant.character.name,
                 team: participant.team_id,
-                level: participant.character.level_id,
-                character_type: participant.character.character_type_id,
+                level: level,
+                character_type: participant?.player ? participant.player.character.character_type_id : participant.character.character_type_id,
                 attributes: attributes,
                 real_speed: attributes.SPEED,
             };

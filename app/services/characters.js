@@ -323,10 +323,27 @@ const updateCharacterAttributes = async (characterId, increments) => {
     }
 }
 
+const deleteCharacter = async (characterId) => {
+    try {
+        const character = await CharactersModel.findByPk(characterId);
+
+        if (!character) {
+            return NotFoundError('Character not found');
+        }
+
+        await character.destroy();
+
+        return success({}, message = 'Character deleted successfully');
+    } catch (error) {
+        return ServerError(error.message);
+    }
+};
+
 module.exports = {
     getCharacters,
     getCharacter,
     createCharacter,
     addXPtoCharacter,
-    updateCharacterAttributes
+    updateCharacterAttributes,
+    deleteCharacter
 };
