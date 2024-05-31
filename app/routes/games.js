@@ -251,6 +251,101 @@ router.post("/", async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /games/{id}/bosses:
+ *   put:
+ *     summary: Update the game with the bosses
+ *     tags: [Games]
+ *     description: Update the game with the bosses
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the game
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               bosses:
+ *                 type: array
+ *                 description: An array of boss IDs
+ *                 items:
+ *                   type: integer
+ *                   description: The ID of a boss
+ *     responses:
+ *       200:
+ *         description: The game was successfully updated with the bosses
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   description: Whether the update was successful
+ *                 game:
+ *                   type: object
+ *                   description: The updated game object
+ *                   properties:
+ *                     name:
+ *                       type: string
+ *                     bosses:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   description: Error message
+ *       404:
+ *         description: Bosses not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   description: Error message indicating that bosses were not found
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   description: Error message indicating an internal server error
+ */
+router.post("/:id/bosses", async (req, res) => {
+    try {
+        const id = req.params.id;
+        const { bosses } = req.body;
+        const result = await gamesService.postBossesToGame(id, bosses);
+        console.log('result', result);
+        if (result.meta.error) {
+            return res.status(result.statusCode).json(result);
+        }
+        res.json(result);
+    } catch (err) {
+        console.error(err);
+        res.sendStatus(500);
+    }
+});
+
 // /**
 //  * @swagger
 //  * /games/{id}:
