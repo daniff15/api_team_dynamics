@@ -26,11 +26,6 @@ INSERT INTO games (name) VALUES
 ('Narrativa One'), 
 ('Narrativa Two');
 
--- Inserting data into the 'teams' table
-INSERT INTO teams (name, game_id) VALUES 
-('Alpha Team', 1), 
-('Beta Team', 2);
-
 -- Inserting data into the 'character_types' table
 INSERT INTO character_types (name) VALUES 
 ('Player'), 
@@ -99,6 +94,11 @@ INSERT INTO games_bosses(game_id, boss_id) VALUES
 (1,12),
 (2,10),
 (2,12);
+
+-- Inserting data into the 'teams' table
+INSERT INTO teams (name, game_id, owner_id) VALUES 
+('Alpha Team', 1, 1), 
+('Beta Team', 2, 5);
 
 -- Inserting data into the 'team_characters' table
 INSERT INTO team_players (team_id, player_id) VALUES 

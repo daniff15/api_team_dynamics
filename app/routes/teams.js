@@ -150,6 +150,15 @@ const router = express.Router();
  *                   game_id:
  *                     type: integer
  *                     description: The game ID
+ *                   owner_id:
+ *                     type: integer
+ *                     description: The ID of the owner of the team
+ *                   total_xp:
+ *                     type: integer
+ *                     description: The total XP of the team
+ *                   team_image_path:
+ *                     type: string
+ *                     description: The path to the team image
  *       404:
  *         description: Game not found
  *         content:

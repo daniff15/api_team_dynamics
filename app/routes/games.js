@@ -330,7 +330,7 @@ router.post("/", async (req, res) => {
  *                   type: string
  *                   description: Error message indicating an internal server error
  */
-router.post("/:id/bosses", async (req, res) => {
+router.put("/:id/bosses", async (req, res) => {
     try {
         const id = req.params.id;
         const { bosses } = req.body;

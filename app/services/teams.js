@@ -40,6 +40,7 @@ const getTeam = async (id) => {
     const teamData = {
         id: teamsData.id,
         game_id: teamsData.game_id,
+        owner_id: teamsData.owner_id,
         name: teamsData.name,
         total_xp: teamsData.total_xp,
         team_image_path: teamsData.team_image_path,

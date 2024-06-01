@@ -13,6 +13,10 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.INTEGER,
             allowNull: false
         },
+        owner_id: {
+            type: DataTypes.INTEGER,
+            allowNull: false
+        },
         total_xp: {
             type: DataTypes.INTEGER,
             defaultValue: 0,
@@ -29,6 +33,9 @@ module.exports = (sequelize, DataTypes) => {
     TeamsModel.associate = (models) => {
         TeamsModel.belongsTo(models.GamesModel, {
             foreignKey: 'game_id'
+        });
+        TeamsModel.belongsTo(models.PlayersModel, {
+            foreignKey: 'owner_id'
         });
         TeamsModel.hasMany(models.TeamPlayersModel, { foreignKey: 'team_id' });
     };

@@ -105,12 +105,18 @@ CREATE TABLE IF NOT EXISTS `team_dynamics`.`teams` (
   `id` INT(11) NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(255) NOT NULL,
   `game_id` INT(11) NOT NULL,
+  `owner_id` INT(11) NOT NULL,
   `total_xp` INT(11) NOT NULL DEFAULT '0',
   `team_image_path` VARCHAR(256) NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   CONSTRAINT `fk_teams_games`
     FOREIGN KEY (`game_id`)
     REFERENCES `team_dynamics`.`games` (`id`)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE,
+  CONSTRAINT `fk_teams_players`
+    FOREIGN KEY (`owner_id`)
+    REFERENCES `team_dynamics`.`players` (`id`)
     ON DELETE RESTRICT
     ON UPDATE CASCADE)
 ENGINE = InnoDB
