@@ -15,7 +15,6 @@ const getCharacters = async (filters = {}) => {
             where.character_type_id = filters.character_type;
             
             if (where.character_type_id === 1) {
-                console.log(filters.order_by_xp);
                 if (filters.order_by_xp) {
                     const sortOrder = filters.order_by_xp.toLowerCase() === 'asc' ? 'ASC' : 'DESC';
                     order = [['total_xp', sortOrder]];
@@ -115,6 +114,10 @@ const createCharacter = async (name, ext_id='', characterType, level, elements, 
 
         const characterId = character.id;
         if (characterType === 1) {
+            if (ext_id === '') {
+                return BadRequestError('External ID must be specified for player characters');
+            }
+
             await PlayersModel.create({
                 id: characterId,
                 total_xp: 0,

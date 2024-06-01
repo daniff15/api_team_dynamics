@@ -2,6 +2,7 @@ const { GamesModel, GameBossesModel, BossesModel } = require('../models/index');
 const { NotFoundError, ConflictError, BadRequestError } = require('../utils/errors');
 const { success } = require('../utils/apiResponse');
 const gamesBosses = require('../models/gamesBosses');
+const { constructPlayerResponse, includePlayerAssociationsOutsideTeamPlayer } = require('../utils/characters');
 
 const getAllGames = async () => {
     const games = await GamesModel.findAll({});
@@ -15,7 +16,29 @@ const getGame = async (id) => {
         return NotFoundError('Game Narrative not found');
     }
 
-    return success(game);
+    const gameBosses = await GameBossesModel.findAll({
+        where: {
+            game_id: id
+        }
+    });
+
+    const bosses = await BossesModel.findAll({
+        where: {
+            id: gameBosses.map(gameBoss => gameBoss.boss_id)
+        },
+        include: includePlayerAssociationsOutsideTeamPlayer()
+    });
+
+    const formattedBosses = bosses.map(boss => (
+        constructPlayerResponse(boss)
+    ));
+
+    const data = {
+        game: game,
+        bosses: formattedBosses
+    }
+
+    return success(data);
 }
 
 const createGame = async (game) => {

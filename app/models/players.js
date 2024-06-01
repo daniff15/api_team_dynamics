@@ -15,7 +15,8 @@ module.exports = (sequelize, DataTypes) => {
         },
         ext_id: {
             type: DataTypes.STRING,
-            primaryKey: true
+            primaryKey: true,
+            allowNull: false
         },
     }, {
         timestamps: false

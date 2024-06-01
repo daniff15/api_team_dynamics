@@ -1,5 +1,5 @@
 const { Op } = require('sequelize');
-const { BattlesModel, sequelize, TeamsModel, TeamPlayersModel, AttacksModel, CharactersModel } = require('../models/index');
+const { BattlesModel, sequelize, TeamsModel, TeamPlayersModel, AttacksModel, CharactersModel, GameBossesModel } = require('../models/index');
 const { checkBattleEnd, initializeQueue, calculateDamage } = require('../utils/battles');
 const { updateParticipantBattleStatus, includePlayerAssociationsInsideTeam, includeCharacterAssociationsOutsideTeam } = require('../utils/characters');
 const { NotFoundError, ServerError, BadRequestError } = require('../utils/errors');
@@ -155,6 +155,17 @@ const createBattle = async (battle) => {
 
             if (!opponent) {
                 return NotFoundError('Boss not found');
+            }
+
+            const gameBosses = await GameBossesModel.findOne({
+                where: {
+                    game_id: participants.game_id,
+                    boss_id: boss_id
+                }
+            });
+
+            if (!gameBosses) {
+                return BadRequestError('Boss not in the game narrative');
             }
 
             opponent = {

@@ -90,10 +90,7 @@ const createTeam = async (team) => {
     const playerInATeam = await TeamPlayersModel.findOne({ where: { player_id: player.id } });
 
     if (playerInATeam) {
-        const team = await TeamsModel.findByPk(playerInATeam.team_id);
-        if (team.game_id === game.id) {
-            return ConflictError('Player is already a member of a team in the same game narrative');
-        }
+        return ConflictError('Player is already a member of a team. Create a new player to create a new team or leave the current team (Your stats will be reseted).');
     }
 
     const newTeam = await TeamsModel.create(team);
