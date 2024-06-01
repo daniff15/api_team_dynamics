@@ -39,6 +39,7 @@ const getTeam = async (id) => {
 
     const teamData = {
         id: teamsData.id,
+        community_id_ext: teamsData.community_id_ext,
         game_id: teamsData.game_id,
         owner_id: teamsData.owner_id,
         name: teamsData.name,
@@ -107,25 +108,28 @@ const addCharacterToTeam = async (teamId, characterId) => {
             include: [{ model: TeamPlayersModel, where: { character_id: characterId } }]
         });
         if (teamInSameCommunity) {
-            return ConflictError('Character is already a member of a team in the same community');
+            return ConflictError('Character is already a member of a team in the same game narrative');
         }
 
         const currentMembersCount = await TeamPlayersModel.count({ where: { team_id: teamId } });
         if (currentMembersCount >= 4) {
-            return BadRequestError('Team is already full (4 members max)');
+            return BadRequestError('Team is already full (4 members max).');
         }
 
         const existingMember = await TeamPlayersModel.findOne({ where: { team_id: teamId, character_id: characterId } });
         if (existingMember) {
-            return ConflictError('Character is already a member of the team');
+            return ConflictError('Character is already a member of the team.');
         }
 
         const character = await CharactersModel.findByPk(characterId);
         if (!character) {
-            return NotFoundError('Character not found');
+            return NotFoundError('Character not found.');
         }
 
-        
+        if (character.level_id !== 1) {
+            return BadRequestError('Impossible to add that player to a team, player is not at default stats or level.');
+        }
+
         const result = await TeamPlayersModel.create({ team_id: teamId, character_id: characterId });
         return success(result, message = 'Character added to team');
     } catch (error) {

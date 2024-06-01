@@ -96,16 +96,16 @@ INSERT INTO games_bosses(game_id, boss_id) VALUES
 (2,12);
 
 -- Inserting data into the 'teams' table
-INSERT INTO teams (name, game_id, owner_id) VALUES 
-('Alpha Team', 1, 1), 
-('Beta Team', 2, 5);
+INSERT INTO teams (name, community_id_ext, game_id, owner_id) VALUES 
+('Alpha Team', 'deca', 1, 1), 
+('Beta Team', 'cocaad', 2, 5);
 
 -- Inserting data into the 'team_characters' table
 INSERT INTO team_players (team_id, player_id) VALUES 
 (1, 1), 
 (1, 2), 
 (1, 3), 
-(1, 4), 
+-- (1, 4), REMOVE ONE ELEMENT FROM THE FIRST TEAM TO TEST FUNCIONALITIES
 (2, 5), 
 (2, 6), 
 (2, 7),

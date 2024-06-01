@@ -104,6 +104,7 @@ DEFAULT CHARACTER SET = utf8mb4;
 CREATE TABLE IF NOT EXISTS `team_dynamics`.`teams` (
   `id` INT(11) NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(255) NOT NULL,
+  `community_id_ext` VARCHAR(256) NOT NULL,
   `game_id` INT(11) NOT NULL,
   `owner_id` INT(11) NOT NULL,
   `total_xp` INT(11) NOT NULL DEFAULT '0',
