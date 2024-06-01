@@ -1,4 +1,4 @@
-const { TeamsModel, TeamPlayersModel, CharactersModel, CommunitiesModel, GamesModel } = require('../models/index');
+const { TeamsModel, TeamPlayersModel, CharactersModel, GamesModel } = require('../models/index');
 const { includePlayerAssociationsInsideTeam, constructPlayerResponse } = require('../utils/characters');
 const { BadRequestError, NotFoundError, ServerError, ConflictError } = require('../utils/errors');
 const { success } = require('../utils/apiResponse');
@@ -56,7 +56,6 @@ const getTeam = async (id) => {
     return success(teamData);
 };
 
-
 const createTeam = async (team) => {
     const game = await GamesModel.findByPk(team.game_id);
     if (!game) {
@@ -73,8 +72,33 @@ const createTeam = async (team) => {
     if (existingTeam) {
         return ConflictError('A Team with the same name already exists in this game!');
     }
-    
+
+    const owner = team.owner_id;
+    const player = await CharactersModel.findByPk(owner);
+    if (!player) {
+        return NotFoundError('Player not found.');
+    }
+
+    if(player.character_type_id !== 1) {
+        return BadRequestError('Impossible to create a team, player is not a player character.');
+    }
+
+    if (player.level_id !== 1) {
+        return BadRequestError('Impossible to create a team, player is not at default stats or level.');
+    }
+
+    const playerInATeam = await TeamPlayersModel.findOne({ where: { player_id: player.id } });
+
+    if (playerInATeam) {
+        const team = await TeamsModel.findByPk(playerInATeam.team_id);
+        if (team.game_id === game.id) {
+            return ConflictError('Player is already a member of a team in the same game narrative');
+        }
+    }
+
     const newTeam = await TeamsModel.create(team);
+    await TeamPlayersModel.create({ team_id: newTeam.id, player_id: owner });
+
     return success(newTeam);
 }
 
@@ -103,11 +127,11 @@ const addCharacterToTeam = async (teamId, characterId) => {
             return NotFoundError('Team not found');
         }
 
-        const teamInSameCommunity = await TeamsModel.findOne({
+        const teamInSameGame = await TeamsModel.findOne({
             where: { game_id: team.game_id },
-            include: [{ model: TeamPlayersModel, where: { character_id: characterId } }]
+            include: [{ model: TeamPlayersModel, where: { player_id: characterId } }]
         });
-        if (teamInSameCommunity) {
+        if (teamInSameGame) {
             return ConflictError('Character is already a member of a team in the same game narrative');
         }
 
@@ -116,7 +140,7 @@ const addCharacterToTeam = async (teamId, characterId) => {
             return BadRequestError('Team is already full (4 members max).');
         }
 
-        const existingMember = await TeamPlayersModel.findOne({ where: { team_id: teamId, character_id: characterId } });
+        const existingMember = await TeamPlayersModel.findOne({ where: { team_id: teamId, player_id: characterId } });
         if (existingMember) {
             return ConflictError('Character is already a member of the team.');
         }
@@ -130,7 +154,7 @@ const addCharacterToTeam = async (teamId, characterId) => {
             return BadRequestError('Impossible to add that player to a team, player is not at default stats or level.');
         }
 
-        const result = await TeamPlayersModel.create({ team_id: teamId, character_id: characterId });
+        const result = await TeamPlayersModel.create({ team_id: teamId, player_id: characterId });
         return success(result, message = 'Character added to team');
     } catch (error) {
         return ServerError(error.message);
