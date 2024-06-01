@@ -113,12 +113,12 @@ CREATE TABLE IF NOT EXISTS `team_dynamics`.`teams` (
   CONSTRAINT `fk_teams_games`
     FOREIGN KEY (`game_id`)
     REFERENCES `team_dynamics`.`games` (`id`)
-    ON DELETE RESTRICT
+    ON DELETE CASCADE
     ON UPDATE CASCADE,
   CONSTRAINT `fk_teams_players`
     FOREIGN KEY (`owner_id`)
-    REFERENCES `team_dynamics`.`players` (`id`)
-    ON DELETE RESTRICT
+    REFERENCES `CASCADE`.`players` (`id`)
+    ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB
 AUTO_INCREMENT = 3
