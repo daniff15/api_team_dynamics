@@ -117,7 +117,7 @@ CREATE TABLE IF NOT EXISTS `team_dynamics`.`teams` (
     ON UPDATE CASCADE,
   CONSTRAINT `fk_teams_players`
     FOREIGN KEY (`owner_id`)
-    REFERENCES `CASCADE`.`players` (`id`)
+    REFERENCES `team_dynamics`.`players` (`id`)
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB
