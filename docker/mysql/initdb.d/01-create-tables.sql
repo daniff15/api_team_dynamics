@@ -110,7 +110,7 @@ CREATE TABLE IF NOT EXISTS `team_dynamics`.`teams` (
   `owner_id` INT(11) NOT NULL,
   `total_xp` INT(11) NOT NULL DEFAULT '0',
   `team_image_path` VARCHAR(256) NULL DEFAULT NULL,
-  `cooldown_time` INT(11) NOT NULL DEFAULT '0',
+  `cooldown_time` TIMESTAMP NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   CONSTRAINT `fk_teams_games`
     FOREIGN KEY (`game_id`)
