@@ -1,5 +1,5 @@
 const { Op } = require('sequelize');
-const { BattlesModel, sequelize, TeamsModel, TeamPlayersModel, AttacksModel, CharactersModel, GameBossesModel } = require('../models/index');
+const { BattlesModel, sequelize, TeamsModel, TeamPlayersModel, AttacksModel, CharactersModel, GameBossesModel, BossesModel } = require('../models/index');
 const { checkBattleEnd, initializeQueue, calculateDamage } = require('../utils/battles');
 const { updateParticipantBattleStatus, includePlayerAssociationsInsideTeam, includeCharacterAssociationsOutsideTeam } = require('../utils/characters');
 const { NotFoundError, ServerError, BadRequestError } = require('../utils/errors');
@@ -112,17 +112,6 @@ const createBattle = async (battle) => {
         }
 
         let opponent;
-        const battle_date = new Date();
-
-        const createdBattle = await BattlesModel.create({
-            team_id,
-            opponent_team_id,
-            boss_id,
-            battle_date
-        }, { transaction });
-
-        const battle_id = createdBattle.id;
-
         if (opponent_team_id) {
             opponent = await TeamsModel.findOne({
                 where: { id: opponent_team_id },
@@ -174,6 +163,22 @@ const createBattle = async (battle) => {
                 character: opponent
             };
         }
+
+        const now = new Date();
+        if (participants.cooldown_time && new Date(participants.cooldown_time) > now) {
+            return BadRequestError('Team is on cooldown and cannot battle any bosses. Cooldown till: ' + participants.cooldown_time);
+        }
+
+        const battle_date = new Date();
+
+        const createdBattle = await BattlesModel.create({
+            team_id,
+            opponent_team_id,
+            boss_id,
+            battle_date
+        }, { transaction });
+
+        const battle_id = createdBattle.id;
 
         let deepCloneParticipants = [];
         //Transform the participants to the format required for battle
@@ -257,6 +262,13 @@ const createBattle = async (battle) => {
 
         if (battleResult && battleResult.winnerId) {
             await BattlesModel.update({ winner_id: battleResult.winnerId }, { where: { id: battle_id }, transaction });
+        }
+
+        if(battleResult.winnerId === boss_id) {
+            const boss = await BossesModel.findOne({ where: { id: boss_id }, transaction });
+            const cooldownEndTime = new Date(now.getTime() + (boss.cooldown_time * 1000));
+            const formattedCooldownEndTime = cooldownEndTime.toISOString().slice(0, 19).replace('T', ' ');
+            await TeamsModel.update({ cooldown_time: formattedCooldownEndTime}, { where: { id: team_id }, transaction });
         }
 
         await transaction.commit();
