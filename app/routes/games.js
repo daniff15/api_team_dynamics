@@ -335,7 +335,6 @@ router.put("/:id/bosses", async (req, res) => {
         const id = req.params.id;
         const { bosses } = req.body;
         const result = await gamesService.postBossesToGame(id, bosses);
-        console.log('result', result);
         if (result.meta.error) {
             return res.status(result.statusCode).json(result);
         }

@@ -2,7 +2,7 @@ const { GamesModel, GameBossesModel, BossesModel } = require('../models/index');
 const { NotFoundError, ConflictError, BadRequestError } = require('../utils/errors');
 const { success } = require('../utils/apiResponse');
 const gamesBosses = require('../models/gamesBosses');
-const { constructPlayerResponse, includePlayerAssociationsOutsideTeamPlayer } = require('../utils/characters');
+const { constructCharacterResponse, includePlayerAssociationsOutsideTeamPlayer } = require('../utils/characters');
 
 const getAllGames = async () => {
     const games = await GamesModel.findAll({});
@@ -30,7 +30,7 @@ const getGame = async (id) => {
     });
 
     const formattedBosses = bosses.map(boss => (
-        constructPlayerResponse(boss)
+        constructCharacterResponse(boss)
     ));
 
     const data = {

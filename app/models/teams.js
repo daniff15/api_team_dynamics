@@ -28,6 +28,11 @@ module.exports = (sequelize, DataTypes) => {
         },
         team_image_path: {
             type: DataTypes.STRING
+        },
+        cooldown_time: {
+            type: DataTypes.INTEGER,
+            defaultValue: 0,
+            allowNull: false
         }
     }, 
     {

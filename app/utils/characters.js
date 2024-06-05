@@ -147,28 +147,30 @@ const includePlayerAssociationsOutsideTeamPlayer = () => {
     ]
 };
 
-// Utility function to construct player response
-const constructPlayerResponse = (player) => {
+// Utility function to construct character response
+const constructCharacterResponse = (character) => {
     return {
-        id: player.id,
-        ext_id: player.ext_id,
-        name: player?.character ? player.character.name : player.name,
-        level: player?.character ? player.character.level_id : player.level,
-        xp: player.xp,
-        total_xp: player.total_xp,
-        att_xtra_points: player.att_xtra_points,
-        image_path: player.image_path,
-        before_defeat_phrase: player.before_defeat_phrase,
-        after_defeat_phrase: player.after_defeat_phrase,
-        attributes: player?.character ? player.character.character_level_attributes.reduce((acc, attribute) => {
+        id: character.id,
+        ext_id: character.ext_id,
+        name: character?.character ? character.character.name : character.name,
+        level: character?.character ? character.character.level_id : character.level,
+        character_type_id: character.character.character_type_id,
+        xp: character.xp,
+        total_xp: character.total_xp,
+        att_xtra_points: character.att_xtra_points,
+        image_path: character.character.image_path,
+        before_defeat_phrase: character.before_defeat_phrase,
+        after_defeat_phrase: character.after_defeat_phrase,
+        cooldown_time: character.cooldown_time,
+        attributes: character?.character ? character.character.character_level_attributes.reduce((acc, attribute) => {
             acc[attribute.attribute.name] = attribute.value;
             return acc;
         }, {}) :
-        player.character_level_attributes.reduce((acc, attribute) => {
+        character.character_level_attributes.reduce((acc, attribute) => {
             acc[attribute.attribute.name] = attribute.value;
             return acc;
         }, {}),
-        elements: player?.character ? player.character.character_elements.map(element => {
+        elements: character?.character ? character.character.character_elements.map(element => {
             const elementData = {
                 id: element.element.id,
                 name: element.element.name,
@@ -176,7 +178,7 @@ const constructPlayerResponse = (player) => {
                 weaknesses: element.element.weaknesses.map(weakness => ({ id: weakness.element.id, name: weakness.element.name }))
             };
             return elementData;
-        }) : player.character_elements.map(element => {
+        }) : character.character_elements.map(element => {
             const elementData = {
                 id: element.element.id,
                 name: element.element.name,
@@ -320,7 +322,7 @@ module.exports = {
     includePlayerAssociationsInsideTeam,
     includeCharacterAssociationsOutsideTeam,
     includePlayerAssociationsOutsideTeamPlayer,
-    constructPlayerResponse,
+    constructCharacterResponse,
     updateParticipantBattleStatus,
     checkLevelUp,
     updateTeamTotalXP   

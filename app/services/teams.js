@@ -1,5 +1,5 @@
 const { TeamsModel, TeamPlayersModel, CharactersModel, GamesModel } = require('../models/index');
-const { includePlayerAssociationsInsideTeam, constructPlayerResponse } = require('../utils/characters');
+const { includePlayerAssociationsInsideTeam, constructCharacterResponse } = require('../utils/characters');
 const { BadRequestError, NotFoundError, ServerError, ConflictError } = require('../utils/errors');
 const { success } = require('../utils/apiResponse');
 
@@ -50,7 +50,7 @@ const getTeam = async (id) => {
 
     teamsData.team_players.forEach(teamPlayer => {
         const player = teamPlayer.player;
-        teamData.members.push(constructPlayerResponse(player));
+        teamData.members.push(constructCharacterResponse(player));
     });
 
     return success(teamData);

@@ -1,6 +1,6 @@
 const { baseAttributes } = require('../utils/baseAttributes');
 const { checkLevelUp, updateTeamTotalXP, includePlayerAssociationsOutsideTeamPlayer } = require('../utils/characters');
-const { includeCharacterAssociationsOutsideTeam, constructPlayerResponse } = require('../utils/characters');
+const { includeCharacterAssociationsOutsideTeam, constructCharacterResponse } = require('../utils/characters');
 const { sequelize, CharactersModel, CharacterElementsModel, ElementsModel, CharacterLevelAttributesModel, AttributesModel, LevelsModel, TeamPlayersModel, PlayersModel, BossesModel } = require('../models/index');
 const { BadRequestError, NotFoundError, ServerError } = require('../utils/errors');
 const { success } = require('../utils/apiResponse');
@@ -29,14 +29,20 @@ const getCharacters = async (filters = {}) => {
                 });
             }
         } else {
-            characters = await CharactersModel.findAll({
-                where: where,
-                include: includeCharacterAssociationsOutsideTeam()
+            // Join players and bosses
+            players = await PlayersModel.findAll({
+                include: includePlayerAssociationsOutsideTeamPlayer()
             });
+
+            bosses = await BossesModel.findAll({
+                include: includePlayerAssociationsOutsideTeamPlayer()
+            });
+
+            characters = players.concat(bosses);
         }
 
         const formattedCharacters = characters.map(character => (
-            constructPlayerResponse(character)
+            constructCharacterResponse(character)
         ));
 
         return success(formattedCharacters);
@@ -72,7 +78,7 @@ const getCharacter = async (characterId) => {
             return NotFoundError('Character not found');
         }
 
-        const formattedCharacter = constructPlayerResponse(character);
+        const formattedCharacter = constructCharacterResponse(character);
 
         return success(formattedCharacter);
     } catch (error) {
@@ -243,7 +249,7 @@ const addXPtoCharacter = async (characterId, xp) => {
         const updatedCharacter = await PlayersModel.findByPk(characterId, {
             include: includePlayerAssociationsOutsideTeamPlayer()
         });
-        return success(constructPlayerResponse(updatedCharacter), message = 'XP added successfully');
+        return success(constructCharacterResponse(updatedCharacter), message = 'XP added successfully');
 
     } catch (error) {
         // Rollback the transaction if an error occurs
@@ -320,7 +326,7 @@ const updateCharacterAttributes = async (characterId, increments) => {
             return NotFoundError('Character not found');
         }
 
-        return success(constructPlayerResponse(updatedCharacter), message = 'Attributes updated successfully');
+        return success(constructCharacterResponse(updatedCharacter), message = 'Attributes updated successfully');
     } catch (error) {
         return ServerError(error.message);
     }
