@@ -75,6 +75,7 @@ CREATE TABLE IF NOT EXISTS `team_dynamics`.`bosses` (
   `id` INT(11) NOT NULL,
   `before_defeat_phrase` VARCHAR(256) NULL,
   `after_defeat_phrase` VARCHAR(256) NULL,
+  `cooldown_time` INT(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   CONSTRAINT `fk_characters_copy1_1`
     FOREIGN KEY (`id`)
@@ -109,6 +110,7 @@ CREATE TABLE IF NOT EXISTS `team_dynamics`.`teams` (
   `owner_id` INT(11) NOT NULL,
   `total_xp` INT(11) NOT NULL DEFAULT '0',
   `team_image_path` VARCHAR(256) NULL DEFAULT NULL,
+  `cooldown_time` INT(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   CONSTRAINT `fk_teams_games`
     FOREIGN KEY (`game_id`)
