@@ -287,10 +287,10 @@ const calculate_xp_needed = (character) => {
     }
 }
 
-const updateTeamTotalXP = async (playerId) => {
+const updateTeamTotalXP = async (playerId, transaction) => {
     try {
         // Find the team ID associated with the given player ID
-        const teamCharacter = await TeamPlayersModel.findOne({ where: { player_id: playerId } });
+        const teamCharacter = await TeamPlayersModel.findOne({ where: { player_id: playerId }, transaction });
         if (!teamCharacter) {
             return NotFoundError('Player not found in any team');
         }
@@ -299,17 +299,20 @@ const updateTeamTotalXP = async (playerId) => {
 
         const characters = await TeamPlayersModel.findAll({
             where: { team_id: teamId },
-            include: [{ model: PlayersModel }]
+            include: [{ model: PlayersModel }],
+            transaction
         });
 
         let totalXP = 0;
         for (const character of characters) {
+            console.log('Character: ', character.player.total_xp);
             totalXP += character.player.total_xp;
         }
 
-        const team = await TeamsModel.findByPk(teamId);
+        const team = await TeamsModel.findByPk(teamId, { transaction });
         team.total_xp = totalXP;
-        await team.save();
+
+        await team.save({ transaction });
 
         return team;
     } catch (error) {
@@ -325,5 +328,5 @@ module.exports = {
     constructCharacterResponse,
     updateParticipantBattleStatus,
     checkLevelUp,
-    updateTeamTotalXP   
+    updateTeamTotalXP
 };

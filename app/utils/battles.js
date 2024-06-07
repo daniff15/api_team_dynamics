@@ -1,3 +1,6 @@
+const { TeamPlayersModel, PlayersModel, LevelsModel, CharactersModel } = require("../models");
+const { updateTeamTotalXP, includePlayerAssociationsOutsideTeamPlayer, checkLevelUp } = require("./characters");
+
 const initializeQueue = (participants) => {
     const allCharacters = participants;
     const characters = allCharacters.filter(character => character.attributes.hp_battle > 0);
@@ -54,9 +57,34 @@ const checkBattleEnd = (participants, boss_fight) => {
     return { battleEnded: false };
 }
 
+const rewardWinningTeam = async (battleResult, boss_id, t) => {
+    const winningTeam = await TeamPlayersModel.findAll({ where: { team_id: battleResult.winnerId }, transaction: t });
+    const boss = await CharactersModel.findOne({ where: { id: boss_id }, transaction: t });
+    const maxLevel = await LevelsModel.max('level_value', { transaction: t });
+    for (let character of winningTeam) {
+        const player = await PlayersModel.findByPk(character.player_id, {
+            include: includePlayerAssociationsOutsideTeamPlayer(),
+            transaction: t
+        });
+        if (player.character.level_id !== maxLevel) {
+            player.xp += (100 * (boss.level_id / 5));
+            player.total_xp += (100 * (boss.level_id / 5));
+            await player.save({ transaction: t });
+            await checkLevelUp(player, maxLevel, t);
+        } else {
+            player.total_xp += (100 * (boss.level_id / 5));
+            await player.save({ transaction: t });
+        }
+        
+        await updateTeamTotalXP(player.id, t); 
+    }
+
+    t.commit();
+};
 
 module.exports = {
     checkBattleEnd,
     initializeQueue,
-    calculateDamage
+    calculateDamage,
+    rewardWinningTeam
 };

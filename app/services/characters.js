@@ -231,7 +231,6 @@ const addXPtoCharacter = async (characterId, xp) => {
             character.xp = 0;
             character.total_xp += xp;
             await character.save({ transaction: t });
-            await t.commit();
         } else {
             character.xp += xp;
             character.total_xp += xp;
@@ -239,12 +238,10 @@ const addXPtoCharacter = async (characterId, xp) => {
             await character.save({ transaction: t });
     
             await checkLevelUp(character, maxLevel, t);
-    
-            // Commit the transaction
-            await t.commit();
         }
 
-        await updateTeamTotalXP(character.id);
+        await updateTeamTotalXP(character.id, t);
+        await t.commit();
         // Retrieve the updated character after the transaction is committed
         const updatedCharacter = await PlayersModel.findByPk(characterId, {
             include: includePlayerAssociationsOutsideTeamPlayer()

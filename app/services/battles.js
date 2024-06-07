@@ -1,7 +1,7 @@
 const { Op } = require('sequelize');
-const { BattlesModel, sequelize, TeamsModel, TeamPlayersModel, AttacksModel, CharactersModel, GameBossesModel, BossesModel, LevelsModel } = require('../models/index');
-const { checkBattleEnd, initializeQueue, calculateDamage } = require('../utils/battles');
-const { updateParticipantBattleStatus, includePlayerAssociationsInsideTeam, includeCharacterAssociationsOutsideTeam, checkLevelUp, updateTeamTotalXP } = require('../utils/characters');
+const { BattlesModel, sequelize, TeamsModel, TeamPlayersModel, AttacksModel, CharactersModel, GameBossesModel, BossesModel } = require('../models/index');
+const { checkBattleEnd, initializeQueue, calculateDamage, rewardWinningTeam } = require('../utils/battles');
+const { updateParticipantBattleStatus, includePlayerAssociationsInsideTeam, includeCharacterAssociationsOutsideTeam } = require('../utils/characters');
 const { NotFoundError, ServerError, BadRequestError } = require('../utils/errors');
 const { success } = require('../utils/apiResponse');
 
@@ -269,28 +269,10 @@ const createBattle = async (battle) => {
             const cooldownEndTime = new Date(now.getTime() + (boss.cooldown_time * 1000));
             const formattedCooldownEndTime = cooldownEndTime.toISOString().slice(0, 19).replace('T', ' ');
             await TeamsModel.update({ cooldown_time: formattedCooldownEndTime}, { where: { id: team_id }, transaction });
+            await transaction.commit();
+        } else {
+            rewardWinningTeam(battleResult, boss_id, transaction);
         }
-        // } else {
-        //     console.log('Winner is team');
-
-        //     // Reward each player of the winning team with 100 XP * boss level
-        //     const winningTeam = await TeamsModel.findOne({ where: { id: battleResult.winnerId }, transaction });
-        //     const boss = await CharactersModel.findOne({ where: { id: boss_id }, transaction });
-
-        //     const maxLevel = await LevelsModel.max('level_value', { transaction });
-        //     console.log('Max level:', winningTeam);
-        //     for (let character of winningTeam.team_players) {
-        //         if (character.character.level_id !== maxLevel) {
-        //             character.xp += (100 * (boss.level_id/5));
-        //             character.total_xp += (100 * (boss.level_id/5));
-        //             await character.save({ transaction});
-        //             await checkLevelUp(character, maxLevel, t);
-        //         }
-        
-        //         await updateTeamTotalXP(character.id);
-        //     }
-
-        await transaction.commit();
 
         return success({
             battle: {
