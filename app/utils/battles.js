@@ -83,7 +83,6 @@ const rewardWinningTeam = async (battleResult, boss_id, t) => {
 };
 
 const simulateBattle = async (team, opponent) => {
-    console.log('team', team);
     let deepCloneParticipants = [];
     // Transform the participants to the format required for battle
     for (let participant of [...team.team_players, opponent]) {

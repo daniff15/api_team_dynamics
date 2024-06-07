@@ -305,7 +305,6 @@ const updateTeamTotalXP = async (playerId, transaction) => {
 
         let totalXP = 0;
         for (const character of characters) {
-            console.log('Character: ', character.player.total_xp);
             totalXP += character.player.total_xp;
         }
 
