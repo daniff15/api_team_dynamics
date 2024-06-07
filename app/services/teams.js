@@ -2,6 +2,7 @@ const { TeamsModel, TeamPlayersModel, CharactersModel, GamesModel } = require('.
 const { includePlayerAssociationsInsideTeam, constructCharacterResponse } = require('../utils/characters');
 const { BadRequestError, NotFoundError, ServerError, ConflictError } = require('../utils/errors');
 const { success } = require('../utils/apiResponse');
+const { Op } = require('sequelize');
 
 const getAllTeams = async (game_id, orderByTotalXP = 'DESC') => {
 
@@ -190,11 +191,43 @@ const updateTeam = async (teamId, updates) => {
     return success(updatedTeam, message = 'Team updated successfully');
 };
 
+const leaveTeam = async (playerId) => {
+    const player = await CharactersModel.findByPk(playerId);
+    if (!player) {
+        return NotFoundError('Player not found');
+    }
+
+    const teamPlayer = await TeamPlayersModel.findOne({ where: { player_id: playerId } });
+    if (!teamPlayer) {
+        return NotFoundError('Player is not a member of any team');
+    }
+
+    const team = await TeamsModel.findByPk(teamPlayer.team_id);
+    if (team.owner_id == playerId) {
+        const anotherTeamMember = await TeamPlayersModel.findOne({
+            where: { team_id: team.id, player_id: { [Op.ne]: playerId } }
+        });
+
+        if (anotherTeamMember) {
+            team.owner_id = anotherTeamMember.player_id;
+            await team.save();
+        } else {
+            await team.destroy();
+        }
+    }
+
+    await TeamPlayersModel.destroy({ where: { player_id: playerId } });
+    await CharactersModel.destroy({ where: { id: playerId } });
+
+    return success({}, message = 'Player left team successfully');
+}
+
 module.exports = {
     getAllTeams,
     getTeam,
     createTeam,
     deleteTeam,
     addCharacterToTeam,
-    updateTeam
+    updateTeam,
+    leaveTeam
 };

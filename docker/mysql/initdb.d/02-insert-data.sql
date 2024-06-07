@@ -105,7 +105,7 @@ INSERT INTO team_players (team_id, player_id) VALUES
 (1, 1), 
 (1, 2), 
 (1, 3), 
--- (1, 4), REMOVE ONE ELEMENT FROM THE FIRST TEAM TO TEST FUNCIONALITIES
+(1, 4),
 (2, 5), 
 (2, 6), 
 (2, 7),

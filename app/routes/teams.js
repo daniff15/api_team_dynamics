@@ -708,7 +708,6 @@ router.post("/:teamId/characters", async (req, res) => {
     }
 });
 
-
 /**
  * @swagger
  * /teams/{id}:
@@ -802,6 +801,99 @@ router.put("/:id", async (req, res) => {
         const updates = req.body;
         const teamId = req.params.id;
         const result = await teamsService.updateTeam(teamId, updates);
+        if (result.meta.error) {
+            return res.status(result.statusCode).json(result);
+        }
+        res.json(result);
+    } catch (err) {
+        console.error(err);
+        res.sendStatus(500);
+    }
+});
+
+
+/**
+ * @swagger
+ * /teams/leave/{id}:
+ *   delete:
+ *     summary: Leave a team
+ *     tags: [Teams]
+ *     description: Leave the team with the specified ID
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The ID of the player that will leave the team
+ *     responses:
+ *       '200':
+ *         description: Player left the team successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the result of the operation
+ *                 data:
+ *                   $ref: '#/components/schemas/Team'
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: false
+ *       '404':
+ *         description: Player not found or Player is not a member of a team
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 404
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 500
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
+ */
+
+router.delete("/leave/:id", async (req, res) => {
+    try {
+        const playerId = req.params.id;
+        const result = await teamsService.leaveTeam(playerId);
         if (result.meta.error) {
             return res.status(result.statusCode).json(result);
         }
