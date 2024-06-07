@@ -1,5 +1,5 @@
 const { TeamPlayersModel, PlayersModel, LevelsModel, CharactersModel } = require("../models");
-const { updateTeamTotalXP, includePlayerAssociationsOutsideTeamPlayer, checkLevelUp } = require("./characters");
+const { updateTeamTotalXP, includePlayerAssociationsOutsideTeamPlayer, checkLevelUp, updateParticipantBattleStatus } = require("./characters");
 
 const initializeQueue = (participants) => {
     const allCharacters = participants;
@@ -82,9 +82,85 @@ const rewardWinningTeam = async (battleResult, boss_id, t) => {
     t.commit();
 };
 
+const simulateBattle = async (team, opponent) => {
+    console.log('team', team);
+    let deepCloneParticipants = [];
+    // Transform the participants to the format required for battle
+    for (let participant of [...team.team_players, opponent]) {
+        const attributesArray = participant?.player ? participant.player.character.character_level_attributes : participant.character.character_level_attributes;
+        const attributes = attributesArray.reduce((acc, attribute) => {
+            acc[attribute.attribute.name] = attribute.value;
+            return acc;
+        }, {});
+        const level = participant?.player ? participant.player.character.level_id : participant.character.level_id;
+        
+        attributes.hp_battle = attributes.HP * (1 + (level - 1) * 0.12);
+
+        // Transform strengths and weaknesses before element transformation
+        if (participant?.player) {
+            participant.player.character.character_elements.forEach(element => {
+                participant.strengths = element.element.strengths.map(strength => strength.element.id);
+                participant.weaknesses = element.element.weaknesses.map(weakness => weakness.element.id);
+            });
+        } else {
+            participant.character.character_elements.forEach(element => {
+                participant.strengths = element.element.strengths.map(strength => strength.element.id);
+                participant.weaknesses = element.element.weaknesses.map(weakness => weakness.element.id);
+            });
+        }
+            
+        participant = {
+            id: participant?.player ? participant.player.id : participant.character.id,
+            name: participant?.player ? participant.player.character.name : participant.character.name,
+            team: participant.team_id,
+            level: level,
+            character_type: participant?.player ? participant.player.character.character_type_id : participant.character.character_type_id,
+            attributes: attributes,
+            real_speed: attributes.SPEED,
+        };
+
+        deepCloneParticipants.push(participant);
+    }
+
+    let battleQueue = initializeQueue(deepCloneParticipants);
+
+    let battleResult;
+    while (!(battleResult = checkBattleEnd(deepCloneParticipants, false)).battleEnded) {
+        let current = battleQueue.shift();
+        let damage = 0;
+        let target = null;
+        const availableTargets = deepCloneParticipants.filter(p => p.team !== current.team && p.attributes.hp_battle > 0);
+        target = availableTargets[Math.floor(Math.random() * availableTargets.length)];
+        damage = current.attributes.SPEED === 0 ? 0 : calculateDamage(current, target);
+
+        updateParticipantBattleStatus(deepCloneParticipants, target, 'hp_battle', damage);
+        updateParticipantBattleStatus(deepCloneParticipants, current, 'SPEED');
+
+        if (battleQueue.length === 0) {
+            battleQueue = initializeQueue(deepCloneParticipants);
+        }
+    }
+
+    return battleResult;
+};
+
+const simulateBattles = async (team, opponent) => {
+    let winCount = 0;
+    for (let i = 0; i < 100; i++) {
+        const battleResult = await simulateBattle(team, opponent); 
+        if (battleResult.winnerId === team.id) {
+            winCount++;
+        }
+    }
+    return winCount / 100;
+};
+
+
+
 module.exports = {
     checkBattleEnd,
     initializeQueue,
     calculateDamage,
-    rewardWinningTeam
+    rewardWinningTeam,
+    simulateBattles
 };

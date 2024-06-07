@@ -345,6 +345,102 @@ router.put("/:id/bosses", async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /games/odds/{teamId}:
+ *   get:
+ *     summary: Get the odds of a game by ID
+ *     tags: [Games]
+ *     description: Get the odds of a game by its ID
+ *     parameters:
+ *       - in: path
+ *         name: teamId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the team to retrieve the odds for
+ *     responses:
+ *       200:
+ *         description: Details of the odds for the game
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the result of the operation
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: false
+ *       404:
+ *         description: Not Found - Game not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 404
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 500
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
+ */
+router.get("/odds/:teamId", async (req, res) => {
+    try {
+        const teamId = parseInt(req.params.teamId);
+
+        const result = await gamesService.getGameOdds(teamId);
+        if (result.meta.error) {
+            return res.status(result.statusCode).json(result);
+        }
+        res.json(result);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ 
+            message: err.message, 
+            statusCode: 500, 
+            meta: { error: true } 
+        });
+    }
+});
+
+
+
 // /**
 //  * @swagger
 //  * /games/{id}:

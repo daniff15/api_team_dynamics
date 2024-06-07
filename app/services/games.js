@@ -1,8 +1,10 @@
-const { GamesModel, GameBossesModel, BossesModel } = require('../models/index');
+const { GamesModel, GameBossesModel, BossesModel, TeamsModel, CharactersModel, TeamPlayersModel } = require('../models/index');
 const { NotFoundError, ConflictError, BadRequestError } = require('../utils/errors');
 const { success } = require('../utils/apiResponse');
 const gamesBosses = require('../models/gamesBosses');
-const { constructCharacterResponse, includePlayerAssociationsOutsideTeamPlayer } = require('../utils/characters');
+const { constructCharacterResponse, includePlayerAssociationsOutsideTeamPlayer, includeCharacterAssociationsOutsideTeam, includePlayerAssociationsInsideTeam } = require('../utils/characters');
+const { simulateBattles } = require('../utils/battles');
+const { Op } = require('sequelize');
 
 const getAllGames = async () => {
     const games = await GamesModel.findAll({});
@@ -91,6 +93,56 @@ const postBossesToGame = async (gameId, bosses) => {
     return success(newGameBosses)
 }
 
+const getGameOdds = async (teamId) => {
+    const team = await TeamsModel.findOne({
+        where: { id: teamId },
+        include: [
+            {
+                model: TeamPlayersModel,
+                include: includePlayerAssociationsInsideTeam()
+            }
+        ]
+    });
+
+    if (!team) {
+        return NotFoundError('Team not found');
+    }
+
+    const game = await GamesModel.findByPk(team.game_id);
+
+    const gameBosses = await GameBossesModel.findAll({
+        where: {
+            game_id: game.id
+        }
+    });
+
+    const winRates = [];
+
+    for (const gameBoss of gameBosses) {
+        const boss = await CharactersModel.findOne({
+            where: { 
+                id: gameBoss.boss_id,
+                [Op.or]: [
+                    { character_type_id: 2 },
+                    { character_type_id: 3 }
+                ]
+            },
+            include: includeCharacterAssociationsOutsideTeam()
+        });
+
+        const opponent = {
+            character_id: boss.id,
+            character_type: boss.character_type_id,
+            character: boss
+        };
+
+        const winRate = await simulateBattles(team, opponent);
+        winRates.push({ bossId: boss.id, winRate });
+    }
+
+    return success({ winRates });
+};
+
 
 const deleteGame = async (id) => {
     const result = await GamesModel.destroy({
@@ -106,5 +158,6 @@ module.exports = {
     getGame,
     createGame,
     postBossesToGame,
-    deleteGame
+    deleteGame,
+    getGameOdds
 };
