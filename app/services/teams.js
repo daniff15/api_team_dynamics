@@ -222,6 +222,28 @@ const leaveTeam = async (playerId) => {
     return success({}, message = 'Player left team successfully');
 }
 
+const changeOwner = async (playerId) => {
+    const player = await CharactersModel.findByPk(playerId);
+    if (!player) {
+        return NotFoundError('Player not found');
+    }
+
+    const teamPlayer = await TeamPlayersModel.findOne({ where: { player_id: playerId } });
+    if (!teamPlayer) {
+        return NotFoundError('Player is not a member of any team');
+    }
+
+    const team = await TeamsModel.findByPk(teamPlayer.team_id);
+    if (team.owner_id == playerId) {
+        return BadRequestError('Player is already the owner of the team');
+    }
+
+    team.owner_id = playerId;
+    await team.save();
+
+    return success({}, message = 'Owner changed successfully');
+}
+
 module.exports = {
     getAllTeams,
     getTeam,
@@ -229,5 +251,6 @@ module.exports = {
     deleteTeam,
     addCharacterToTeam,
     updateTeam,
-    leaveTeam
+    leaveTeam,
+    changeOwner
 };
