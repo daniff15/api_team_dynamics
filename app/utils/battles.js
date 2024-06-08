@@ -1,4 +1,4 @@
-const { TeamPlayersModel, PlayersModel, LevelsModel, CharactersModel } = require("../models");
+const { TeamPlayersModel, PlayersModel, LevelsModel, CharactersModel, BattlesModel } = require("../models");
 const { updateTeamTotalXP, includePlayerAssociationsOutsideTeamPlayer, checkLevelUp, updateParticipantBattleStatus } = require("./characters");
 
 const initializeQueue = (participants) => {
@@ -60,6 +60,7 @@ const checkBattleEnd = (participants, boss_fight) => {
 const rewardWinningTeam = async (battleResult, boss_id, t) => {
     const winningTeam = await TeamPlayersModel.findAll({ where: { team_id: battleResult.winnerId }, transaction: t });
     const boss = await CharactersModel.findOne({ where: { id: boss_id }, transaction: t });
+    const reward = 100 * (Math.ceil(boss.level_id / 3));
     const maxLevel = await LevelsModel.max('level_value', { transaction: t });
     for (let character of winningTeam) {
         const player = await PlayersModel.findByPk(character.player_id, {
@@ -67,12 +68,12 @@ const rewardWinningTeam = async (battleResult, boss_id, t) => {
             transaction: t
         });
         if (player.character.level_id !== maxLevel) {
-            player.xp += (100 * (boss.level_id / 5));
-            player.total_xp += (100 * (boss.level_id / 5));
+            player.xp += reward;
+            player.total_xp += reward;
             await player.save({ transaction: t });
             await checkLevelUp(player, maxLevel, t);
         } else {
-            player.total_xp += (100 * (boss.level_id / 5));
+            player.total_xp += reward;
             await player.save({ transaction: t });
         }
         
@@ -80,6 +81,8 @@ const rewardWinningTeam = async (battleResult, boss_id, t) => {
     }
 
     t.commit();
+
+    return reward;
 };
 
 const simulateBattle = async (team, opponent) => {
@@ -154,12 +157,23 @@ const simulateBattles = async (team, opponent) => {
     return winCount / 100;
 };
 
+const hasDefeatedBoss = async (teamId, bossId) => {
+    const previousVictory = await BattlesModel.findOne({
+        where: {
+            team_id: teamId,
+            boss_id: bossId,
+            winner_id: teamId
+        }
+    });
 
+    return previousVictory !== null;
+};
 
 module.exports = {
     checkBattleEnd,
     initializeQueue,
     calculateDamage,
     rewardWinningTeam,
-    simulateBattles
+    simulateBattles,
+    hasDefeatedBoss,
 };

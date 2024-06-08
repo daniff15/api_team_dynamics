@@ -1,6 +1,6 @@
 const { Op } = require('sequelize');
 const { BattlesModel, sequelize, TeamsModel, TeamPlayersModel, AttacksModel, CharactersModel, GameBossesModel, BossesModel } = require('../models/index');
-const { checkBattleEnd, initializeQueue, calculateDamage, rewardWinningTeam } = require('../utils/battles');
+const { checkBattleEnd, initializeQueue, calculateDamage, rewardWinningTeam, hasDefeatedBoss } = require('../utils/battles');
 const { updateParticipantBattleStatus, includePlayerAssociationsInsideTeam, includeCharacterAssociationsOutsideTeam } = require('../utils/characters');
 const { NotFoundError, ServerError, BadRequestError } = require('../utils/errors');
 const { success } = require('../utils/apiResponse');
@@ -264,6 +264,7 @@ const createBattle = async (battle) => {
             await BattlesModel.update({ winner_id: battleResult.winnerId }, { where: { id: battle_id }, transaction });
         }
 
+        let reward = null;
         if (boss_id) {
             if(battleResult.winnerId === boss_id) {
                 const boss = await BossesModel.findOne({ where: { id: boss_id }, transaction });
@@ -272,7 +273,11 @@ const createBattle = async (battle) => {
                 await TeamsModel.update({ cooldown_time: formattedCooldownEndTime}, { where: { id: team_id }, transaction });
                 await transaction.commit();
             } else {
-                rewardWinningTeam(battleResult, boss_id, transaction);
+                const defeatedBoss = await hasDefeatedBoss(team_id, boss_id);
+
+                if (!(defeatedBoss)) {
+                    reward = await rewardWinningTeam(battleResult, boss_id, transaction);
+                }
             }
         } else {
             if (battleResult && battleResult.winnerId) {
@@ -290,7 +295,8 @@ const createBattle = async (battle) => {
                 battle_date,
                 winner_id: battleResult.winnerId || null
             },
-            participants: deepCloneParticipants
+            participants: deepCloneParticipants,
+            reward: reward
         });
     } catch (error) {
         if (transaction) await transaction.rollback();
