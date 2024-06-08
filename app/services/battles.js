@@ -106,12 +106,13 @@ const createBattle = async (battle) => {
         if (!participants) {
             return NotFoundError('Team not found');
         }
-
+        
         if (participants.team_players.length !== 4) {
             return BadRequestError('Team must have 4 characters');
-        }
-
+            }
+            
         let opponent;
+        const now = new Date();
         if (opponent_team_id) {
             opponent = await TeamsModel.findOne({
                 where: { id: opponent_team_id },
@@ -162,11 +163,10 @@ const createBattle = async (battle) => {
                 character_type: opponent.character_type_id,
                 character: opponent
             };
-        }
-
-        const now = new Date();
-        if (participants.cooldown_time && new Date(participants.cooldown_time) > now) {
-            return BadRequestError('Team is on cooldown and cannot battle any bosses. Cooldown till: ' + participants.cooldown_time);
+        
+            if (participants.cooldown_time && new Date(participants.cooldown_time) > now) {
+                return BadRequestError('Team is on cooldown and cannot battle any bosses. Cooldown till: ' + participants.cooldown_time);
+            }
         }
 
         const battle_date = new Date();

@@ -110,6 +110,12 @@ const deleteTeam = async (id) => {
         return NotFoundError('Team not found');
     }
 
+    const teamPlayers = await TeamPlayersModel.findAll({ where: { team_id: id } });
+    for (let i = 0; i < teamPlayers.length; i++) {
+        const player = await CharactersModel.findByPk(teamPlayers[i].player_id);
+        await player.destroy();
+    }
+
     const result = await TeamsModel.destroy({
         where: {
             id

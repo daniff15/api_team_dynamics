@@ -1,9 +1,10 @@
 const { baseAttributes } = require('../utils/baseAttributes');
 const { checkLevelUp, updateTeamTotalXP, includePlayerAssociationsOutsideTeamPlayer } = require('../utils/characters');
 const { includeCharacterAssociationsOutsideTeam, constructCharacterResponse } = require('../utils/characters');
-const { sequelize, CharactersModel, CharacterElementsModel, ElementsModel, CharacterLevelAttributesModel, AttributesModel, LevelsModel, TeamPlayersModel, PlayersModel, BossesModel } = require('../models/index');
+const { sequelize, CharactersModel, CharacterElementsModel, ElementsModel, CharacterLevelAttributesModel, AttributesModel, LevelsModel, TeamPlayersModel, PlayersModel, BossesModel, TeamsModel } = require('../models/index');
 const { BadRequestError, NotFoundError, ServerError } = require('../utils/errors');
 const { success } = require('../utils/apiResponse');
+const { Op } = require('sequelize');
 
 const getCharacters = async (filters = {}) => {
     try {
@@ -335,6 +336,23 @@ const deleteCharacter = async (characterId) => {
 
         if (!character) {
             return NotFoundError('Character not found');
+        }
+
+        const teamPlayer = await TeamPlayersModel.findOne({ where: { player_id: characterId } });
+        const team = await TeamsModel.findByPk(teamPlayer.team_id);
+        if(teamPlayer) {
+            if (team.owner_id == characterId) {
+                const anotherTeamMember = await TeamPlayersModel.findOne({
+                    where: { team_id: team.id, player_id: { [Op.ne]: characterId } }
+                });
+
+                if (anotherTeamMember) {
+                    team.owner_id = anotherTeamMember.player_id;
+                    await team.save();
+                } else {
+                    await team.destroy();
+                }
+            }
         }
 
         await character.destroy();
