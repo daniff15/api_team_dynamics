@@ -1,4 +1,4 @@
-const { GamesModel, GameBossesModel, BossesModel, TeamsModel, CharactersModel, TeamPlayersModel } = require('../models/index');
+const { GamesModel, GameBossesModel, BossesModel, TeamsModel, CharactersModel, TeamPlayersModel, BattlesModel } = require('../models/index');
 const { NotFoundError, ConflictError, BadRequestError } = require('../utils/errors');
 const { success } = require('../utils/apiResponse');
 const gamesBosses = require('../models/gamesBosses');
@@ -143,21 +143,53 @@ const getGameOdds = async (teamId) => {
     return success({ winRates });
 };
 
+const checkNarrativeStatus = async (teamId) => {
+    const team = await TeamsModel.findOne({
+        where: { id: teamId },
+        include: [
+            {
+                model: TeamPlayersModel,
+                include: includePlayerAssociationsInsideTeam()
+            }
+        ]
+    });
 
-const deleteGame = async (id) => {
-    const result = await GamesModel.destroy({
+    if (!team) {
+        return NotFoundError('Team not found');
+    }
+
+    const game = await GamesModel.findByPk(team.game_id);
+
+    const gameBosses = await GameBossesModel.findAll({
         where: {
-            id
+            game_id: game.id
         }
     });
-    return result;
-}
+
+    const defeatedBosses = await BattlesModel.findAll({
+        where: {
+            team_id: teamId,
+            boss_id: gameBosses.map(gameBoss => gameBoss.boss_id),
+            winner_id: teamId
+        }
+    });
+
+    const defeatedBossIds = Array.from(new Set(defeatedBosses.map(battle => battle.boss_id)));
+    const allBossesDefeated = gameBosses.length === defeatedBossIds.length;
+
+    return success({
+        game_id: game.id,
+        narrativeCompleted: allBossesDefeated,
+        defeatedBossIds,
+        remainingBossIds: gameBosses.filter(gameBoss => !defeatedBossIds.includes(gameBoss.boss_id)).map(gameBoss => gameBoss.boss_id)
+    });
+};
 
 module.exports = {
     getAllGames,
     getGame,
     createGame,
     postBossesToGame,
-    deleteGame,
-    getGameOdds
+    getGameOdds,
+    checkNarrativeStatus
 };

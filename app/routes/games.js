@@ -439,45 +439,97 @@ router.get("/odds/:teamId", async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /games/status/{teamId}:
+ *   get:
+ *     summary: Check the narrative status of a game for a team
+ *     tags: [Games]
+ *     description: Check if a team has defeated all the bosses in the narrative
+ *     parameters:
+ *       - in: path
+ *         name: teamId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the team to check the narrative status for
+ *     responses:
+ *       200:
+ *         description: Narrative status of the game for the team
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 narrativeCompleted:
+ *                   type: boolean
+ *                   description: Indicates if the team has defeated all bosses in the narrative
+ *                 defeatedBossIds:
+ *                   type: array
+ *                   items:
+ *                     type: integer
+ *                   description: IDs of the bosses defeated by the team
+ *                 remainingBossIds:
+ *                   type: array
+ *                   items:
+ *                     type: integer
+ *                   description: IDs of the remaining bosses to be defeated by the team
+ *       404:
+ *         description: Not Found - Team or game not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 404
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 500
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
+ */
+router.get("/status/:teamId", async (req, res) => {
+    try {
+        const teamId = req.params.teamId;
+        const result = await gamesService.checkNarrativeStatus(teamId);
+        if (result.meta.error) {
+            return res.status(result.statusCode).json(result);
+        }
+        res.json(result);
+    } catch (err) {
+        console.error(err);
+        res.sendStatus(500);
+    }
+});
 
-
-// /**
-//  * @swagger
-//  * /games/{id}:
-//  *   delete:
-//  *     summary: Delete a game narrative by ID
-//  *     tags: [Games]
-//  *     description: Delete a game narrative by its ID
-//  *     parameters:
-//  *       - in: path
-//  *         name: id
-//  *         required: true
-//  *         schema:
-//  *           type: integer
-//  *         description: ID of the game to delete
-//  *     responses:
-//  *       200:
-//  *         description: The result of the deletion
-//  *         content:
-//  *           application/json:
-//  *             schema:
-//  *               type: object
-//  *               properties:
-//  *                 message:
-//  *                   type: string
-//  *                   description: A message indicating the result of the deletion
-//  *       500:
-//  *         description: Internal Server Error
-//  */
-// router.delete("/:id", async (req, res) => {
-//     try {
-//         const id = req.params.id;
-//         const result = await gamesService.deleteGame(id);
-//         res.json(result);
-//     } catch (err) {
-//         console.error(err);
-//         res.sendStatus(500);
-//     }
-// });
 
 module.exports = router;
