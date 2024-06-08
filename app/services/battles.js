@@ -109,7 +109,7 @@ const createBattle = async (battle) => {
         
         if (participants.team_players.length !== 4) {
             return BadRequestError('Team must have 4 characters');
-            }
+        }
             
         let opponent;
         const now = new Date();
@@ -190,7 +190,7 @@ const createBattle = async (battle) => {
             }, {});
             const level = participant?.player ? participant.player.character.level_id : participant.character.level_id;
             
-            attributes.hp_battle = attributes.HP * (1 + (level - 1) * 0.12);
+            attributes.hp_battle = Math.round(attributes.HP * (1 + (level - 1) * 0.12));
 
             // Transform strengths and weaknesses before element transofmation
             if (participant?.player) {
@@ -264,14 +264,21 @@ const createBattle = async (battle) => {
             await BattlesModel.update({ winner_id: battleResult.winnerId }, { where: { id: battle_id }, transaction });
         }
 
-        if(battleResult.winnerId === boss_id) {
-            const boss = await BossesModel.findOne({ where: { id: boss_id }, transaction });
-            const cooldownEndTime = new Date(now.getTime() + (boss.cooldown_time * 1000));
-            const formattedCooldownEndTime = cooldownEndTime.toISOString().slice(0, 19).replace('T', ' ');
-            await TeamsModel.update({ cooldown_time: formattedCooldownEndTime}, { where: { id: team_id }, transaction });
-            await transaction.commit();
+        if (boss_id) {
+            if(battleResult.winnerId === boss_id) {
+                const boss = await BossesModel.findOne({ where: { id: boss_id }, transaction });
+                const cooldownEndTime = new Date(now.getTime() + (boss.cooldown_time * 1000));
+                const formattedCooldownEndTime = cooldownEndTime.toISOString().slice(0, 19).replace('T', ' ');
+                await TeamsModel.update({ cooldown_time: formattedCooldownEndTime}, { where: { id: team_id }, transaction });
+                await transaction.commit();
+            } else {
+                rewardWinningTeam(battleResult, boss_id, transaction);
+            }
         } else {
-            rewardWinningTeam(battleResult, boss_id, transaction);
+            if (battleResult && battleResult.winnerId) {
+                await BattlesModel.update({ winner_id: battleResult.winnerId }, { where: { id: battle_id }, transaction });
+            }
+            await transaction.commit();
         }
 
         return success({

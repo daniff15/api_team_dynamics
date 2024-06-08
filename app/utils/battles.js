@@ -93,7 +93,7 @@ const simulateBattle = async (team, opponent) => {
         }, {});
         const level = participant?.player ? participant.player.character.level_id : participant.character.level_id;
         
-        attributes.hp_battle = attributes.HP * (1 + (level - 1) * 0.12);
+        attributes.hp_battle = Math.round(attributes.HP * (1 + (level - 1) * 0.12));
 
         // Transform strengths and weaknesses before element transformation
         if (participant?.player) {
