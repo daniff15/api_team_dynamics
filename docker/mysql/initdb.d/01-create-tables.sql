@@ -135,7 +135,7 @@ CREATE TABLE IF NOT EXISTS `team_dynamics`.`battles` (
   `team_id` INT(11) NOT NULL,
   `opponent_team_id` INT(11) NULL DEFAULT NULL,
   `boss_id` INT(11) NULL DEFAULT NULL,
-  `battle_date` DATETIME NOT NULL,
+  `battle_date` TIMESTAMP NOT NULL,
   `winner_id` INT(11) NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   CONSTRAINT `fk_battles_bosses`
@@ -167,7 +167,7 @@ CREATE TABLE IF NOT EXISTS `team_dynamics`.`attacks` (
   `attacker_id` INT(11) NOT NULL,
   `defender_id` INT(11) NOT NULL,
   `damage` INT(11) NOT NULL,
-  `attack_time` DATETIME NOT NULL,
+  `attack_time` TIMESTAMP NOT NULL,
   PRIMARY KEY (`id`),
   CONSTRAINT `fk_attacks_attacker`
     FOREIGN KEY (`attacker_id`)
