@@ -329,6 +329,74 @@ const updateCharacterAttributes = async (characterId, increments) => {
     }
 }
 
+const transferExtraPoints = async (fromPlayerId, toPlayerId, points) => {
+    try {
+        const fromPlayer = await PlayersModel.findByPk(fromPlayerId);
+        const toPlayer = await PlayersModel.findByPk(toPlayerId);
+
+        if (!fromPlayer) {
+            return NotFoundError('From player not found');
+        }
+
+        if (!toPlayer) {
+            return NotFoundError('To player not found');
+        }
+
+        const teamMembershipFrom = await TeamPlayersModel.findOne({
+            where: { player_id: fromPlayerId }
+        });
+
+        const teamMembershipTo = await TeamPlayersModel.findOne({
+            where: { player_id: toPlayerId }
+        });
+
+        if (!teamMembershipFrom || !teamMembershipTo) {
+            return BadRequestError('Both players must be members of a team');
+        }
+
+        if (teamMembershipFrom.team_id !== teamMembershipTo.team_id) {
+            return BadRequestError('Players are not on the same team');
+        }
+
+        const availableXtraPoints = parseInt(fromPlayer.att_xtra_points);
+
+        if (points <= 0) {
+            return BadRequestError('Points must be a positive integer');
+        }
+
+        if (points > availableXtraPoints) {
+            return BadRequestError('Insufficient extra points to transfer');
+        }
+
+        // Update the extra points for both players
+        await PlayersModel.update(
+            { att_xtra_points: availableXtraPoints - points },
+            { where: { id: fromPlayerId } }
+        );
+
+        await PlayersModel.update(
+            { att_xtra_points: parseInt(toPlayer.att_xtra_points) + points },
+            { where: { id: toPlayerId } }
+        );
+
+        // Fetch the updated details of both players
+        const updatedFromPlayer = await PlayersModel.findByPk(fromPlayerId, {
+            include: includePlayerAssociationsOutsideTeamPlayer()
+        });
+        const updatedToPlayer = await PlayersModel.findByPk(toPlayerId, {
+            include: includePlayerAssociationsOutsideTeamPlayer()
+        });
+
+        return success({
+            fromPlayer: constructCharacterResponse(updatedFromPlayer),
+            toPlayer: constructCharacterResponse(updatedToPlayer)
+        }, 'Points transferred successfully');
+    } catch (error) {
+        return ServerError(error.message);
+    }
+};
+  
+
 const deleteCharacter = async (characterId) => {
     try {
         const character = await CharactersModel.findByPk(characterId);
@@ -368,5 +436,6 @@ module.exports = {
     createCharacter,
     addXPtoCharacter,
     updateCharacterAttributes,
+    transferExtraPoints,
     deleteCharacter
 };

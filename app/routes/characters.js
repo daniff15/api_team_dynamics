@@ -603,6 +603,133 @@ router.put('/:id/attributes', async (req, res) => {
     }
 });
 
+
+/**
+ * @swagger
+ * /characters/extraPoints:
+ *   put:
+ *     summary: Give extra points to a teammate
+ *     tags: [Characters]
+ *     description: Give extra points to a teammate. The player that is giving the points must have enough points to give. The player that is receiving the points must be a player character and belong to the same team as the player that is giving the points.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               fromPlayerId:
+ *                 type: integer
+ *                 description: The ID of the player that is giving the points
+ *               toPlayerId:
+ *                 type: integer
+ *                 description: The ID of the player that is receiving the points
+ *               points:
+ *                 type: integer
+ *                 description: The amount of points to give to the teammate
+ *     responses:
+ *       200:
+ *         description: Successfully updated attributes of the character
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the result of the operation
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 200
+ *                 data:
+ *                   $ref: '#/components/schemas/Character'
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: false
+ *       400:
+ *         description: Bad Request - The request body is invalid
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 400
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
+ *       404:
+ *         description: Not Found - The character with the specified ID does not exist
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 404
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 500
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
+ */
+router.put('/extraPoints', async (req, res) => {
+    try {
+        const { fromPlayerId, toPlayerId, points } = req.body;
+        const result = await charactersService.transferExtraPoints(fromPlayerId, toPlayerId, points);
+        if (result.meta.error) {
+            return res.status(result.statusCode).json(result);
+        }
+        res.json(result);
+    }
+    catch (err) {
+        console.error(err);
+        res.sendStatus(500);
+    }
+});
+
 /**
  * @swagger
  * /characters/{id}:
