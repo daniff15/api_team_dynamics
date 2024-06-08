@@ -16,9 +16,8 @@ const getCharacters = async (filters = {}) => {
             where.character_type_id = filters.character_type;
             
             if (where.character_type_id === 1) {
-                if (filters.order_by_xp) {
-                    const sortOrder = filters.order_by_xp.toLowerCase() === 'asc' ? 'ASC' : 'DESC';
-                    order = [['total_xp', sortOrder]];
+                if (filters.orderByTotalXP) {
+                    order = [['total_xp', filters.orderByTotalXP]];
                 }
                 characters = await PlayersModel.findAll({
                     include: includePlayerAssociationsOutsideTeamPlayer(),

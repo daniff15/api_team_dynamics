@@ -16,7 +16,7 @@ const router = express.Router();
  *   get:
  *     summary: Get characters
  *     tags: [Characters]
- *     description: Retrieve a list of characters based on specified filters (Player - 1, Minion - 2, Boss - 3). The `order_by_xp` filter can only be used when `character_type` is 1 (Player).
+ *     description: Retrieve a list of characters based on specified filters (Player - 1, Minion - 2, Boss - 3). The `orderByTotalXP` filter can only be used when `character_type` is 1 (Player).
  *     parameters:
  *       - in: query
  *         name: character_type
@@ -24,10 +24,10 @@ const router = express.Router();
  *           type: integer
  *         description: ID of the character type to filter
  *       - in: query
- *         name: order_by_xp
+ *         name: orderByTotalXP
  *         schema:
  *           type: string
- *           enum: [asc, desc]
+ *           enum: [ASC, DESC]
  *         description: Order players by XP (can only be used when character_type is 1)
  *     responses:
  *       200:
@@ -78,6 +78,7 @@ router.get('/', async (req, res) => {
         const filters = {};
         if (req.query.character_type) {
             filters.character_type = parseInt(req.query.character_type, 10);
+            filters.orderByTotalXP = req.query.orderByTotalXP;
         }
 
         const characters = await charactersService.getCharacters(filters);
