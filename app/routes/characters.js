@@ -163,14 +163,14 @@ const router = express.Router();
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
- *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Character'
  *                 statusCode:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 200
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Character'
  *                 meta:
  *                   type: object
  *                   properties:
@@ -244,12 +244,12 @@ router.get('/', async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
- *                 data:
- *                   $ref: '#/components/schemas/Character'
  *                 statusCode:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 200
+ *                 data:
+ *                   $ref: '#/components/schemas/Character'
  *                 meta:
  *                   type: object
  *                   properties:
@@ -529,12 +529,12 @@ router.post('/', async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
- *                 data:
- *                   $ref: '#/components/schemas/Player'
  *                 statusCode:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 200
+ *                 data:
+ *                   $ref: '#/components/schemas/Player'
  *                 meta:
  *                   type: object
  *                   properties:

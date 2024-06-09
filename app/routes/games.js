@@ -43,12 +43,12 @@ const router = express.Router();
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
- *                 data:
- *                   $ref: '#/components/schemas/Game'
  *                 statusCode:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 200
+ *                 data:
+ *                   $ref: '#/components/schemas/Game'
  *                 meta:
  *                   type: object
  *                   properties:
@@ -115,6 +115,10 @@ router.get("/", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 200
  *                 data:
  *                   type: object
  *                   properties:
@@ -124,10 +128,6 @@ router.get("/", async (req, res) => {
  *                       type: array
  *                       items:
  *                         $ref: '#/components/schemas/Boss'
- *                 statusCode:
- *                   type: integer
- *                   description: The status code of the response
- *                   example: 200
  *                 meta:
  *                   type: object
  *                   properties:
@@ -221,12 +221,12 @@ router.get("/:id", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
- *                 data:
- *                   $ref: '#/components/schemas/Game'
  *                 statusCode:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 201
+ *                 data:
+ *                   $ref: '#/components/schemas/Game'
  *                 meta:
  *                   type: object
  *                   properties:
@@ -308,6 +308,10 @@ router.post("/", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 200
  *                 data:
  *                   type: array
  *                   items:
@@ -319,10 +323,6 @@ router.post("/", async (req, res) => {
  *                       boss_id:
  *                         type: integer
  *                         description: The ID of the boss
- *                 statusCode:
- *                   type: integer
- *                   description: The status code of the response
- *                   example: 200
  *                 meta:
  *                   type: object
  *                   properties:
@@ -455,6 +455,10 @@ router.put("/:id/bosses", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 200
  *                 data:
  *                   type: array
  *                   items:
@@ -466,10 +470,6 @@ router.put("/:id/bosses", async (req, res) => {
  *                       win_rate:
  *                         type: number
  *                         description: The win rate the team has against the boss
- *                 statusCode:
- *                   type: integer
- *                   description: The status code of the response
- *                   example: 200
  *                 meta:
  *                   type: object
  *                   properties:
@@ -564,6 +564,10 @@ router.get("/odds/:team_id", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 200
  *                 data:
  *                   type: object
  *                   properties:
@@ -580,10 +584,6 @@ router.get("/odds/:team_id", async (req, res) => {
  *                            items:
  *                              type: integer
  *                              description: IDs of the remaining bosses to be defeated by the team
- *                 statusCode:
- *                   type: integer
- *                   description: The status code of the response
- *                   example: 200
  *                 meta:
  *                   type: object
  *                   properties:

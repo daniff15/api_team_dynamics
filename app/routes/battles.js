@@ -149,6 +149,10 @@ const router = express.Router();
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 200
  *                 data:
  *                   type: array
  *                   items:
@@ -172,10 +176,6 @@ const router = express.Router();
  *                       battle_type:
  *                         type: string
  *                         description: The type of battle
- *                 statusCode:
- *                   type: integer
- *                   description: The status code of the response
- *                   example: 200
  *                 meta:
  *                   type: object
  *                   properties:
@@ -253,14 +253,14 @@ router.get("/", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
- *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Battle'
  *                 statusCode:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 200
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Battle'
  *                 meta:
  *                   type: object
  *                   properties:
@@ -369,6 +369,10 @@ router.get("/:id", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 201
  *                 data:
  *                   type: object
  *                   properties:
@@ -400,10 +404,6 @@ router.get("/:id", async (req, res) => {
  *                     reward:
  *                       type: integer
  *                       description: The reward for winning the battle
- *                 statusCode:
- *                   type: integer
- *                   description: The status code of the response
- *                   example: 201
  *                 meta:
  *                   type: object
  *                   properties:
