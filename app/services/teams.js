@@ -124,7 +124,7 @@ const createTeam = async (team) => {
     const newTeam = await TeamsModel.create(team);
     await TeamPlayersModel.create({ team_id: newTeam.id, player_id: owner });
 
-    return success(newTeam);
+    return success(newTeam, statusCode = 201, message = 'Team created successfully');
 }
 
 const deleteTeam = async (id) => {
@@ -143,12 +143,12 @@ const deleteTeam = async (id) => {
         await player.destroy();
     }
 
-    const result = await TeamsModel.destroy({
+    await TeamsModel.destroy({
         where: {
             id
         }
     });
-    return success(result, message = 'Team deleted successfully');
+    return success({id: parseInt(id)}, message = 'Team deleted successfully');
 }
 
 const addCharacterToTeam = async (teamId, characterId) => {
@@ -186,7 +186,11 @@ const addCharacterToTeam = async (teamId, characterId) => {
         }
 
         const result = await TeamPlayersModel.create({ team_id: teamId, player_id: characterId });
-        return success(result, message = 'Character added to team');
+        const response = {
+            team_id: parseInt(result.team_id),
+            player_id: parseInt(result.player_id)
+        }
+        return success(response, message = 'Character added to team');
     } catch (error) {
         return ServerError(error.message);
     }
@@ -217,10 +221,6 @@ const updateTeam = async (teamId, updates) => {
     await TeamsModel.update(updatedFields, { where: { id: teamId } });
 
     const updatedTeam = await TeamsModel.findByPk(teamId);
-    if (!updatedTeam) {
-        return NotFoundError('Team not found');
-    }
-
     return success(updatedTeam, message = 'Team updated successfully');
 };
 
@@ -232,7 +232,7 @@ const leaveTeam = async (playerId) => {
 
     const teamPlayer = await TeamPlayersModel.findOne({ where: { player_id: playerId } });
     if (!teamPlayer) {
-        return NotFoundError('Player is not a member of any team');
+        return BadRequestError('Player is not a member of any team');
     }
 
     const team = await TeamsModel.findByPk(teamPlayer.team_id);
@@ -263,7 +263,7 @@ const changeOwner = async (playerId) => {
 
     const teamPlayer = await TeamPlayersModel.findOne({ where: { player_id: playerId } });
     if (!teamPlayer) {
-        return NotFoundError('Player is not a member of any team');
+        return BadRequestError('Player is not a member of any team');
     }
 
     const team = await TeamsModel.findByPk(teamPlayer.team_id);
@@ -271,10 +271,10 @@ const changeOwner = async (playerId) => {
         return BadRequestError('Player is already the owner of the team');
     }
 
-    team.owner_id = playerId;
+    team.owner_id = parseInt(playerId);
     await team.save();
 
-    return success({}, message = 'Owner changed successfully');
+    return success(team, message = 'Owner changed successfully');
 }
 
 module.exports = {

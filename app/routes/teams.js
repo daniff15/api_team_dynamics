@@ -17,15 +17,34 @@ const router = express.Router();
  *       properties:
  *         id:
  *           type: integer
- *           description: The ID of the team
+ *           description: The team ID
  *         name:
  *           type: string
- *           description: The name of the team
+ *           description: The team name
+ *         community_id_ext:
+ *           type: string
+ *           description: The external ID of the element, should be the id of the community on the platform
+ *         game_id:
+ *           type: integer
+ *           description: The game ID
+ *         owner_id:
+ *           type: integer
+ *           description: The ID of the owner of the team
+ *         total_xp:
+ *           type: integer
+ *           description: The total XP of the team
+ *         team_image_path:
+ *           type: string
+ *           description: The path to the team image
+ *         cooldown_time:
+ *           type: string
+ *           format: date-time
+ *           description: The cooldown time of the team
  *         members:
  *           type: array
  *           description: The members of the team
  *           items:
- *             $ref: '#/components/schemas/Character'
+ *             $ref: '#/components/schemas/Player'
  */
 
 /**
@@ -145,33 +164,52 @@ const router = express.Router();
  *               items:
  *                 type: object
  *                 properties:
- *                   id:
- *                     type: integer
- *                     description: The team ID
- *                   name:
+ *                   message:
  *                     type: string
- *                     description: The team name
- *                   community_id_ext:
- *                     type: string
- *                     description: The external ID of the element, should be the id of the community on the platform
- *                   game_id:
+ *                     description: A message indicating the result of the operation
+ *                   statusCode:
  *                     type: integer
- *                     description: The game ID
- *                   owner_id:
- *                     type: integer
- *                     description: The ID of the owner of the team
- *                   total_xp:
- *                     type: integer
- *                     description: The total XP of the team
- *                   team_image_path:
- *                     type: string
- *                     description: The path to the team image
- *                   cooldown_time:
- *                     type: string
- *                     format: date-time
- *                     description: The cooldown time of the team
+ *                     description: The status code of the response
+ *                     example: 200
+ *                   data:
+ *                     type: array
+ *                     items:
+ *                      type: object
+ *                      properties:
+ *                        id:
+ *                          type: integer
+ *                          description: The team ID
+ *                        name:
+ *                          type: string
+ *                          description: The team name
+ *                        community_id_ext:
+ *                          type: string
+ *                          description: The external ID of the element, should be the id of the community on the platform
+ *                        game_id:
+ *                          type: integer
+ *                          description: The game ID
+ *                        owner_id:
+ *                          type: integer
+ *                          description: The ID of the owner of the team
+ *                        total_xp:
+ *                          type: integer
+ *                          description: The total XP of the team
+ *                        team_image_path:
+ *                          type: string
+ *                          description: The path to the team image
+ *                        cooldown_time:
+ *                          type: string
+ *                          format: date-time
+ *                          description: The cooldown time of the team
+ *                   meta:
+ *                     type: object
+ *                     properties:
+ *                       error:
+ *                         type: boolean
+ *                         description: Indicates if an error occurred
+ *                         example: false
  *       404:
- *         description: Game not found
+ *         description: Not Found - Game not found
  *         content:
  *           application/json:
  *             schema:
@@ -252,6 +290,10 @@ router.get('/', async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 200
  *                 data:
  *                   $ref: '#/components/schemas/Team'
  *                 meta:
@@ -262,7 +304,7 @@ router.get('/', async (req, res) => {
  *                       description: Indicates if an error occurred
  *                       example: false
  *       '404':
- *         description: Team not found
+ *         description: Not Found - Team not found
  *         content:
  *           application/json:
  *             schema:
@@ -340,6 +382,12 @@ router.get("/:id", async (req, res) => {
  *               game_id:
  *                 type: integer
  *                 description: The ID of the game the team belongs to
+ *               owner_id:
+ *                 type: integer
+ *                 description: The ID of the owner of the team
+ *               community_id_ext:
+ *                 type: string
+ *                 description: The external ID of the element, should be the id of the community on the platform
  *     responses:
  *       '201':
  *         description: Team created successfully
@@ -351,18 +399,38 @@ router.get("/:id", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 201
  *                 data:
  *                   type: object    
  *                   properties:
  *                     id:
  *                       type: integer
- *                       description: The ID of the created team
- *                     game_id:
- *                       type: integer
- *                       description: The ID of the game the team belongs to
+ *                       description: The team ID
  *                     name:
  *                       type: string
- *                       description: The name of the created team
+ *                       description: The team name
+ *                     community_id_ext:
+ *                       type: string
+ *                       description: The external ID of the element, should be the id of the community on the platform
+ *                     game_id:
+ *                       type: integer
+ *                       description: The game ID
+ *                     owner_id:
+ *                       type: integer
+ *                       description: The ID of the owner of the team
+ *                     total_xp:
+ *                       type: integer
+ *                       description: The total XP of the team
+ *                     team_image_path:
+ *                       type: string
+ *                       description: The path to the team image
+ *                     cooldown_time:
+ *                       type: string
+ *                       format: date-time
+ *                       description: The cooldown time of the team
  *                 meta:
  *                   type: object
  *                   properties:
@@ -371,7 +439,7 @@ router.get("/:id", async (req, res) => {
  *                       description: Indicates if an error occurred
  *                       example: false
  *       '404':
- *         description: Game not found
+ *         description: Not Found - Game not found
  *         content:
  *           application/json:
  *             schema:
@@ -392,7 +460,7 @@ router.get("/:id", async (req, res) => {
  *                       description: Indicates if an error occurred
  *                       example: true
  *       '409':
- *         description: Conflict - Team with the same name already exists in the game
+ *         description: Conflict - (Player is already a member of a team. Create a new player to create a new team./A Team with the same name already exists in this game!)
  *         content:
  *           application/json:
  *             schema:
@@ -455,7 +523,7 @@ router.post("/", async (req, res) => {
  *   delete:
  *     summary: Delete a team
  *     tags: [Teams]
- *     description: Remove the team with the specified ID
+ *     description: Remove the team with the specified ID. If the team is deleted, all members will be deleted as well.
  *     parameters:
  *       - in: path
  *         name: id
@@ -474,6 +542,10 @@ router.post("/", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 200
  *                 data:
  *                   type: object
  *                   properties:
@@ -509,7 +581,7 @@ router.post("/", async (req, res) => {
  *                       description: Indicates if an error occurred
  *                       example: true
  *       '404':
- *         description: Team not found
+ *         description: Not Found - Team not found
  *         content:
  *           application/json:
  *             schema:
@@ -567,14 +639,14 @@ router.delete("/:id", async (req, res) => {
 
 /**
  * @swagger
- * /teams/{teamId}/characters:
+ * /teams/{team_id}/players:
  *   post:
  *     summary: Add a character to a team
  *     tags: [Teams]
  *     description: Add a character with the specified ID to the team with the specified ID
  *     parameters:
  *       - in: path
- *         name: teamId
+ *         name: team_id
  *         required: true
  *         type: integer
  *         description: The ID of the team
@@ -585,7 +657,7 @@ router.delete("/:id", async (req, res) => {
  *           schema:
  *             type: object
  *             properties:
- *               characterId:
+ *               character_id:
  *                 type: integer
  *                 description: The ID of the character to add to the team
  *     responses:
@@ -599,18 +671,19 @@ router.delete("/:id", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 200
  *                 data:
  *                   type: object    
  *                   properties:
- *                     id:
- *                       type: integer
- *                       description: The ID of the created team
  *                     game_id:
  *                       type: integer
  *                       description: The ID of the game the team belongs to
- *                     name:
- *                       type: string
- *                       description: The name of the created team
+ *                     player_id:
+ *                       type: integer
+ *                       description: The ID of the player that was added to the team
  *                 meta:
  *                   type: object
  *                   properties:
@@ -619,7 +692,7 @@ router.delete("/:id", async (req, res) => {
  *                       description: Indicates if an error occurred
  *                       example: false
  *       '400':
- *         description: Bad Request - Team already has 4 members or character is already a member of the team
+ *         description: Bad Request - (Team already has 4 members/Impossible to add that player to a team, player is not at default stats or level.)
  *         content:
  *           application/json:
  *             schema:
@@ -640,7 +713,7 @@ router.delete("/:id", async (req, res) => {
  *                       description: Indicates if an error occurred
  *                       example: true
  *       '404':
- *         description: Team or Character not found
+ *         description: Not Found - (Team/Character) not found
  *         content:
  *           application/json:
  *             schema:
@@ -661,7 +734,7 @@ router.delete("/:id", async (req, res) => {
  *                       description: Indicates if an error occurred
  *                       example: true
  *       '409':
- *         description: Conflict - Character is already a member of a team in the same game or Character is already on the team
+ *         description: Conflict - (Character is already a member of a team in the same game/Character is already on the team)
  *         content:
  *           application/json:
  *             schema:
@@ -704,10 +777,10 @@ router.delete("/:id", async (req, res) => {
  *                       example: true
  */
 
-router.post("/:teamId/characters", async (req, res) => {
+router.post("/:team_id/players", async (req, res) => {
     try {
-        const teamId = req.params.teamId;
-        const characterId = req.body.characterId;
+        const teamId = req.params.team_id;
+        const characterId = req.body.character_id;
         const result = await teamsService.addCharacterToTeam(teamId, characterId);
         if (result.meta.error) {
             return res.status(result.statusCode).json(result);
@@ -754,8 +827,38 @@ router.post("/:teamId/characters", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 200
  *                 data:
- *                   $ref: '#/components/schemas/Team'
+ *                   type: object    
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       description: The team ID
+ *                     name:
+ *                       type: string
+ *                       description: The team name
+ *                     community_id_ext:
+ *                       type: string
+ *                       description: The external ID of the element, should be the id of the community on the platform
+ *                     game_id:
+ *                       type: integer
+ *                       description: The game ID
+ *                     owner_id:
+ *                       type: integer
+ *                       description: The ID of the owner of the team
+ *                     total_xp:
+ *                       type: integer
+ *                       description: The total XP of the team
+ *                     team_image_path:
+ *                       type: string
+ *                       description: The path to the team image
+ *                     cooldown_time:
+ *                       type: string
+ *                       format: date-time
+ *                       description: The cooldown time of the team
  *                 meta:
  *                   type: object
  *                   properties:
@@ -763,8 +866,50 @@ router.post("/:teamId/characters", async (req, res) => {
  *                       type: boolean
  *                       description: Indicates if an error occurred
  *                       example: false
+ *       '400':
+ *         description: Bad Request - No valid fields to update
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 400
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
+ *       '404':
+ *         description: Not Found - Team not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 404
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
  *       '409':
- *         description: Conflict - Team with the same name already exists in the game
+ *         description: Conflict - Team with the same name already exists in the game narrative.
  *         content:
  *           application/json:
  *             schema:
@@ -827,9 +972,9 @@ router.put("/:id", async (req, res) => {
  * @swagger
  * /teams/leave/{id}:
  *   delete:
- *     summary: Leave a team
+ *     summary: Leave a team.
  *     tags: [Teams]
- *     description: Leave the team with the specified ID
+ *     description: Leave the team with the specified ID.  If the player that left the team was the owner, the team ownership will be transferred to another member. If no other members are present, the team will be deleted.
  *     parameters:
  *       - in: path
  *         name: id
@@ -848,8 +993,12 @@ router.put("/:id", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 200
  *                 data:
- *                   $ref: '#/components/schemas/Team'
+ *                   type: object
  *                 meta:
  *                   type: object
  *                   properties:
@@ -857,8 +1006,29 @@ router.put("/:id", async (req, res) => {
  *                       type: boolean
  *                       description: Indicates if an error occurred
  *                       example: false
+ *       '400':
+ *         description: Bad Request - Player is not part of the team
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 400
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
  *       '404':
- *         description: Player not found or Player is not a member of a team
+ *         description: Not Found - Player not found
  *         content:
  *           application/json:
  *             schema:
@@ -941,8 +1111,38 @@ router.delete("/leave/:id", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 200
  *                 data:
- *                   $ref: '#/components/schemas/Team'
+ *                   type: object    
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       description: The team ID
+ *                     name:
+ *                       type: string
+ *                       description: The team name
+ *                     community_id_ext:
+ *                       type: string
+ *                       description: The external ID of the element, should be the id of the community on the platform
+ *                     game_id:
+ *                       type: integer
+ *                       description: The game ID
+ *                     owner_id:
+ *                       type: integer
+ *                       description: The ID of the owner of the team
+ *                     total_xp:
+ *                       type: integer
+ *                       description: The total XP of the team
+ *                     team_image_path:
+ *                       type: string
+ *                       description: The path to the team image
+ *                     cooldown_time:
+ *                       type: string
+ *                       format: date-time
+ *                       description: The cooldown time of the team
  *                 meta:
  *                   type: object
  *                   properties:
@@ -951,7 +1151,7 @@ router.delete("/leave/:id", async (req, res) => {
  *                       description: Indicates if an error occurred
  *                       example: false
  *       '400':
- *         description: Bad Request - Player is already the owner of the team or Player is not part of the team
+ *         description: Bad Request - (Player is not a member of any team/Player is already the owner of the team)
  *         content:
  *           application/json:
  *             schema:
@@ -972,7 +1172,7 @@ router.delete("/leave/:id", async (req, res) => {
  *                       description: Indicates if an error occurred
  *                       example: true
  *       '404':
- *         description: Player not found
+ *         description: Not Found - Player not found
  *         content:
  *           application/json:
  *             schema:

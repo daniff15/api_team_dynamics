@@ -30,9 +30,9 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING
         },
         cooldown_time: {
-            type: DataTypes.INTEGER,
-            defaultValue: 0,
-            allowNull: false
+            type: DataTypes.DATE,
+            defaultValue: null,
+            allowNull: true
         }
     }, 
     {

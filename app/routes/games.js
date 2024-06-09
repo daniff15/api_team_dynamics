@@ -136,7 +136,7 @@ router.get("/", async (req, res) => {
  *                       description: Indicates if an error occurred
  *                       example: false
  *       404:
- *         description: Game Narrative not found
+ *         description: Not Found - Game Narrative not found
  *         content:
  *           application/json:
  *             schema:
@@ -352,7 +352,7 @@ router.post("/", async (req, res) => {
  *                       description: Indicates if an error occurred
  *                       example: true
  *       404:
- *         description: (Game/Boss) not found
+ *         description: Not Found - (Game/Boss) not found
  *         content:
  *           application/json:
  *             schema:
@@ -373,7 +373,7 @@ router.post("/", async (req, res) => {
  *                       description: Indicates if an error occurred
  *                       example: true
  *       409:
- *         description: The following bosses are already associated with the game - {existingBossConflicts}
+ *         description: Conflict - The following bosses are already associated with the game - {existingBossConflicts}
  *         content:
  *           application/json:
  *             schema:
@@ -478,7 +478,7 @@ router.put("/:id/bosses", async (req, res) => {
  *                       description: Indicates if an error occurred
  *                       example: false
  *       404:
- *         description: Team not found
+ *         description: Not Found - Team not found
  *         content:
  *           application/json:
  *             schema:
