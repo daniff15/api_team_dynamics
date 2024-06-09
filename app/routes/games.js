@@ -45,6 +45,10 @@ const router = express.Router();
  *                   description: A message indicating the result of the operation
  *                 data:
  *                   $ref: '#/components/schemas/Game'
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 200
  *                 meta:
  *                   type: object
  *                   properties:
@@ -86,7 +90,6 @@ router.get("/", async (req, res) => {
         res.sendStatus(500);
     }
 });
-
 /**
  * @swagger
  * /games/{id}:
@@ -113,7 +116,18 @@ router.get("/", async (req, res) => {
  *                   type: string
  *                   description: A message indicating the result of the operation
  *                 data:
- *                   $ref: '#/components/schemas/Game'
+ *                   type: object
+ *                   properties:
+ *                     game:
+ *                       $ref: '#/components/schemas/Game'
+ *                     bosses:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Boss'
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 200
  *                 meta:
  *                   type: object
  *                   properties:
@@ -164,6 +178,7 @@ router.get("/", async (req, res) => {
  *                       description: Indicates if an error occurred
  *                       example: true
  */
+
 router.get("/:id", async (req, res) => {
     try {
         const id = req.params.id;
@@ -208,6 +223,10 @@ router.get("/:id", async (req, res) => {
  *                   description: A message indicating the result of the operation
  *                 data:
  *                   $ref: '#/components/schemas/Game'
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 201
  *                 meta:
  *                   type: object
  *                   properties:
@@ -286,49 +305,115 @@ router.post("/", async (req, res) => {
  *             schema:
  *               type: object
  *               properties:
- *                 success:
- *                   type: boolean
- *                   description: Whether the update was successful
- *                 game:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the result of the operation
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       game_id:
+ *                         type: integer
+ *                         description: The ID of the game
+ *                       boss_id:
+ *                         type: integer
+ *                         description: The ID of the boss
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 200
+ *                 meta:
  *                   type: object
- *                   description: The updated game object
  *                   properties:
- *                     name:
- *                       type: string
- *                     bosses:
- *                       type: array
- *                       items:
- *                         type: string
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: false
  *       400:
- *         description: Bad request
+ *         description: Bad Request - (The request body is invalid/No bosses provided)
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 error:
+ *                 message:
  *                   type: string
- *                   description: Error message
+ *                   description: A message indicating the error
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 400
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
  *       404:
- *         description: Bosses not found
+ *         description: (Game/Boss) not found
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 error:
+ *                 message:
  *                   type: string
- *                   description: Error message indicating that bosses were not found
+ *                   description: A message indicating the error
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 404
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
+ *       409:
+ *         description: The following bosses are already associated with the game - {existingBossConflicts}
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 409
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
  *       500:
- *         description: Internal server error
+ *         description: Internal Server Error
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 error:
+ *                 message:
  *                   type: string
- *                   description: Error message indicating an internal server error
+ *                   description: A message indicating the error
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 500
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
  */
 router.put("/:id/bosses", async (req, res) => {
     try {
@@ -347,21 +432,21 @@ router.put("/:id/bosses", async (req, res) => {
 
 /**
  * @swagger
- * /games/odds/{teamId}:
+ * /games/odds/{team_id}:
  *   get:
  *     summary: Get the odds of a game by ID
  *     tags: [Games]
  *     description: Get the odds of a game by its ID
  *     parameters:
  *       - in: path
- *         name: teamId
+ *         name: team_id
  *         required: true
  *         schema:
  *           type: integer
  *         description: ID of the team to retrieve the odds for
  *     responses:
  *       200:
- *         description: Details of the odds for the game
+ *         description: The game odds were successfully retrieved
  *         content:
  *           application/json:
  *             schema:
@@ -370,6 +455,21 @@ router.put("/:id/bosses", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       boss_id:
+ *                         type: integer
+ *                         description: The ID of the boss
+ *                       win_rate:
+ *                         type: number
+ *                         description: The win rate the team has against the boss
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 200
  *                 meta:
  *                   type: object
  *                   properties:
@@ -378,7 +478,7 @@ router.put("/:id/bosses", async (req, res) => {
  *                       description: Indicates if an error occurred
  *                       example: false
  *       404:
- *         description: Not Found - Game not found
+ *         description: Team not found
  *         content:
  *           application/json:
  *             schema:
@@ -420,9 +520,9 @@ router.put("/:id/bosses", async (req, res) => {
  *                       description: Indicates if an error occurred
  *                       example: true
  */
-router.get("/odds/:teamId", async (req, res) => {
+router.get("/odds/:team_id", async (req, res) => {
     try {
-        const teamId = parseInt(req.params.teamId);
+        const teamId = parseInt(req.params.team_id);
 
         const result = await gamesService.getGameOdds(teamId);
         if (result.meta.error) {
@@ -441,14 +541,14 @@ router.get("/odds/:teamId", async (req, res) => {
 
 /**
  * @swagger
- * /games/status/{teamId}:
+ * /games/status/{team_id}:
  *   get:
  *     summary: Check the narrative status of a game for a team
  *     tags: [Games]
  *     description: Check if a team has defeated all the bosses in the narrative
  *     parameters:
  *       - in: path
- *         name: teamId
+ *         name: team_id
  *         required: true
  *         schema:
  *           type: integer
@@ -461,21 +561,38 @@ router.get("/odds/:teamId", async (req, res) => {
  *             schema:
  *               type: object
  *               properties:
- *                 narrativeCompleted:
- *                   type: boolean
- *                   description: Indicates if the team has defeated all bosses in the narrative
- *                 defeatedBossIds:
- *                   type: array
- *                   items:
- *                     type: integer
- *                   description: IDs of the bosses defeated by the team
- *                 remainingBossIds:
- *                   type: array
- *                   items:
- *                     type: integer
- *                   description: IDs of the remaining bosses to be defeated by the team
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the result of the operation
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     narrative_completed:
+ *                         type: boolean
+ *                         description: Indicates if the team has defeated all bosses in the narrative
+ *                     defeated_boss_ids:
+ *                         type: array
+ *                         items:
+ *                            type: integer
+ *                            description: IDs of the bosses defeated by the team
+ *                     remaining_boss_ids:
+ *                            type: array
+ *                            items:
+ *                              type: integer
+ *                              description: IDs of the remaining bosses to be defeated by the team
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 200
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: false
  *       404:
- *         description: Not Found - Team or game not found
+ *         description: Not Found - Team not found
  *         content:
  *           application/json:
  *             schema:
@@ -517,9 +634,9 @@ router.get("/odds/:teamId", async (req, res) => {
  *                       description: Indicates if an error occurred
  *                       example: true
  */
-router.get("/status/:teamId", async (req, res) => {
+router.get("/status/:team_id", async (req, res) => {
     try {
-        const teamId = req.params.teamId;
+        const teamId = req.params.team_id;
         const result = await gamesService.checkNarrativeStatus(teamId);
         if (result.meta.error) {
             return res.status(result.statusCode).json(result);

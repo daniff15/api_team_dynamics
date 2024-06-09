@@ -68,6 +68,61 @@ const router = express.Router();
  *             $ref: '#/components/schemas/Element'
  */
 
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Boss:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *           description: The ID of the character
+ *         name:
+ *           type: string
+ *           description: The name of the character
+ *         level:
+ *           type: integer
+ *           description: The level of the character
+ *         character_type_id:
+ *           type: integer
+ *           description: The character type ID
+ *         image_path:
+ *           type: string
+ *           description: The path to the character image
+ *         before_defeat_phrase:
+ *           type: string
+ *           description: The phrase that is displayed before the boss is defeated
+ *         after_defeat_phrase:
+ *           type: string
+ *           description: The phrase that is displayed after the boss is defeated
+ *         cooldown_time:
+ *           type: integer
+ *           description: The cooldown period in seconds that the team who got defeated has to wait until they can fight another boss again (seconds)
+ *         attributes:
+ *           type: object
+ *           description: The attributes of the character
+ *           properties:
+ *             HP:
+ *               type: integer
+ *               description: The health points of the character
+ *             DEF:
+ *               type: integer
+ *               description: The defense points of the character
+ *             ATK:
+ *               type: integer
+ *               description: The attack points of the character
+ *             SPEED:
+ *               type: integer
+ *               description: The speed of the character
+ *         elements:
+ *           type: array
+ *           description: The elements of the character
+ *           items:
+ *             $ref: '#/components/schemas/Element'
+ */
+
 /**
  * @swagger
  * /characters:
@@ -112,6 +167,10 @@ const router = express.Router();
  *                   type: array
  *                   items:
  *                     $ref: '#/components/schemas/Character'
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 200
  *                 meta:
  *                   type: object
  *                   properties:
@@ -187,6 +246,10 @@ router.get('/', async (req, res) => {
  *                   description: A message indicating the result of the operation
  *                 data:
  *                   $ref: '#/components/schemas/Character'
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 200
  *                 meta:
  *                   type: object
  *                   properties:
@@ -339,6 +402,7 @@ router.get('/:id', async (req, res) => {
  *                 statusCode:
  *                   type: integer
  *                   description: The status code of the response
+ *                   example: 201
  *                 data:
  *                   type: object
  *                   properties:
@@ -467,6 +531,10 @@ router.post('/', async (req, res) => {
  *                   description: A message indicating the result of the operation
  *                 data:
  *                   $ref: '#/components/schemas/Player'
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 200
  *                 meta:
  *                   type: object
  *                   properties:

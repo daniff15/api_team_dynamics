@@ -63,7 +63,7 @@ const postBossesToGame = async (gameId, bosses) => {
         const existing_boss = await BossesModel.findByPk(boss);
 
         if (!existing_boss) {
-            return BadRequestError(`Boss with id ${boss} does not exist`);
+            return NotFoundError(`Boss with id ${boss} does not exist`);
         }
     }
 
@@ -83,8 +83,8 @@ const postBossesToGame = async (gameId, bosses) => {
     const newBossIds = bosses.filter(bossId => !existingBossIds.includes(bossId));
 
     const newGameBosses = newBossIds.map(bossId => ({
-        game_id: gameId,
-        boss_id: bossId
+        game_id: parseInt(gameId),
+        boss_id: parseInt(bossId)
     }));
 
 
@@ -137,10 +137,10 @@ const getGameOdds = async (teamId) => {
         };
 
         const winRate = await simulateBattles(team, opponent);
-        winRates.push({ bossId: boss.id, winRate });
+        winRates.push({ boss_id: boss.id, win_rate: winRate });
     }
 
-    return success({ winRates });
+    return success(winRates);
 };
 
 const checkNarrativeStatus = async (teamId) => {
@@ -179,9 +179,9 @@ const checkNarrativeStatus = async (teamId) => {
 
     return success({
         game_id: game.id,
-        narrativeCompleted: allBossesDefeated,
-        defeatedBossIds,
-        remainingBossIds: gameBosses.filter(gameBoss => !defeatedBossIds.includes(gameBoss.boss_id)).map(gameBoss => gameBoss.boss_id)
+        narrative_completed: allBossesDefeated,
+        defeated_boss_ids: defeatedBossIds,
+        remaining_boss_ids: gameBosses.filter(gameBoss => !defeatedBossIds.includes(gameBoss.boss_id)).map(gameBoss => gameBoss.boss_id)
     });
 };
 
