@@ -10,13 +10,81 @@ const router = express.Router();
  *  description: API endpoints for characters
  */
 
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Player:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *           description: The ID of the character
+ *         ext_id:
+ *           type: string
+ *           description: The external ID of the character
+ *         name:
+ *           type: string
+ *           description: The name of the character
+ *         level:
+ *           type: integer
+ *           description: The level of the character
+ *         character_type_id:
+ *           type: integer
+ *           description: The character type ID
+ *         xp:
+ *           type: integer
+ *           description: The XP of the character
+ *         total_xp:
+ *           type: integer
+ *           description: The total XP of the character
+ *         att_xtra_points:
+ *           type: integer
+ *           description: The extra points of the character
+ *         image_path:
+ *           type: string
+ *           description: The path to the character image
+ *         attributes:
+ *           type: object
+ *           description: The attributes of the character
+ *           properties:
+ *             HP:
+ *               type: integer
+ *               description: The health points of the character
+ *             DEF:
+ *               type: integer
+ *               description: The defense points of the character
+ *             ATK:
+ *               type: integer
+ *               description: The attack points of the character
+ *             SPEED:
+ *               type: integer
+ *               description: The speed of the character
+ *         elements:
+ *           type: array
+ *           description: The elements of the character
+ *           items:
+ *             $ref: '#/components/schemas/Element'
+ */
+
 /**
  * @swagger
  * /characters:
  *   get:
  *     summary: Get characters
  *     tags: [Characters]
- *     description: Retrieve a list of characters based on specified filters (Player - 1, Minion - 2, Boss - 3). The `orderByTotalXP` filter can only be used when `character_type` is 1 (Player).
+ *     description: |
+ *       Retrieve a list of characters based on specified filters:
+ *       - Player: 1
+ *       - Minion: 2
+ *       - Boss: 3
+ *       
+ *       The `orderByTotalXP` filter can only be used when `character_type` is 1 (Player).
+ *       
+ *       The response structure is similar for players, minions, and bosses. However, if `character_type` is 1 (Player), additional attributes such as `ext_id`, `xp`, `total_xp`, and `att_xtra_points` will be returned. 
+ *       If `character_type` is 2 or 3, the attributes `before_defeat_phrase`, `after_defeat_phrase`, and `cooldown_time` (represents the cooldown period in seconds that the team who got defeated has to wait until they can fight another boss again) will be returned.
+ *     
  *     parameters:
  *       - in: query
  *         name: character_type
@@ -108,7 +176,7 @@ router.get('/', async (req, res) => {
  *         description: ID of the character to retrieve details
  *     responses:
  *       200:
- *         description: Details of the character
+ *         description: Details of the character (This example response only contains the attributes that are common to all character types. The response will contain more attributes depending on the character type.)
  *         content:
  *           application/json:
  *             schema:
@@ -189,7 +257,31 @@ router.get('/:id', async (req, res) => {
  *   post:
  *     summary: Create a new character
  *     tags: [Characters]
- *     description: Create a new character with the provided data. Player Required Fields - name, characterType, element (only one). Minion/Boss Required Fields - name, characterType, elements (can be more than one), attributes.
+ *     description: |
+ *       Create a new character with the provided data. 
+ *       Player Required Fields:
+ *       - `name`
+ *       - `ext_id` (corresponds to the ID of the player in the platform)
+ *       - `characterType`
+ *       - `element` (only one).
+ *       
+ *       Minion/Boss Required Fields:
+ *       - `name`
+ *       - `characterType`
+ *       - `elements` (can be more than one)
+ *       - `attributes`
+ *       - `cooldown_time`.
+ *       
+ *       Optional Fields:
+ *       - `image_path` (for all character types)
+ *       
+ *       Required Fields for Boss/Minions:
+ *       - `level` (required only for boss/minions characters)
+ *       
+ *       Required Fields for Boss characters:
+ *       - `attributes` (required only for boss characters)
+ *       - `before_defeat_phrase` and `after_defeat_phrase` (optional for boss characters).
+ *
  *     requestBody:
  *       required: true
  *       content:
@@ -200,6 +292,12 @@ router.get('/:id', async (req, res) => {
  *               name:
  *                 type: string
  *                 description: The name of the character
+ *               ext_id:
+ *                 type: string
+ *                 description: The external ID of the character
+ *               image_path:
+ *                 type: string
+ *                 description: The path to the image of the character
  *               characterType:
  *                 type: integer
  *                 description: The type of character (1 for player character, 3 for boss character)
@@ -227,9 +325,6 @@ router.get('/:id', async (req, res) => {
  *                   SPEED:
  *                     type: integer
  *                     description: The speed attribute of the boss character
- *                   XP:
- *                     type: integer
- *                     description: The experience points of the boss character
  *     responses:
  *       201:
  *         description: Successfully created a new character
@@ -241,6 +336,9 @@ router.get('/:id', async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
+ *                 statusCode:
+ *                   type: integer
+ *                   description: The status code of the response
  *                 data:
  *                   type: object
  *                   properties:
@@ -276,7 +374,7 @@ router.get('/:id', async (req, res) => {
  *                       description: Indicates if an error occurred
  *                       example: true
  *       404:
- *         description: Not Found - Element not found.
+ *         description: Not Found - (Element/Attribute {name}) not found.
  *         content:
  *           application/json:
  *             schema:
@@ -368,7 +466,7 @@ router.post('/', async (req, res) => {
  *                   type: string
  *                   description: A message indicating the result of the operation
  *                 data:
- *                   $ref: '#/components/schemas/Character'
+ *                   $ref: '#/components/schemas/Player'
  *                 meta:
  *                   type: object
  *                   properties:
@@ -377,7 +475,7 @@ router.post('/', async (req, res) => {
  *                       description: Indicates if an error occurred
  *                       example: false
  *       400:
- *         description: Bad Request - The request body is invalid
+ *         description: Bad Request - (The request body is invalid/Character is not a player character/Character is not a member of any team)
  *         content:
  *           application/json:
  *             schema:
@@ -515,7 +613,7 @@ router.put('/:id/xp', async (req, res) => {
  *                   description: The status code of the response
  *                   example: 200
  *                 data:
- *                   $ref: '#/components/schemas/Character'
+ *                   $ref: '#/components/schemas/Player'
  *                 meta:
  *                   type: object
  *                   properties:
@@ -524,7 +622,7 @@ router.put('/:id/xp', async (req, res) => {
  *                       description: Indicates if an error occurred
  *                       example: false
  *       400:
- *         description: Bad Request - The request body is invalid
+ *         description: Bad Request - (The request body is invalid/Attributes can only be updated for player characters/Character is not a member of any team/Insufficient extra points to update attributes)
  *         content:
  *           application/json:
  *             schema:
@@ -545,7 +643,7 @@ router.put('/:id/xp', async (req, res) => {
  *                       description: Indicates if an error occurred
  *                       example: true
  *       404:
- *         description: Not Found - The character with the specified ID does not exist
+ *         description: Not Found - (The character with the specified ID does not exist/Attribute {key} not found or not updatable)
  *         content:
  *           application/json:
  *             schema:
@@ -643,7 +741,12 @@ router.put('/:id/attributes', async (req, res) => {
  *                   description: The status code of the response
  *                   example: 200
  *                 data:
- *                   $ref: '#/components/schemas/Character'
+ *                   type: object
+ *                   properties:
+ *                      fromPlayer:
+ *                         $ref: '#/components/schemas/Player'
+ *                      toPlayer:
+ *                         $ref: '#/components/schemas/Player'
  *                 meta:
  *                   type: object
  *                   properties:
@@ -736,7 +839,7 @@ router.put('/extraPoints', async (req, res) => {
  *   delete:
  *     summary: Delete a character by ID
  *     tags: [Characters]
- *     description: Delete a character by its ID.
+ *     description: Delete a character by its ID. If the character is a player character and is owner of a team, the team ownership will be transferred to another player character in the same team, if no other player character is in the team, the team will be deleted.
  *     parameters:
  *       - in: path
  *         name: id

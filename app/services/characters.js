@@ -74,10 +74,6 @@ const getCharacter = async (characterId) => {
             });
         }
 
-        if (!character) {
-            return NotFoundError('Character not found');
-        }
-
         const formattedCharacter = constructCharacterResponse(character);
 
         return success(formattedCharacter);
@@ -194,7 +190,7 @@ const createCharacter = async (name, ext_id='', characterType, level, elements, 
         }
 
         await transaction.commit();
-        return success({ id: characterId}, message = 'Character created successfully');
+        return success({ id: characterId}, message = 'Character created successfully', statusCode = 201);
     } catch (error) {
         if (transaction) await transaction.rollback();
         return ServerError(error.message);
@@ -318,10 +314,6 @@ const updateCharacterAttributes = async (characterId, increments) => {
         const updatedCharacter = await PlayersModel.findByPk(characterId, {
             include: includePlayerAssociationsOutsideTeamPlayer()
         });
-
-        if (!updatedCharacter) {
-            return NotFoundError('Character not found');
-        }
 
         return success(constructCharacterResponse(updatedCharacter), message = 'Attributes updated successfully');
     } catch (error) {

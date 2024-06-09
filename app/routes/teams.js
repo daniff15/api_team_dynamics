@@ -83,12 +83,12 @@ const router = express.Router();
  *         level:
  *           type: integer
  *           description: The level of the character
- *         xp:
+ *         character_type_id:
  *           type: integer
- *           description: The experience points of the character
- *         att_xtra_points:
- *           type: integer
- *           description: The extra points of the character
+ *           description: The character type ID
+ *         image_path:
+ *           type: string
+ *           description: The path to the character image
  *         attributes:
  *           type: object
  *           description: The attributes of the character

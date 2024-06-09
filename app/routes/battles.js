@@ -106,7 +106,16 @@ const router = express.Router();
  *   get:
  *     summary: Get battles
  *     tags: [Battles]
- *     description: Retrieve a list of battles based on specified filters. team_id filter retrieves battles where the team participated, boss_id filter retrieves battles where the boss was involved, winner_id filter retrieves battles where the specified team or boss won, and battle_type filter retrieves battles of the specified type. If no filters are provided, all battles are retrieved. The filters can be combined to retrieve battles based on multiple criteria.
+ *     description: |
+ *       Retrieve a list of battles based on specified filters:
+ *       - `team_id` filter: Retrieves battles where the team participated
+ *       - `boss_id` filter: Retrieves battles where the boss was involved
+ *       - `winner_id` filter: Retrieves battles where the specified team or boss won
+ *       - `battle_type` filter: Retrieves battles of the specified type
+ *       
+ *       If no filters are provided, all battles are retrieved. 
+ *       The filters can be combined to retrieve battles based on multiple criteria.
+ *  
  *     parameters:
  *       - in: query
  *         name: team_id
@@ -314,7 +323,15 @@ router.get("/:id", async (req, res) => {
  *   post:
  *     summary: Create a new battle
  *     tags: [Battles]
- *     description: Create a new battle with the provided data. If the battle is a team battle, the team_id and opponent_team_id fields are required. If the battle is a boss battle, the team_id and boss_id fields are required. Boss battles give rewards based on boss level (only the first time the boss is defeated) and cooldown time is activated if the team is defeated by the boss. Team battles give no rewards.
+ *     description: |
+ *       Create a new battle with the provided data. 
+ *       If the battle is a team battle, the `team_id` and `opponent_team_id` fields are required. 
+ *       If the battle is a boss battle, the `team_id` and `boss_id` fields are required. 
+ *       
+ *       Boss battles give rewards based on boss level (only the first time the boss is defeated) 
+ *       and cooldown time is activated if the team is defeated by the boss. 
+ *       Team battles give no rewards and have no cooldown time.
+ *  
  *     requestBody:
  *       required: true
  *       content:
@@ -383,7 +400,7 @@ router.get("/:id", async (req, res) => {
  *                       description: Indicates if an error occurred
  *                       example: false
  *       400:
- *         description: Bad Request - (You can only have one opponent/You must have an opponent/Team must have 4 characters/Opponent team must have 4 characters/Boss not in the game narrative/Team is on cooldown and cannot battle any bosses. Cooldown till - cooldown_time)
+ *         description: Bad Request - (You can only have one opponent/You must have an opponent/Team must have 4 characters/Opponent team must have 4 characters/Boss not in the game narrative/Team is on cooldown and cannot battle any bosses. Cooldown till - {cooldown_time})
  *         content:
  *           application/json:
  *             schema:
