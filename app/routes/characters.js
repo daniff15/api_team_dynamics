@@ -163,7 +163,7 @@ const router = express.Router();
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 200
@@ -188,7 +188,7 @@ const router = express.Router();
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 500
@@ -210,7 +210,7 @@ router.get('/', async (req, res) => {
 
         const characters = await charactersService.getCharacters(filters);
         if (characters.meta.error) {
-            return res.status(characters.statusCode).json(characters);
+            return res.status(characters.status_code).json(characters);
         }
         res.json(characters);
     } catch (err) {
@@ -244,7 +244,7 @@ router.get('/', async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 200
@@ -267,7 +267,7 @@ router.get('/', async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 404
@@ -288,7 +288,7 @@ router.get('/', async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 500
@@ -305,7 +305,7 @@ router.get('/:id', async (req, res) => {
         const id = req.params.id;
         const character = await charactersService.getCharacter(id);
         if (character.meta.error) {
-            return res.status(character.statusCode).json(character);
+            return res.status(character.status_code).json(character);
         }
         res.json(character);
     } catch (err) {
@@ -399,7 +399,7 @@ router.get('/:id', async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 201
@@ -426,7 +426,7 @@ router.get('/:id', async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 400
@@ -447,7 +447,7 @@ router.get('/:id', async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 404
@@ -468,7 +468,7 @@ router.get('/:id', async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 500
@@ -485,7 +485,7 @@ router.post('/', async (req, res) => {
         const { name, ext_id, characterType, level, elements, attributes, image_path, before_defeat_phrase, after_defeat_phrase } = req.body;
         const result = await charactersService.createCharacter(name, ext_id, characterType, level, elements, attributes, image_path, before_defeat_phrase, after_defeat_phrase);
         if (result.meta.error) {
-            return res.status(result.statusCode).json(result);
+            return res.status(result.status_code).json(result);
         }
         res.status(201).send(result);
     } catch (error) {
@@ -529,7 +529,7 @@ router.post('/', async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 200
@@ -552,7 +552,7 @@ router.post('/', async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 400
@@ -573,7 +573,7 @@ router.post('/', async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 404
@@ -594,7 +594,7 @@ router.post('/', async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 500
@@ -612,7 +612,7 @@ router.put('/:id/xp', async (req, res) => {
         const attribute = req.body;
         const result = await charactersService.addXPtoCharacter(id, attribute.XP);
         if (result.meta.error) {
-            return res.status(result.statusCode).json(result);
+            return res.status(result.status_code).json(result);
         }
         res.json(result);
     }
@@ -676,7 +676,7 @@ router.put('/:id/xp', async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 200
@@ -699,7 +699,7 @@ router.put('/:id/xp', async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 400
@@ -720,7 +720,7 @@ router.put('/:id/xp', async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 404
@@ -741,7 +741,7 @@ router.put('/:id/xp', async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 500
@@ -759,7 +759,7 @@ router.put('/:id/attributes', async (req, res) => {
         const attributes = req.body;
         const result = await charactersService.updateCharacterAttributes(id, attributes);
         if (result.meta.error) {
-            return res.status(result.statusCode).json(result);
+            return res.status(result.status_code).json(result);
         }
         res.json(result);
     }
@@ -784,10 +784,10 @@ router.put('/:id/attributes', async (req, res) => {
  *           schema:
  *             type: object
  *             properties:
- *               fromPlayerId:
+ *               from_player_id:
  *                 type: integer
  *                 description: The ID of the player that is giving the points
- *               toPlayerId:
+ *               to_player_id:
  *                 type: integer
  *                 description: The ID of the player that is receiving the points
  *               points:
@@ -804,16 +804,16 @@ router.put('/:id/attributes', async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 200
  *                 data:
  *                   type: object
  *                   properties:
- *                      fromPlayer:
+ *                      from_player:
  *                         $ref: '#/components/schemas/Player'
- *                      toPlayer:
+ *                      to_player:
  *                         $ref: '#/components/schemas/Player'
  *                 meta:
  *                   type: object
@@ -832,7 +832,7 @@ router.put('/:id/attributes', async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 400
@@ -853,7 +853,7 @@ router.put('/:id/attributes', async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 404
@@ -874,7 +874,7 @@ router.put('/:id/attributes', async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 500
@@ -888,10 +888,10 @@ router.put('/:id/attributes', async (req, res) => {
  */
 router.put('/extraPoints', async (req, res) => {
     try {
-        const { fromPlayerId, toPlayerId, points } = req.body;
-        const result = await charactersService.transferExtraPoints(fromPlayerId, toPlayerId, points);
+        const { from_player_id, to_player_id, points } = req.body;
+        const result = await charactersService.transferExtraPoints(from_player_id, to_player_id, points);
         if (result.meta.error) {
-            return res.status(result.statusCode).json(result);
+            return res.status(result.status_code).json(result);
         }
         res.json(result);
     }
@@ -926,7 +926,7 @@ router.put('/extraPoints', async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 200
@@ -947,7 +947,7 @@ router.put('/extraPoints', async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 404
@@ -968,7 +968,7 @@ router.put('/extraPoints', async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 500
@@ -985,7 +985,7 @@ router.delete('/:id', async (req, res) => {
         const id = req.params.id;
         const result = await charactersService.deleteCharacter(id);
         if (result.meta.error) {
-            return res.status(result.statusCode).json(result);
+            return res.status(result.status_code).json(result);
         }
         res.json(result);
     } catch (err) {

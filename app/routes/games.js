@@ -43,7 +43,7 @@ const router = express.Router();
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 200
@@ -66,7 +66,7 @@ const router = express.Router();
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 500
@@ -82,7 +82,7 @@ router.get("/", async (req, res) => {
     try {
         const rows = await gamesService.getAllGames();
         if (rows.meta.error) {
-            return res.status(rows.statusCode).json(rows);
+            return res.status(rows.status_code).json(rows);
         }
         res.json(rows);
     } catch (err) {
@@ -115,7 +115,7 @@ router.get("/", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 200
@@ -145,7 +145,7 @@ router.get("/", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 404
@@ -166,7 +166,7 @@ router.get("/", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 500
@@ -184,7 +184,7 @@ router.get("/:id", async (req, res) => {
         const id = req.params.id;
         const game = await gamesService.getGame(id);
         if (game.meta.error) {
-            return res.status(game.statusCode).json(game);
+            return res.status(game.status_code).json(game);
         }
         res.json(game);
     } catch (err) {
@@ -221,7 +221,7 @@ router.get("/:id", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 201
@@ -244,7 +244,7 @@ router.get("/:id", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 500
@@ -261,7 +261,7 @@ router.post("/", async (req, res) => {
         const game = req.body;
         const result = await gamesService.createGame(game);
         if (result.meta.error) {
-            return res.status(result.statusCode).json(result);
+            return res.status(result.status_code).json(result);
         }
         res.status(201).json(result);
     } catch (err) {
@@ -308,7 +308,7 @@ router.post("/", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 200
@@ -340,7 +340,7 @@ router.post("/", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 400
@@ -361,7 +361,7 @@ router.post("/", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 404
@@ -382,7 +382,7 @@ router.post("/", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 409
@@ -403,7 +403,7 @@ router.post("/", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 500
@@ -421,7 +421,7 @@ router.put("/:id/bosses", async (req, res) => {
         const { bosses } = req.body;
         const result = await gamesService.postBossesToGame(id, bosses);
         if (result.meta.error) {
-            return res.status(result.statusCode).json(result);
+            return res.status(result.status_code).json(result);
         }
         res.json(result);
     } catch (err) {
@@ -455,7 +455,7 @@ router.put("/:id/bosses", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 200
@@ -487,7 +487,7 @@ router.put("/:id/bosses", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 404
@@ -508,7 +508,7 @@ router.put("/:id/bosses", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 500
@@ -526,14 +526,14 @@ router.get("/odds/:team_id", async (req, res) => {
 
         const result = await gamesService.getGameOdds(teamId);
         if (result.meta.error) {
-            return res.status(result.statusCode).json(result);
+            return res.status(result.status_code).json(result);
         }
         res.json(result);
     } catch (err) {
         console.error(err);
         res.status(500).json({ 
             message: err.message, 
-            statusCode: 500, 
+            status_code: 500, 
             meta: { error: true } 
         });
     }
@@ -564,7 +564,7 @@ router.get("/odds/:team_id", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 200
@@ -601,7 +601,7 @@ router.get("/odds/:team_id", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 404
@@ -622,7 +622,7 @@ router.get("/odds/:team_id", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 500
@@ -639,7 +639,7 @@ router.get("/status/:team_id", async (req, res) => {
         const teamId = req.params.team_id;
         const result = await gamesService.checkNarrativeStatus(teamId);
         if (result.meta.error) {
-            return res.status(result.statusCode).json(result);
+            return res.status(result.status_code).json(result);
         }
         res.json(result);
     } catch (err) {

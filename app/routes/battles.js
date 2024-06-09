@@ -149,7 +149,7 @@ const router = express.Router();
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 200
@@ -193,7 +193,7 @@ const router = express.Router();
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 500
@@ -218,7 +218,7 @@ router.get("/", async (req, res) => {
 
         const battles = await battlesService.getAllBattles(filters);
         if (battles.meta.error) {
-            return res.status(battles.statusCode).json(battles);
+            return res.status(battles.status_code).json(battles);
         }
         res.json(battles);
     } catch (err) {
@@ -253,7 +253,7 @@ router.get("/", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 200
@@ -278,7 +278,7 @@ router.get("/", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 404
@@ -299,7 +299,7 @@ router.get("/", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 500
@@ -316,7 +316,7 @@ router.get("/:id", async (req, res) => {
     try {
         const battleDetails = await battlesService.getBattle(req.params.id);
         if (battleDetails.meta.error) {
-            return res.status(battleDetails.statusCode).json(battleDetails);
+            return res.status(battleDetails.status_code).json(battleDetails);
         }
         res.json(battleDetails);
     } catch (err) {
@@ -369,7 +369,7 @@ router.get("/:id", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 201
@@ -421,7 +421,7 @@ router.get("/:id", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 400
@@ -442,7 +442,7 @@ router.get("/:id", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 404
@@ -463,7 +463,7 @@ router.get("/:id", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 500
@@ -479,7 +479,7 @@ router.post("/", async (req, res) => {
     try {
         const battle = await battlesService.createBattle(req.body);
         if (battle.meta.error) {
-            return res.status(battle.statusCode).json(battle);
+            return res.status(battle.status_code).json(battle);
         }
         res.status(201).json(battle);
     } catch (err) {

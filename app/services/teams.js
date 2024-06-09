@@ -124,7 +124,7 @@ const createTeam = async (team) => {
     const newTeam = await TeamsModel.create(team);
     await TeamPlayersModel.create({ team_id: newTeam.id, player_id: owner });
 
-    return success(newTeam, statusCode = 201, message = 'Team created successfully');
+    return success(newTeam, status_code = 201, message = 'Team created successfully');
 }
 
 const deleteTeam = async (id) => {

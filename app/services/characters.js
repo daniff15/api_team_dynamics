@@ -190,7 +190,7 @@ const createCharacter = async (name, ext_id='', characterType, level, elements, 
         }
 
         await transaction.commit();
-        return success({ id: characterId}, message = 'Character created successfully', statusCode = 201);
+        return success({ id: characterId}, message = 'Character created successfully', status_code = 201);
     } catch (error) {
         if (transaction) await transaction.rollback();
         return ServerError(error.message);
@@ -321,25 +321,25 @@ const updateCharacterAttributes = async (characterId, increments) => {
     }
 }
 
-const transferExtraPoints = async (fromPlayerId, toPlayerId, points) => {
+const transferExtraPoints = async (from_player_id, to_player_id, points) => {
     try {
-        const fromPlayer = await PlayersModel.findByPk(fromPlayerId);
-        const toPlayer = await PlayersModel.findByPk(toPlayerId);
+        const from_player = await PlayersModel.findByPk(from_player_id);
+        const to_player = await PlayersModel.findByPk(to_player_id);
 
-        if (!fromPlayer) {
+        if (!from_player) {
             return NotFoundError('From player not found');
         }
 
-        if (!toPlayer) {
+        if (!to_player) {
             return NotFoundError('To player not found');
         }
 
         const teamMembershipFrom = await TeamPlayersModel.findOne({
-            where: { player_id: fromPlayerId }
+            where: { player_id: from_player_id }
         });
 
         const teamMembershipTo = await TeamPlayersModel.findOne({
-            where: { player_id: toPlayerId }
+            where: { player_id: to_player_id }
         });
 
         if (!teamMembershipFrom || !teamMembershipTo) {
@@ -350,7 +350,7 @@ const transferExtraPoints = async (fromPlayerId, toPlayerId, points) => {
             return BadRequestError('Players are not on the same team');
         }
 
-        const availableXtraPoints = parseInt(fromPlayer.att_xtra_points);
+        const availableXtraPoints = parseInt(from_player.att_xtra_points);
 
         if (points <= 0) {
             return BadRequestError('Points must be a positive integer');
@@ -363,25 +363,25 @@ const transferExtraPoints = async (fromPlayerId, toPlayerId, points) => {
         // Update the extra points for both players
         await PlayersModel.update(
             { att_xtra_points: availableXtraPoints - points },
-            { where: { id: fromPlayerId } }
+            { where: { id: from_player_id } }
         );
 
         await PlayersModel.update(
-            { att_xtra_points: parseInt(toPlayer.att_xtra_points) + points },
-            { where: { id: toPlayerId } }
+            { att_xtra_points: parseInt(to_player.att_xtra_points) + points },
+            { where: { id: to_player_id } }
         );
 
         // Fetch the updated details of both players
-        const updatedFromPlayer = await PlayersModel.findByPk(fromPlayerId, {
+        const updatedfrom_player = await PlayersModel.findByPk(from_player_id, {
             include: includePlayerAssociationsOutsideTeamPlayer()
         });
-        const updatedToPlayer = await PlayersModel.findByPk(toPlayerId, {
+        const updatedto_player = await PlayersModel.findByPk(to_player_id, {
             include: includePlayerAssociationsOutsideTeamPlayer()
         });
 
         return success({
-            fromPlayer: constructCharacterResponse(updatedFromPlayer),
-            toPlayer: constructCharacterResponse(updatedToPlayer)
+            from_player: constructCharacterResponse(updatedfrom_player),
+            to_player: constructCharacterResponse(updatedto_player)
         }, 'Points transferred successfully');
     } catch (error) {
         return ServerError(error.message);

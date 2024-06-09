@@ -167,7 +167,7 @@ const router = express.Router();
  *                   message:
  *                     type: string
  *                     description: A message indicating the result of the operation
- *                   statusCode:
+ *                   status_code:
  *                     type: integer
  *                     description: The status code of the response
  *                     example: 200
@@ -218,7 +218,7 @@ const router = express.Router();
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 404
@@ -239,7 +239,7 @@ const router = express.Router();
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 500
@@ -256,7 +256,7 @@ router.get('/', async (req, res) => {
         const { game_id, order_by_total_xp, search_comm_term } = req.query;
         const teams = await teamsService.getAllTeams(game_id, order_by_total_xp, search_comm_term);
         if (teams.meta.error) {
-            return res.status(teams.statusCode).json(teams);
+            return res.status(teams.status_code).json(teams);
         }
         res.json(teams);
     } catch (error) {
@@ -290,7 +290,7 @@ router.get('/', async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 200
@@ -313,7 +313,7 @@ router.get('/', async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 404
@@ -334,7 +334,7 @@ router.get('/', async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 500
@@ -352,7 +352,7 @@ router.get("/:id", async (req, res) => {
         const id = req.params.id;
         const team = await teamsService.getTeam(id);
         if (team.meta.error) {
-            return res.status(team.statusCode).json(team);
+            return res.status(team.status_code).json(team);
         }
         res.json(team);
     } catch (err) {
@@ -399,7 +399,7 @@ router.get("/:id", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 201
@@ -448,7 +448,7 @@ router.get("/:id", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 404
@@ -469,7 +469,7 @@ router.get("/:id", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 409
@@ -490,7 +490,7 @@ router.get("/:id", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 500
@@ -508,7 +508,7 @@ router.post("/", async (req, res) => {
         const team = req.body;
         const result = await teamsService.createTeam(team);
         if (result.meta.error) {
-            return res.status(result.statusCode).json(result);
+            return res.status(result.status_code).json(result);
         }
         res.status(201).json(result);
     } catch (err) {
@@ -542,7 +542,7 @@ router.post("/", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 200
@@ -569,7 +569,7 @@ router.post("/", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 400
@@ -590,7 +590,7 @@ router.post("/", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 404
@@ -611,7 +611,7 @@ router.post("/", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 500
@@ -628,7 +628,7 @@ router.delete("/:id", async (req, res) => {
         const id = req.params.id;
         const result = await teamsService.deleteTeam(id);
         if (result.meta.error) {
-            return res.status(result.statusCode).json(result);
+            return res.status(result.status_code).json(result);
         }
         res.json(result);
     } catch (err) {
@@ -671,7 +671,7 @@ router.delete("/:id", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 200
@@ -701,7 +701,7 @@ router.delete("/:id", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 400
@@ -722,7 +722,7 @@ router.delete("/:id", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 404
@@ -743,7 +743,7 @@ router.delete("/:id", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 409
@@ -764,7 +764,7 @@ router.delete("/:id", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 500
@@ -783,7 +783,7 @@ router.post("/:team_id/players", async (req, res) => {
         const characterId = req.body.character_id;
         const result = await teamsService.addCharacterToTeam(teamId, characterId);
         if (result.meta.error) {
-            return res.status(result.statusCode).json(result);
+            return res.status(result.status_code).json(result);
         }
         res.json(result);
     } catch (err) {
@@ -827,7 +827,7 @@ router.post("/:team_id/players", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 200
@@ -876,7 +876,7 @@ router.post("/:team_id/players", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 400
@@ -897,7 +897,7 @@ router.post("/:team_id/players", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 404
@@ -918,7 +918,7 @@ router.post("/:team_id/players", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 409
@@ -939,7 +939,7 @@ router.post("/:team_id/players", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 500
@@ -958,7 +958,7 @@ router.put("/:id", async (req, res) => {
         const teamId = req.params.id;
         const result = await teamsService.updateTeam(teamId, updates);
         if (result.meta.error) {
-            return res.status(result.statusCode).json(result);
+            return res.status(result.status_code).json(result);
         }
         res.json(result);
     } catch (err) {
@@ -993,7 +993,7 @@ router.put("/:id", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 200
@@ -1016,7 +1016,7 @@ router.put("/:id", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 400
@@ -1037,7 +1037,7 @@ router.put("/:id", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 404
@@ -1058,7 +1058,7 @@ router.put("/:id", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 500
@@ -1076,7 +1076,7 @@ router.delete("/leave/:id", async (req, res) => {
         const playerId = req.params.id;
         const result = await teamsService.leaveTeam(playerId);
         if (result.meta.error) {
-            return res.status(result.statusCode).json(result);
+            return res.status(result.status_code).json(result);
         }
         res.json(result);
     } catch (err) {
@@ -1111,7 +1111,7 @@ router.delete("/leave/:id", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the result of the operation
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 200
@@ -1160,7 +1160,7 @@ router.delete("/leave/:id", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 400
@@ -1181,7 +1181,7 @@ router.delete("/leave/:id", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 404
@@ -1202,7 +1202,7 @@ router.delete("/leave/:id", async (req, res) => {
  *                 message:
  *                   type: string
  *                   description: A message indicating the error
- *                 statusCode:
+ *                 status_code:
  *                   type: integer
  *                   description: The status code of the response
  *                   example: 500
@@ -1219,7 +1219,7 @@ router.put("/owner/:id", async (req, res) => {
         const playerId = req.params.id;
         const result = await teamsService.changeOwner(playerId);
         if (result.meta.error) {
-            return res.status(result.statusCode).json(result);
+            return res.status(result.status_code).json(result);
         }
         res.json(result);
     } catch (err) {

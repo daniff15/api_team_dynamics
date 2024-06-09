@@ -1,7 +1,7 @@
-function success(data, message = "OK", statusCode = 200) {
+function success(data, message = "OK", status_code = 200) {
   return {
     message,
-    statusCode,
+    status_code,
     meta: {
         error: false,
     },
@@ -9,10 +9,10 @@ function success(data, message = "OK", statusCode = 200) {
   };
 }
 
-function error(message = "Server error", statusCode = 500) {
+function error(message = "Server error", status_code = 500) {
   return {
     message,
-    statusCode,
+    status_code,
     meta: {
       error: true,
     },
