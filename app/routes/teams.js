@@ -118,7 +118,7 @@ const router = express.Router();
  *   get:
  *     summary: Get all teams
  *     tags: [Teams]
- *     description: Get all teams. The `orderByTotalXP` parameter can be used to order teams by total XP in ascending or descending order.
+ *     description: Get all teams. The `order_by_total_xp` parameter can be used to order teams by total XP in ascending or descending order.
  *     parameters:
  *       - in: query
  *         name: game_id
@@ -126,10 +126,14 @@ const router = express.Router();
  *           type: integer
  *         description: Optional. Filter teams by game narrative ID.
  *       - in: query
- *         name: orderByTotalXP
+ *         name: order_by_total_xp
  *         schema:
  *           type: string
  *           enum: [ASC, DESC]
+ *       - in: query
+ *         name: search_comm_term
+ *         schema:
+ *           type: string
  *         description: Optional. Order teams by total XP. Use 'ASC' for ascending order and 'DESC' for descending order.
  *     responses:
  *       200:
@@ -147,6 +151,9 @@ const router = express.Router();
  *                   name:
  *                     type: string
  *                     description: The team name
+ *                   community_id_ext:
+ *                     type: string
+ *                     description: The external ID of the element, should be the id of the community on the platform
  *                   game_id:
  *                     type: integer
  *                     description: The game ID
@@ -159,6 +166,10 @@ const router = express.Router();
  *                   team_image_path:
  *                     type: string
  *                     description: The path to the team image
+ *                   cooldown_time:
+ *                     type: string
+ *                     format: date-time
+ *                     description: The cooldown time of the team
  *       404:
  *         description: Game not found
  *         content:
@@ -204,8 +215,8 @@ const router = express.Router();
  */
 router.get('/', async (req, res) => {
     try {
-        const { game_id, orderByTotalXP } = req.query;
-        const teams = await teamsService.getAllTeams(game_id, orderByTotalXP);
+        const { game_id, order_by_total_xp, search_comm_term } = req.query;
+        const teams = await teamsService.getAllTeams(game_id, order_by_total_xp, search_comm_term);
         if (teams.meta.error) {
             return res.status(teams.statusCode).json(teams);
         }

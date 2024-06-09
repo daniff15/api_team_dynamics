@@ -135,7 +135,7 @@ const router = express.Router();
  *       - Minion: 2
  *       - Boss: 3
  *       
- *       The `orderByTotalXP` filter can only be used when `character_type` is 1 (Player).
+ *       The `order_by_total_xp` filter can only be used when `character_type` is 1 (Player).
  *       
  *       The response structure is similar for players, minions, and bosses. However, if `character_type` is 1 (Player), additional attributes such as `ext_id`, `xp`, `total_xp`, and `att_xtra_points` will be returned. 
  *       If `character_type` is 2 or 3, the attributes `before_defeat_phrase`, `after_defeat_phrase`, and `cooldown_time` (represents the cooldown period in seconds that the team who got defeated has to wait until they can fight another boss again) will be returned.
@@ -147,7 +147,7 @@ const router = express.Router();
  *           type: integer
  *         description: ID of the character type to filter
  *       - in: query
- *         name: orderByTotalXP
+ *         name: order_by_total_xp
  *         schema:
  *           type: string
  *           enum: [ASC, DESC]
@@ -205,7 +205,7 @@ router.get('/', async (req, res) => {
         const filters = {};
         if (req.query.character_type) {
             filters.character_type = parseInt(req.query.character_type, 10);
-            filters.orderByTotalXP = req.query.orderByTotalXP;
+            filters.order_by_total_xp = req.query.order_by_total_xp;
         }
 
         const characters = await charactersService.getCharacters(filters);

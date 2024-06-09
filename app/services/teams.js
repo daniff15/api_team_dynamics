@@ -4,11 +4,16 @@ const { BadRequestError, NotFoundError, ServerError, ConflictError } = require('
 const { success } = require('../utils/apiResponse');
 const { Op } = require('sequelize');
 
-const getAllTeams = async (game_id, orderByTotalXP = 'DESC') => {
-
+const getAllTeams = async (game_id, order_by_total_xp = 'DESC', search_comm_term = '') => {
     const queryOptions = {
         where: {},
-        order: [['total_xp', orderByTotalXP]] 
+        order: [['total_xp', order_by_total_xp]],
+        include: [
+            {
+                model: TeamPlayersModel,
+                include: includePlayerAssociationsInsideTeam()
+            }
+        ]
     };
 
     if (game_id) {
@@ -19,8 +24,29 @@ const getAllTeams = async (game_id, orderByTotalXP = 'DESC') => {
         queryOptions.where.game_id = game_id;
     }
 
-    const teams = await TeamsModel.findAll(queryOptions);
-    return success(teams);
+    if (search_comm_term) {
+        queryOptions.where.community_id_ext = { [Op.like]: `%${search_comm_term}%` };
+    }
+
+    const teamsData = await TeamsModel.findAll(queryOptions);
+
+    // Remove team_players from the response
+    const response = teamsData.map(team => {
+        const teamData = {
+            id: team.id,
+            community_id_ext: team.community_id_ext,
+            game_id: team.game_id,
+            owner_id: team.owner_id,
+            name: team.name,
+            total_xp: team.total_xp,
+            team_image_path: team.team_image_path,
+            cooldown_time: team.cooldown_time
+        };
+
+        return teamData;
+    });
+
+    return success(response);
 };
 
 const getTeam = async (id) => {
@@ -92,7 +118,7 @@ const createTeam = async (team) => {
     const playerInATeam = await TeamPlayersModel.findOne({ where: { player_id: player.id } });
 
     if (playerInATeam) {
-        return ConflictError('Player is already a member of a team. Create a new player to create a new team or leave the current team (Your stats will be reseted).');
+        return ConflictError('Player is already a member of a team. Create a new player to create a new team.');
     }
 
     const newTeam = await TeamsModel.create(team);
