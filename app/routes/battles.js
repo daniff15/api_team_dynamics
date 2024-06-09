@@ -59,6 +59,45 @@ const router = express.Router();
  *           type: string
  *           format: date-time
  *           description: The timestamp when the attack was performed
+ *     Battle_Participant:
+ *       type: object
+ *       properties:
+ *           id:
+ *             type: integer
+ *             description: The ID of the participant
+ *           name:
+ *             type: string
+ *             description: The name of the participant
+ *           team:
+ *             type: integer
+ *             description: The ID of the team the participant belongs to
+ *           level:
+ *             type: integer
+ *             description: The level of the participant
+ *           character_type:
+ *             type: integer
+ *             description: The type of character
+ *           attributes:
+ *             type: object
+ *             properties:
+ *               HP:
+ *                 type: integer
+ *                 description: Hit Points (HP) of the participant
+ *               DEF:
+ *                 type: integer
+ *                 description: Defense attribute of the participant
+ *               ATK:
+ *                 type: integer
+ *                 description: Attack attribute of the participant
+ *               SPEED:
+ *                 type: integer
+ *                 description: Speed attribute of the participant
+ *               hp_battle:
+ *                 type: integer
+ *                 description: Hit Points (HP) remaining after the battle
+ *           real_speed:
+ *             type: integer
+ *             description: The actual speed of the participant
  */
 
 /**
@@ -67,31 +106,32 @@ const router = express.Router();
  *   get:
  *     summary: Get battles
  *     tags: [Battles]
- *     description: Retrieve a list of battles based on specified filters
+ *     description: Retrieve a list of battles based on specified filters. team_id filter retrieves battles where the team participated, boss_id filter retrieves battles where the boss was involved, winner_id filter retrieves battles where the specified team or boss won, and battle_type filter retrieves battles of the specified type. If no filters are provided, all battles are retrieved. The filters can be combined to retrieve battles based on multiple criteria.
  *     parameters:
  *       - in: query
  *         name: team_id
  *         schema:
  *           type: integer
- *         description: ID of the team participating in the battles
+ *         description: ID of the team involved in the battle
  *       - in: query
  *         name: boss_id
  *         schema:
  *           type: integer
- *         description: ID of the boss involved in the battles
+ *         description: ID of the boss involved in the battle
  *       - in: query
  *         name: winner_id
  *         schema:
  *           type: integer
- *         description: ID of the winning team or boss in the battles
+ *         description: ID of the winning team or boss involved in the battle
  *       - in: query
  *         name: battle_type
  *         schema:
  *           type: string
- *         description: Type of battles to filter [boss, team]
+ *           enum: [BOSS, TEAM]
+ *         description: The type of battles to retrieve
  *     responses:
  *       200:
- *         description: A list of battles
+ *         description: A list of battles based on the selected filters
  *         content:
  *           application/json:
  *             schema:
@@ -103,7 +143,26 @@ const router = express.Router();
  *                 data:
  *                   type: array
  *                   items:
- *                     $ref: '#/components/schemas/Battle'
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                         description: The ID of the battle
+ *                       team_id:
+ *                         type: integer
+ *                         description: The ID of the team participating in the battle
+ *                       opponent_team_id:
+ *                         type: integer    
+ *                         description: The ID of the opposing team (required for team battle)
+ *                       boss_id:
+ *                         type: integer
+ *                         description: The ID of the boss in the battle
+ *                       winner_id:
+ *                         type: integer
+ *                         description: The ID of the winning team or boss
+ *                       battle_type:
+ *                         type: string
+ *                         description: The type of battle
  *                 meta:
  *                   type: object
  *                   properties:
@@ -162,7 +221,7 @@ router.get("/", async (req, res) => {
  *   get:
  *     summary: Get details of a battle by ID
  *     tags: [Battles]
- *     description: Get details of a battle including attacks by its ID
+ *     description: Get details of a battle including attacks performed during the battle.
  *     parameters:
  *       - in: path
  *         name: id
@@ -255,7 +314,7 @@ router.get("/:id", async (req, res) => {
  *   post:
  *     summary: Create a new battle
  *     tags: [Battles]
- *     description: Create a new battle with the provided data
+ *     description: Create a new battle with the provided data. If the battle is a team battle, the team_id and opponent_team_id fields are required. If the battle is a boss battle, the team_id and boss_id fields are required. Boss battles give rewards based on boss level (only the first time the boss is defeated) and cooldown time is activated if the team is defeated by the boss. Team battles give no rewards.
  *     requestBody:
  *       required: true
  *       content:
@@ -286,9 +345,36 @@ router.get("/:id", async (req, res) => {
  *                   type: string
  *                   description: A message indicating the result of the operation
  *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Battle'
+ *                   type: object
+ *                   properties:
+ *                     battle:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: integer
+ *                           description: The ID of the battle
+ *                         team_id:
+ *                           type: integer
+ *                           description: The ID of the team participating in the battle
+ *                         opponent_team_id:
+ *                           type: integer    
+ *                           description: The ID of the opposing team (required for team battle)
+ *                         boss_id:
+ *                           type: integer
+ *                           description: The ID of the boss in the battle
+ *                         winner_id:
+ *                           type: integer
+ *                           description: The ID of the winning team or boss
+ *                         battle_type:
+ *                           type: string
+ *                           description: The type of battle
+ *                     participants:
+ *                       type: array 
+ *                       items:
+ *                           $ref: '#/components/schemas/Battle_Participant'
+ *                     reward:
+ *                       type: integer
+ *                       description: The reward for winning the battle
  *                 meta:
  *                   type: object
  *                   properties:
@@ -297,7 +383,7 @@ router.get("/:id", async (req, res) => {
  *                       description: Indicates if an error occurred
  *                       example: false
  *       400:
- *         description: Bad Request - The request body is invalid
+ *         description: Bad Request - (You can only have one opponent/You must have an opponent/Team must have 4 characters/Opponent team must have 4 characters/Boss not in the game narrative/Team is on cooldown and cannot battle any bosses. Cooldown till - cooldown_time)
  *         content:
  *           application/json:
  *             schema:
@@ -318,7 +404,7 @@ router.get("/:id", async (req, res) => {
  *                       description: Indicates if an error occurred
  *                       example: true
  *       404:
- *         description: Not Found - The battle with the specified ID does not exist
+ *         description: Not Found - The (team/oponnent_team/boss) with the specified ID does not exist
  *         content:
  *           application/json:
  *             schema:

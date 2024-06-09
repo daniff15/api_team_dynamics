@@ -25,9 +25,9 @@ const getAllBattles = async (filters = {}) => {
         }
 
         if (filters.battle_type) {
-            if (filters.battle_type === 'boss') {
+            if (filters.battle_type === 'BOSS') {
                 where.boss_id = { [Op.not]: null };
-            } else if (filters.battle_type === 'team') {
+            } else if (filters.battle_type === 'TEAM') {
                 where.opponent_team_id = { [Op.not]: null };
             }
         }
@@ -83,7 +83,11 @@ const createBattle = async (battle) => {
     let transaction;
     try {
         transaction = await sequelize.transaction();
-        const { team_id, opponent_team_id, boss_id } = battle;
+        let { team_id, opponent_team_id, boss_id } = battle;
+
+        // If the body passed to create a battle has a 0 value for opponent_team_id or boss_id, we should set it to null in order to avoid unecessary errors.
+        opponent_team_id = opponent_team_id == 0 ? null : opponent_team_id;
+        boss_id = boss_id == 0 ? null : boss_id;
 
         if (opponent_team_id && boss_id) {
             return BadRequestError('You can only have one opponent');
