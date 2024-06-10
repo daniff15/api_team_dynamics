@@ -99,6 +99,12 @@ const createCharacter = async (name, ext_id='', characterType, level, elements, 
         // Create the character
         let character;
         if (characterType === 2 || characterType === 3) {
+
+            const maxLevel = await LevelsModel.max('level_value', { transaction });
+            if (level > maxLevel) {
+                return BadRequestError('Level cannot be greater than the maximum level');
+            }
+
             character = await CharactersModel.create({
                 name: name,
                 character_type_id: characterType,

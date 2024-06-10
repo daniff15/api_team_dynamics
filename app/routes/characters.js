@@ -417,7 +417,7 @@ router.get('/:id', async (req, res) => {
  *                       description: Indicates if an error occurred
  *                       example: false
  *       400:
- *         description: Bad Request - The request body is invalid
+ *         description: Bad Request - (Level cannot be greater than the maximum level/External ID must be specified for player characters)
  *         content:
  *           application/json:
  *             schema:
@@ -543,7 +543,7 @@ router.post('/', async (req, res) => {
  *                       description: Indicates if an error occurred
  *                       example: false
  *       400:
- *         description: Bad Request - (The request body is invalid/Character is not a player character/Character is not a member of any team)
+ *         description: Bad Request - (Character is not a player character/Character is not a member of any team)
  *         content:
  *           application/json:
  *             schema:
@@ -690,7 +690,7 @@ router.put('/:id/xp', async (req, res) => {
  *                       description: Indicates if an error occurred
  *                       example: false
  *       400:
- *         description: Bad Request - (The request body is invalid/Attributes can only be updated for player characters/Character is not a member of any team/Insufficient extra points to update attributes)
+ *         description: Bad Request - (Attributes can only be updated for player characters/Character is not a member of any team/Insufficient extra points to update attributes)
  *         content:
  *           application/json:
  *             schema:
@@ -823,7 +823,7 @@ router.put('/:id/attributes', async (req, res) => {
  *                       description: Indicates if an error occurred
  *                       example: false
  *       400:
- *         description: Bad Request - The request body is invalid
+ *         description: Bad Request - (Both players must be members of a team/Players are not on the same team/Points must be a positive integer/Insufficient extra points to transfer)
  *         content:
  *           application/json:
  *             schema:
@@ -844,7 +844,7 @@ router.put('/:id/attributes', async (req, res) => {
  *                       description: Indicates if an error occurred
  *                       example: true
  *       404:
- *         description: Not Found - The character with the specified ID does not exist
+ *         description: Not Found - (From/To) player not found
  *         content:
  *           application/json:
  *             schema:

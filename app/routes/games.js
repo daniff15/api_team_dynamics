@@ -331,7 +331,7 @@ router.post("/", async (req, res) => {
  *                       description: Indicates if an error occurred
  *                       example: false
  *       400:
- *         description: Bad Request - (The request body is invalid/No bosses provided)
+ *         description: Bad Request - No bosses provided
  *         content:
  *           application/json:
  *             schema:
