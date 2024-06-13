@@ -152,7 +152,7 @@ const updateMaxLevel = async (level) => {
 
 module.exports = {
     getAllElements,
-    updateElementRelationships,
+    // updateElementRelationships,
     getAllAttributes,
     getMaxLevel,
     updateMaxLevel,
