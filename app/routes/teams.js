@@ -641,9 +641,9 @@ router.delete("/:id", async (req, res) => {
  * @swagger
  * /teams/{team_id}/players:
  *   post:
- *     summary: Add a character to a team
+ *     summary: Add players to a team
  *     tags: [Teams]
- *     description: Add a character with the specified ID to the team with the specified ID
+ *     description: Add players with the specified ID to the team with the specified ID
  *     parameters:
  *       - in: path
  *         name: team_id
@@ -658,11 +658,13 @@ router.delete("/:id", async (req, res) => {
  *             type: object
  *             properties:
  *               character_id:
- *                 type: integer
- *                 description: The ID of the character to add to the team
+ *                 type: array
+ *                 items:
+ *                   type: integer
+ *                   description: The ID of the player to add to the team
  *     responses:
  *       '200':
- *         description: Character added to the team successfully
+ *         description: Players added to team sucessfully
  *         content:
  *           application/json:
  *             schema:
@@ -692,7 +694,7 @@ router.delete("/:id", async (req, res) => {
  *                       description: Indicates if an error occurred
  *                       example: false
  *       '400':
- *         description: Bad Request - (Team already has 4 members/Impossible to add that player to a team, player is not at default stats or level.)
+ *         description: Bad Request - Team has ${existingMembers.length} members, cannot add ${characterIds.length} more members since the maximum size of a team is 4
  *         content:
  *           application/json:
  *             schema:
@@ -781,7 +783,7 @@ router.post("/:team_id/players", async (req, res) => {
     try {
         const teamId = req.params.team_id;
         const characterId = req.body.character_id;
-        const result = await teamsService.addCharacterToTeam(teamId, characterId);
+        const result = await teamsService.addCharactersToTeam(teamId, characterId);
         if (result.meta.error) {
             return res.status(result.status_code).json(result);
         }

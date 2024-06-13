@@ -151,46 +151,48 @@ const deleteTeam = async (id) => {
     return success({id: parseInt(id)}, message = 'Team deleted successfully');
 }
 
-const addCharacterToTeam = async (teamId, characterId) => {
+const addCharactersToTeam = async (teamId, characterIds) => {
     try {
         const team = await TeamsModel.findByPk(teamId);
         if (!team) {
             return NotFoundError('Team not found');
         }
 
-        const teamInSameGame = await TeamsModel.findOne({
-            where: { game_id: team.game_id },
-            include: [{ model: TeamPlayersModel, where: { player_id: characterId } }]
-        });
-        if (teamInSameGame) {
-            return ConflictError('Character is already a member of a team in the same game narrative');
+        const existingMembers = await TeamPlayersModel.findAll({ where: { team_id: teamId } });
+        if (existingMembers.length + characterIds.length > 4) {
+            return BadRequestError(`Team has ${existingMembers.length} members, cannot add ${characterIds.length} more members since the maximum size of a team is 4`);
         }
 
-        const currentMembersCount = await TeamPlayersModel.count({ where: { team_id: teamId } });
-        if (currentMembersCount >= 4) {
-            return BadRequestError('Team is already full (4 members max).');
+        for (const characterId of characterIds) {
+            const teamInSameGame = await TeamsModel.findOne({
+                where: { game_id: team.game_id },
+                include: [{ model: TeamPlayersModel, where: { player_id: characterId } }]
+            });
+            if (teamInSameGame) {
+                return ConflictError(`Character with ID ${characterId} is already a member of a team in the same game narrative`);
+            }
+
+            const existingMember = existingMembers.find(member => member.player_id === characterId);
+            if (existingMember) {
+                return ConflictError(`Character with ID ${characterId} is already a member of the team.`);
+            }
+
+            const character = await CharactersModel.findByPk(characterId);
+            if (!character) {
+                return NotFoundError(`Character with ID ${characterId} not found.`);
+            }
         }
 
-        const existingMember = await TeamPlayersModel.findOne({ where: { team_id: teamId, player_id: characterId } });
-        if (existingMember) {
-            return ConflictError('Character is already a member of the team.');
+        const results = [];
+        for (const characterId of characterIds) {
+            const result = await TeamPlayersModel.create({ team_id: teamId, player_id: characterId });
+            results.push({
+                team_id: parseInt(result.team_id),
+                player_id: parseInt(result.player_id)
+            });
         }
 
-        const character = await CharactersModel.findByPk(characterId);
-        if (!character) {
-            return NotFoundError('Character not found.');
-        }
-
-        if (character.level_id !== 1) {
-            return BadRequestError('Impossible to add that player to a team, player is not at default stats or level.');
-        }
-
-        const result = await TeamPlayersModel.create({ team_id: teamId, player_id: characterId });
-        const response = {
-            team_id: parseInt(result.team_id),
-            player_id: parseInt(result.player_id)
-        }
-        return success(response, message = 'Character added to team');
+        return success(results, message = 'Players added to team sucessfully');
     } catch (error) {
         return ServerError(error.message);
     }
@@ -282,7 +284,7 @@ module.exports = {
     getTeam,
     createTeam,
     deleteTeam,
-    addCharacterToTeam,
+    addCharactersToTeam,
     updateTeam,
     leaveTeam,
     changeOwner

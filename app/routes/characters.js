@@ -417,7 +417,7 @@ router.get('/:id', async (req, res) => {
  *                       description: Indicates if an error occurred
  *                       example: false
  *       400:
- *         description: Bad Request - (Level cannot be greater than the maximum level/External ID must be specified for player characters)
+ *         description: Bad Request - (Level cannot be greater than the maximum level/External ID must be specified for player characters/Cooldown time must be specified for non-player characters, in seconds)
  *         content:
  *           application/json:
  *             schema:
@@ -482,8 +482,8 @@ router.get('/:id', async (req, res) => {
  */
 router.post('/', async (req, res) => {
     try {
-        const { name, ext_id, characterType, level, elements, attributes, image_path, before_defeat_phrase, after_defeat_phrase } = req.body;
-        const result = await charactersService.createCharacter(name, ext_id, characterType, level, elements, attributes, image_path, before_defeat_phrase, after_defeat_phrase);
+        const { name, ext_id, characterType, level, elements, attributes, image_path, before_defeat_phrase, after_defeat_phrase, cooldown_time } = req.body;
+        const result = await charactersService.createCharacter(name, ext_id, characterType, level, elements, attributes, image_path, before_defeat_phrase, after_defeat_phrase, cooldown_time);
         if (result.meta.error) {
             return res.status(result.status_code).json(result);
         }

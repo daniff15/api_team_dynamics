@@ -82,7 +82,7 @@ const getCharacter = async (characterId) => {
     }
 };
 
-const createCharacter = async (name, ext_id='', characterType, level, elements, attributes, image_path='', before_defeat_phrase='', after_defeat_phrase='') => {
+const createCharacter = async (name, ext_id='', characterType, level, elements, attributes, image_path='', before_defeat_phrase='', after_defeat_phrase='', cooldown_time) => {
     let transaction;
     try {
         transaction = await sequelize.transaction();
@@ -160,10 +160,16 @@ const createCharacter = async (name, ext_id='', characterType, level, elements, 
                 value: value
             })), { transaction });
         } else {
+
+            if(!cooldown_time) {
+                return BadRequestError('Cooldown time must be specified for non-player characters, in seconds');
+            }
+
             await BossesModel.create({
                 id: characterId,
                 before_defeat_phrase,
-                after_defeat_phrase
+                after_defeat_phrase,
+                cooldown_time
             }, { transaction });
             for (const elementId of elements) {
                 const element = await ElementsModel.findByPk(elementId, { transaction });
