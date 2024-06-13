@@ -13,15 +13,19 @@ const getCharacters = async (filters = {}) => {
         let order = [];
 
         if (filters.character_type) {
-            where.character_type_id = filters.character_type;
+
+            if (filters.ext_id) {
+                where.ext_id = filters.ext_id;
+            }
             
-            if (where.character_type_id === 1) {
+            if (filters.character_type === 1) {
                 if (filters.order_by_total_xp) {
                     order = [['total_xp', filters.order_by_total_xp]];
                 }
                 characters = await PlayersModel.findAll({
                     include: includePlayerAssociationsOutsideTeamPlayer(),
-                    order: order
+                    order: order,
+                    where: where
                 });
             } else {
                 characters = await BossesModel.findAll({
