@@ -24,6 +24,7 @@ module.exports = (sequelize, DataTypes) => {
 
     PlayersModel.associate = (models) => {
         PlayersModel.belongsTo(models.CharactersModel, { foreignKey: 'id' });
+        PlayersModel.hasMany(models.TeamPlayersModel, { foreignKey: 'player_id' });
     }
 
     return PlayersModel;

@@ -4,6 +4,7 @@ const gamesRoutes = require('./routes/games');
 const teamsRoutes = require('./routes/teams');
 const charactersRoutes = require('./routes/characters');
 const battlesRoutes = require('./routes/battles');
+const utilsRoutes = require('./routes/utils');
 const appSwagger = require('./swagger');
 
 const app = express();
@@ -26,6 +27,7 @@ app.use('/games', gamesRoutes);
 app.use('/teams', teamsRoutes);
 app.use('/characters', charactersRoutes);
 app.use('/battles', battlesRoutes);
+app.use('/utils', utilsRoutes);
 
 sequelize.sync().then(() => {
     app.listen(PORT, () => {

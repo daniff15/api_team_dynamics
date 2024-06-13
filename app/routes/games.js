@@ -12,21 +12,6 @@ const router = express.Router();
 
 /**
  * @swagger
- * components:
- *   schemas:
- *     Game:
- *       type: object
- *       properties:
- *         id:
- *           type: integer
- *           description: The ID of the game
- *         name:
- *           type: string
- *           description: The name of the game
- */
-
-/**
- * @swagger
  * /games:
  *   get:
  *     summary: Get all games
