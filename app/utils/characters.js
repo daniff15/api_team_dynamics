@@ -319,6 +319,17 @@ const updateTeamTotalXP = async (playerId, transaction) => {
     }
 };
 
+const adjustAttributesForLevel = async (character) => {
+    const currentAttributes = await CharacterLevelAttributesModel.findAll({
+        where: { character_id: character.id }
+    });
+
+    for (const attribute of currentAttributes) {
+        if (attribute.level_id > character.level_id) {
+            await attribute.destroy();
+        }
+    }
+};
 
 module.exports = {
     includePlayerAssociationsInsideTeam,
@@ -327,5 +338,6 @@ module.exports = {
     constructCharacterResponse,
     updateParticipantBattleStatus,
     checkLevelUp,
-    updateTeamTotalXP
-};
+    updateTeamTotalXP,
+    adjustAttributesForLevel
+}

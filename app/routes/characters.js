@@ -772,6 +772,160 @@ router.put('/:id/attributes', async (req, res) => {
 
 /**
  * @swagger
+ * /characters/{id}:
+ *   put:
+ *     summary: Update character name, image or element
+ *     tags: [Characters]
+ *     description: Update the name, image or element of the character with the specified ID.
+ *       
+ * 
+ *       The alteration of the player's `element` is only allowed for player characters and will penalize the player with a deduction of three levels and if the player has remaining xp it will be 0 after the update of the element.
+ *       
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The ID of the character to update
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: The new name for the character
+ *               image_path:
+ *                 type: string
+ *                 description: The new path to the character image
+ *               element:
+ *                 type: integer
+ *                 description: The new element ID for the character (only for player characters)
+ *     responses:
+ *       '200':
+ *         description: Team updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the result of the operation
+ *                 status_code:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 200
+ *                 data:
+ *                   type: object    
+ *                   properties:
+ *                      id:
+ *                         type: integer
+ *                         description: The ID of the character
+ *                      name:
+ *                         type: string
+ *                         description: The name of the character
+ *                      image_path:
+ *                         type: string
+ *                         description: The path to the character image
+ *                      character_type_id:
+ *                         type: integer
+ *                         description: The character type ID
+ *                      level_id:
+ *                         type: integer
+ *                         description: The level of the character
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: false
+ *       '400':
+ *         description: Bad Request - (No valid fields to update/Element cannot be updated since it is already that element/Element cannot be updated for non-player characters)
+ *         content:
+ *           apxplication/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 status_code:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 400
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
+ *       '404':
+ *         description: Not Found - (Character/Element) not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 status_code:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 404
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 status_code:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 500
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
+ */
+
+router.put("/:id", async (req, res) => {
+    try {
+        const updates = req.body;
+        const characterId = req.params.id;
+        const result = await charactersService.updateCharacter(characterId, updates);
+        if (result.meta.error) {
+            return res.status(result.status_code).json(result);
+        }
+        res.json(result);
+    } catch (err) {
+        console.error(err);
+        res.sendStatus(500);
+    }
+});
+
+/**
+ * @swagger
  * /characters/extraPoints:
  *   put:
  *     summary: Give extra points to a teammate

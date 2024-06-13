@@ -205,7 +205,8 @@ const updateTeam = async (teamId, updates) => {
     }
 
     const allowedUpdates = {
-        name: updates.name
+        name: updates.name,
+        team_image_path: updates.team_image_path
     };
 
     const updatedFields = {};

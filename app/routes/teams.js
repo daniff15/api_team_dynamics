@@ -798,9 +798,9 @@ router.post("/:team_id/players", async (req, res) => {
  * @swagger
  * /teams/{id}:
  *   put:
- *     summary: Update a team's name
+ *     summary: Update team name or image
  *     tags: [Teams]
- *     description: Update the name of the team with the specified ID
+ *     description: Update the name or image of the team with the specified ID
  *     parameters:
  *       - in: path
  *         name: id
@@ -818,9 +818,12 @@ router.post("/:team_id/players", async (req, res) => {
  *               name:
  *                 type: string
  *                 description: The new name for the team
+ *               team_image_path:
+ *                 type: string
+ *                 description: The new path to the team image
  *     responses:
  *       '200':
- *         description: Team name updated successfully
+ *         description: Team updated successfully
  *         content:
  *           application/json:
  *             schema:

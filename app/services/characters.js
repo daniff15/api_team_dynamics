@@ -1,5 +1,5 @@
 const { baseAttributes } = require('../utils/baseAttributes');
-const { checkLevelUp, updateTeamTotalXP, includePlayerAssociationsOutsideTeamPlayer } = require('../utils/characters');
+const { checkLevelUp, updateTeamTotalXP, includePlayerAssociationsOutsideTeamPlayer, adjustAttributesForLevel } = require('../utils/characters');
 const { includeCharacterAssociationsOutsideTeam, constructCharacterResponse } = require('../utils/characters');
 const { sequelize, CharactersModel, CharacterElementsModel, ElementsModel, CharacterLevelAttributesModel, AttributesModel, LevelsModel, TeamPlayersModel, PlayersModel, BossesModel, TeamsModel } = require('../models/index');
 const { BadRequestError, NotFoundError, ServerError } = require('../utils/errors');
@@ -332,6 +332,71 @@ const updateCharacterAttributes = async (characterId, increments) => {
         return ServerError(error.message);
     }
 }
+const updateCharacter = async (characterId, updates) => {
+    try {
+        const character = await CharactersModel.findByPk(characterId);
+        if (!character) {
+            return NotFoundError('Character not found');
+        }
+
+        const allowedUpdates = {
+            name: updates.name,
+            image_path: updates.image_path,
+            element: updates.element
+        };
+
+        const updatedFields = {};
+        Object.entries(allowedUpdates).forEach(([key, value]) => {
+            if (value !== undefined) {
+                updatedFields[key] = value;
+            }
+        });
+
+        if (Object.keys(updatedFields).length === 0) {
+            return BadRequestError('No valid fields to update');
+        }
+
+        if (character.character_type_id === 1) {
+            const characterElement = await CharacterElementsModel.findOne({ where: { character_id: characterId } });
+            const player = await PlayersModel.findByPk(characterId);
+            if (updatedFields.element !== undefined && updatedFields.element !== characterElement.element_id) {
+                const element = await ElementsModel.findOne({ where: { id: updatedFields.element } });
+
+                if (!element) {
+                    return NotFoundError('Element not found');
+                }
+
+                await CharacterElementsModel.update(
+                    { element_id: updatedFields.element },
+                    { where: { character_id: characterId } }
+                );
+
+                const newLevel = Math.max(1, character.level_id - 3);
+                character.level_id = newLevel;
+                player.xp = 0;
+                await player.save();
+                await character.save();
+
+                adjustAttributesForLevel(character);
+
+                await CharactersModel.update(updatedFields, { where: { id: characterId } });
+            } else {
+                return BadRequestError('Element cannot be updated since it is already that element');
+            }
+        } else { 
+            if (updatedFields.element !== undefined) {
+                return BadRequestError('Element cannot be updated for non-player characters');
+            }
+
+            await CharactersModel.update(updatedFields, { where: { id: characterId } });
+        }
+
+        const updatedCharacter = await CharactersModel.findByPk(characterId);
+        return success(updatedCharacter, message = 'Character updated successfully');
+    } catch (error) {
+        return ServerError(error.message);
+    }
+};
 
 const transferExtraPoints = async (from_player_id, to_player_id, points) => {
     try {
@@ -440,6 +505,7 @@ module.exports = {
     createCharacter,
     addXPtoCharacter,
     updateCharacterAttributes,
+    updateCharacter,
     transferExtraPoints,
     deleteCharacter
 };
