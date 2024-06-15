@@ -224,6 +224,17 @@ const router = express.Router();
  *         name:
  *           type: string
  *           description: The name of the game
+ *         start_date:
+ *           type: string
+ *           format: date-time
+ *           description: The start date of the game
+ *         end_date:
+ *           type: string
+ *           format: date-time
+ *           description: The end date of the game
+ *         status:
+ *           type: boolean
+ *           description: The status of the game
  */
 
 /**

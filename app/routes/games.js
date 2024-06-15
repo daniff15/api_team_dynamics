@@ -33,7 +33,9 @@ const router = express.Router();
  *                   description: The status code of the response
  *                   example: 200
  *                 data:
- *                   $ref: '#/components/schemas/Game'
+ *                   type: array
+ *                   items:
+ *                      $ref: '#/components/schemas/Game'
  *                 meta:
  *                   type: object
  *                   properties:
@@ -81,7 +83,7 @@ router.get("/", async (req, res) => {
  *   get:
  *     summary: Get a game narrative by ID
  *     tags: [Games]
- *     description: Get a game narrative by its ID
+ *     description: Get a game narrative by its ID. Get a game by ID, will bring the game information plus the `bosses` associated with it
  *     parameters:
  *       - in: path
  *         name: id
@@ -184,7 +186,7 @@ router.get("/:id", async (req, res) => {
  *   post:
  *     summary: Create a new game narrative
  *     tags: [Games]
- *     description: Create a new game narrative with the provided name
+ *     description: Create a new game narrative with the provided name. The game will be created with a default status based on the `start_date` field, so if the `start_date` is in the future, the game will be created with a `status` of `false`, otherwise, it will be created with a `status` of `true`. If no `start_date` is provided, the game will be created with the current date and time. The `end_date` and `status` field is optional and can be set later.
  *     requestBody:
  *       required: true
  *       content:
@@ -195,6 +197,17 @@ router.get("/:id", async (req, res) => {
  *               name:
  *                 type: string
  *                 description: The name of the game narrative
+ *               start_date:
+ *                 type: string
+ *                 format: date-time
+ *                 description: The start date of the game narrative
+ *               end_date:
+ *                 type: string
+ *                 format: date-time
+ *                 description: The end date of the game narrative
+ *               status:
+ *                 type: boolean
+ *                 description: The status of the game narrative
  *     responses:
  *       201:
  *         description: The created game narrative object
@@ -219,6 +232,27 @@ router.get("/:id", async (req, res) => {
  *                       type: boolean
  *                       description: Indicates if an error occurred
  *                       example: false
+ *       400:
+ *         description: Bad Request - (Name is required/End date cannot be smaller than current date or start date)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 status_code:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 400
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
  *       500:
  *         description: Internal Server Error
  *         content:
@@ -405,6 +439,145 @@ router.put("/:id/bosses", async (req, res) => {
         const id = req.params.id;
         const { bosses } = req.body;
         const result = await gamesService.postBossesToGame(id, bosses);
+        if (result.meta.error) {
+            return res.status(result.status_code).json(result);
+        }
+        res.json(result);
+    } catch (err) {
+        console.error(err);
+        res.sendStatus(500);
+    }
+});
+
+
+/**
+ * @swagger
+ * /games/{id}:
+ *   put:
+ *     summary: Update the game information.
+ *     tags: [Games]
+ *     description: Update the game with the provided name, start date, end date, and status.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the game
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                  type: string
+ *                  description: The name of the game narrative
+ *               start_date:
+ *                  type: string
+ *                  format: date-time
+ *                  description: The start date of the game narrative
+ *               end_date:
+ *                  type: string
+ *                  format: date-time
+ *                  description: The end date of the game narrative
+ *               status:
+ *                  type: boolean
+ *                  description: The status of the game narrative
+ *     responses:
+ *       200:
+ *         description: The game was successfully updated with the provided information
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the result of the operation
+ *                 status_code:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 200
+ *                 data:
+ *                   $ref: '#/components/schemas/Game'
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: false
+ *       400:
+ *         description: Bad Request - (Name is required/End date cannot be smaller or equal than current date or start date)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 status_code:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 400
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
+ *       404:
+ *         description: Not Found - Game not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 status_code:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 404
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A message indicating the error
+ *                 status_code:
+ *                   type: integer
+ *                   description: The status code of the response
+ *                   example: 500
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     error:
+ *                       type: boolean
+ *                       description: Indicates if an error occurred
+ *                       example: true
+ */
+router.put("/:id", async (req, res) => {
+    try {
+        const id = req.params.id;
+        const game = req.body;
+        const result = await gamesService.updateGame(id, game);
         if (result.meta.error) {
             return res.status(result.status_code).json(result);
         }

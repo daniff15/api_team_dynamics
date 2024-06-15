@@ -44,7 +44,35 @@ const getGame = async (id) => {
 }
 
 const createGame = async (game) => {
-    const newGame = await GamesModel.create(game);
+    let {name, start_date, end_date, status} = game;
+    const nowDate = new Date();
+
+    if (!name) {
+        return BadRequestError('Name is required');
+    }
+
+    if (!start_date && !status) {
+        status = true;
+    }
+
+    if (start_date && !status) {
+        if (new Date(start_date) <= nowDate) {
+            status = true;
+        } else {
+            status = false
+        }
+    }
+
+    if (end_date && new Date(end_date) < nowDate) {
+        return BadRequestError('End date cannot be smaller than current date or start date');
+    }
+
+    const newGame = await GamesModel.create({
+        name,
+        start_date,
+        end_date,
+        status
+    });
     return success(newGame);
 }
 
@@ -185,11 +213,51 @@ const checkNarrativeStatus = async (teamId) => {
     });
 };
 
+const updateGame = async (gameId, game) => {
+    const existingGame = await GamesModel.findByPk(gameId);
+
+    if (!existingGame) {
+        return NotFoundError('Game not found');
+    }
+
+    const { name, start_date, end_date, status } = game;
+
+    if (!name && !start_date && !end_date && !status) {
+        return BadRequestError('No fields to update');
+    }
+
+    if (name) {
+        existingGame.name = name;
+    }
+
+    if (start_date) {
+        existingGame.start_date = start_date;
+    }
+
+    if (end_date) {
+        existingGame.end_date = end_date;
+    }
+
+    if (status !== undefined) {
+        existingGame.status = status;
+    }
+
+    //check if end_date is smaller than start_date
+    if (end_date && start_date && new Date(end_date) <= new Date(start_date)) {
+        return BadRequestError('End date cannot be smaller or equal than start date');
+    }
+
+    await existingGame.save();
+
+    return success(existingGame);
+};
+
 module.exports = {
     getAllGames,
     getGame,
     createGame,
     postBossesToGame,
     getGameOdds,
-    checkNarrativeStatus
+    checkNarrativeStatus,
+    updateGame
 };
