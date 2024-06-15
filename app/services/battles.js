@@ -174,9 +174,6 @@ const createBattle = async (battle) => {
                 character: opponent
             };
         
-            console.log("participants.cooldown_time");
-            console.log(participants.cooldown_time);
-
             if (participants.cooldown_time && new Date(participants.cooldown_time) > now) {
                 return BadRequestError('Team is on cooldown and cannot battle any bosses. Cooldown till: ' + participants.cooldown_time);
             }
