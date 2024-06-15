@@ -1,5 +1,5 @@
 const { Op } = require('sequelize');
-const { BattlesModel, sequelize, TeamsModel, TeamPlayersModel, AttacksModel, CharactersModel, GameBossesModel, BossesModel } = require('../models/index');
+const { BattlesModel, sequelize, TeamsModel, TeamPlayersModel, AttacksModel, CharactersModel, GameBossesModel, BossesModel, GamesModel } = require('../models/index');
 const { checkBattleEnd, initializeQueue, calculateDamage, rewardWinningTeam, hasDefeatedBoss } = require('../utils/battles');
 const { updateParticipantBattleStatus, includePlayerAssociationsInsideTeam, includeBossesAssociations } = require('../utils/characters');
 const { NotFoundError, ServerError, BadRequestError } = require('../utils/errors');
@@ -151,6 +151,12 @@ const createBattle = async (battle) => {
                 return NotFoundError('Boss not found');
             }
 
+            const game = await GamesModel.findByPk(participants.game_id);
+
+            if (game.status === false) {
+                return NotFoundError('Game is not active');
+            }
+
             const gameBosses = await GameBossesModel.findOne({
                 where: {
                     game_id: participants.game_id,
@@ -168,6 +174,9 @@ const createBattle = async (battle) => {
                 character: opponent
             };
         
+            console.log("participants.cooldown_time");
+            console.log(participants.cooldown_time);
+
             if (participants.cooldown_time && new Date(participants.cooldown_time) > now) {
                 return BadRequestError('Team is on cooldown and cannot battle any bosses. Cooldown till: ' + participants.cooldown_time);
             }
