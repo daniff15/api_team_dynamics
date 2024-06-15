@@ -252,6 +252,18 @@ const updateGame = async (gameId, game) => {
     return success(existingGame);
 };
 
+const deleteGame = async (gameId) => {
+    const existingGame = await GamesModel.findByPk(gameId);
+
+    if (!existingGame) {
+        return NotFoundError('Game not found');
+    }
+
+    await existingGame.destroy();
+
+    return success({}, message = 'Game deleted successfully');
+};
+
 module.exports = {
     getAllGames,
     getGame,
@@ -259,5 +271,6 @@ module.exports = {
     postBossesToGame,
     getGameOdds,
     checkNarrativeStatus,
-    updateGame
+    updateGame,
+    deleteGame
 };
