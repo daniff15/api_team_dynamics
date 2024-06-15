@@ -264,6 +264,57 @@ const deleteGame = async (gameId) => {
     return success({}, message = 'Game deleted successfully');
 };
 
+const deleteBossesFromGame = async (gameId, bosses) => {
+    const game = await GamesModel.findByPk(gameId);
+
+    if (!game) {
+        return NotFoundError('Game not found');
+    }
+
+    if (!bosses || bosses.length === 0) {
+        return BadRequestError('No bosses provided');
+    }
+
+    for (const boss of bosses) {
+        const existing_boss = await BossesModel.findByPk(boss);
+
+        if (!existing_boss) {
+            return NotFoundError(`Boss with id ${boss} does not exist`);
+        }
+    }
+
+    const gameBosses = await GameBossesModel.findAll({
+        where: {
+            game_id: gameId
+        }
+    });
+
+    const existingBossIds = gameBosses.map(gameBoss => gameBoss.boss_id);
+    const existingBossConflicts = bosses.filter(bossId => !existingBossIds.includes(bossId));
+    if (existingBossConflicts.length > 0) {
+        return BadRequestError(`The following bosses are not associated with the game: ${existingBossConflicts.join(', ')}`);
+    }
+
+    // Filter new bosses to add
+    const newBossIds = bosses.filter(bossId => existingBossIds.includes(bossId));
+
+    const newGameBosses = newBossIds.map(bossId => ({
+        game_id: parseInt(gameId),
+        boss_id: parseInt(bossId)
+    }));
+
+    await GameBossesModel.destroy({
+        where: {
+            [Op.and]: [
+                { game_id: gameId },
+                { boss_id: newBossIds }
+            ]
+        }
+    });
+
+    return success(newGameBosses)
+}
+
 module.exports = {
     getAllGames,
     getGame,
@@ -272,5 +323,6 @@ module.exports = {
     getGameOdds,
     checkNarrativeStatus,
     updateGame,
-    deleteGame
+    deleteGame,
+    deleteBossesFromGame
 };
