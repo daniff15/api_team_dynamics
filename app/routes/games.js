@@ -590,14 +590,14 @@ router.put("/:id", async (req, res) => {
 
 /**
  * @swagger
- * /games/odds/{team_id}:
+ * /games/odds/{id}:
  *   get:
  *     summary: Get the odds of a game by ID
  *     tags: [Games]
  *     description: Get the odds of a game by its ID
  *     parameters:
  *       - in: path
- *         name: team_id
+ *         name: id
  *         required: true
  *         schema:
  *           type: integer
@@ -678,9 +678,9 @@ router.put("/:id", async (req, res) => {
  *                       description: Indicates if an error occurred
  *                       example: true
  */
-router.get("/odds/:team_id", async (req, res) => {
+router.get("/odds/:id", async (req, res) => {
     try {
-        const teamId = parseInt(req.params.team_id);
+        const teamId = parseInt(req.params.id);
 
         const result = await gamesService.getGameOdds(teamId);
         if (result.meta.error) {
@@ -699,14 +699,14 @@ router.get("/odds/:team_id", async (req, res) => {
 
 /**
  * @swagger
- * /games/status/{team_id}:
+ * /games/status/{id}:
  *   get:
  *     summary: Check the narrative status of a game for a team
  *     tags: [Games]
  *     description: Check if a team has defeated all the bosses in the narrative
  *     parameters:
  *       - in: path
- *         name: team_id
+ *         name: id
  *         required: true
  *         schema:
  *           type: integer
@@ -792,9 +792,9 @@ router.get("/odds/:team_id", async (req, res) => {
  *                       description: Indicates if an error occurred
  *                       example: true
  */
-router.get("/status/:team_id", async (req, res) => {
+router.get("/status/:id", async (req, res) => {
     try {
-        const teamId = req.params.team_id;
+        const teamId = req.params.id;
         const result = await gamesService.checkNarrativeStatus(teamId);
         if (result.meta.error) {
             return res.status(result.status_code).json(result);
@@ -949,7 +949,7 @@ router.delete('/:id', async (req, res) => {
  *                       description: Indicates if an error occurred
  *                       example: false
  *       400:
- *         description: Bad Request - (No bosses provided/The following bosses are not associated with the game: {boss})
+ *         description: Bad Request - (No bosses provided/The following bosses are not associated with the game - {boss})
  *         content:
  *           application/json:
  *             schema:

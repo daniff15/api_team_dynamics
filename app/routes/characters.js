@@ -515,14 +515,19 @@ router.put('/:id/xp', async (req, res) => {
     }
 });
 
-
 /**
  * @swagger
  * /characters/{id}/attributes:
  *   put:
  *     summary: Update attributes of a character by ID
  *     tags: [Characters]
- *     description: Update attributes of a character by its ID. If you don't want the field to be updated just don't include it in the request body or set it to zero.
+ *     description: |
+ *      Update attributes of a character by its ID. If you don't want the field to be updated just don't include it in the request body or set it to zero.
+ *      Available attributes to update:
+ *       - `HP`
+ *       - `ATK`
+ *       - `DEF`
+ *       - `SPEED` 
  *     parameters:
  *       - in: path
  *         name: id

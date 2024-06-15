@@ -517,14 +517,14 @@ router.delete("/:id", async (req, res) => {
 
 /**
  * @swagger
- * /teams/{team_id}/players:
+ * /teams/{id}/players:
  *   post:
  *     summary: Add players to a team
  *     tags: [Teams]
  *     description: Add players with the specified ID to the team with the specified ID
  *     parameters:
  *       - in: path
- *         name: team_id
+ *         name: id
  *         required: true
  *         type: integer
  *         description: The ID of the team
@@ -572,7 +572,7 @@ router.delete("/:id", async (req, res) => {
  *                       description: Indicates if an error occurred
  *                       example: false
  *       '400':
- *         description: Bad Request - Team has ${existingMembers.length} members, cannot add ${characterIds.length} more members since the maximum size of a team is 4
+ *         description: Bad Request - Team has {length} members, cannot add {length} more members since the maximum size of a team is 4
  *         content:
  *           application/json:
  *             schema:
@@ -657,9 +657,9 @@ router.delete("/:id", async (req, res) => {
  *                       example: true
  */
 
-router.post("/:team_id/players", async (req, res) => {
+router.post("/:id/players", async (req, res) => {
     try {
-        const teamId = req.params.team_id;
+        const teamId = req.params.id;
         const characterId = req.body.character_id;
         const result = await teamsService.addCharactersToTeam(teamId, characterId);
         if (result.meta.error) {
