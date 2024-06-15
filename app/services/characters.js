@@ -1,6 +1,6 @@
 const { baseAttributes } = require('../utils/baseAttributes');
 const { checkLevelUp, updateTeamTotalXP, includePlayerAssociationsOutsideTeamPlayer, adjustAttributesForLevel } = require('../utils/characters');
-const { includeCharacterAssociationsOutsideTeam, constructCharacterResponse } = require('../utils/characters');
+const { constructCharacterResponse } = require('../utils/characters');
 const { sequelize, CharactersModel, CharacterElementsModel, ElementsModel, CharacterLevelAttributesModel, AttributesModel, LevelsModel, TeamPlayersModel, PlayersModel, BossesModel, TeamsModel } = require('../models/index');
 const { BadRequestError, NotFoundError, ServerError } = require('../utils/errors');
 const { success } = require('../utils/apiResponse');
@@ -23,7 +23,7 @@ const getCharacters = async (filters = {}) => {
                     order = [['total_xp', filters.order_by_total_xp]];
                 }
                 characters = await PlayersModel.findAll({
-                    include: includePlayerAssociationsOutsideTeamPlayer(),
+                    include: includePlayerAssociationsOutsideTeamPlayer(true),
                     order: order,
                     where: where
                 });
@@ -35,7 +35,7 @@ const getCharacters = async (filters = {}) => {
         } else {
             // Join players and bosses
             players = await PlayersModel.findAll({
-                include: includePlayerAssociationsOutsideTeamPlayer()
+                include: includePlayerAssociationsOutsideTeamPlayer(true)
             });
 
             bosses = await BossesModel.findAll({
@@ -74,7 +74,7 @@ const getCharacter = async (characterId) => {
             });
         } else {
             character = await PlayersModel.findByPk(characterId, {
-                include: includePlayerAssociationsOutsideTeamPlayer()
+                include: includePlayerAssociationsOutsideTeamPlayer(true)
             });
         }
 
@@ -218,7 +218,7 @@ const addXPtoCharacter = async (characterId, xp) => {
     try {
         const maxLevel = await LevelsModel.max('level_value', { transaction: t });
         const character = await PlayersModel.findByPk(characterId, {
-            include: includePlayerAssociationsOutsideTeamPlayer(),
+            include: includePlayerAssociationsOutsideTeamPlayer(true),
             transaction: t
         });
 
@@ -256,7 +256,7 @@ const addXPtoCharacter = async (characterId, xp) => {
         await t.commit();
         // Retrieve the updated character after the transaction is committed
         const updatedCharacter = await PlayersModel.findByPk(characterId, {
-            include: includePlayerAssociationsOutsideTeamPlayer()
+            include: includePlayerAssociationsOutsideTeamPlayer(true)
         });
         return success(constructCharacterResponse(updatedCharacter), message = 'XP added successfully');
 
@@ -269,9 +269,7 @@ const addXPtoCharacter = async (characterId, xp) => {
 
 const updateCharacterAttributes = async (characterId, increments) => {
     try {
-        const character = await CharactersModel.findByPk(characterId, {
-            include: includeCharacterAssociationsOutsideTeam()
-        });
+        const character = await CharactersModel.findByPk(characterId);
 
         const player = await PlayersModel.findByPk(characterId);
 
@@ -328,7 +326,7 @@ const updateCharacterAttributes = async (characterId, increments) => {
 
         // After updating attributes, fetch the updated details of the player
         const updatedCharacter = await PlayersModel.findByPk(characterId, {
-            include: includePlayerAssociationsOutsideTeamPlayer()
+            include: includePlayerAssociationsOutsideTeamPlayer(true)
         });
 
         return success(constructCharacterResponse(updatedCharacter), message = 'Attributes updated successfully');
@@ -384,8 +382,10 @@ const updateCharacter = async (characterId, updates) => {
                 adjustAttributesForLevel(character);
 
                 await CharactersModel.update(updatedFields, { where: { id: characterId } });
-            } else {
+            } else if (updatedFields.element === characterElement.element_id) {
                 return BadRequestError('Element cannot be updated since it is already that element');
+            } else {
+                await CharactersModel.update(updatedFields, { where: { id: characterId } });
             }
         } else { 
             if (updatedFields.element !== undefined) {
@@ -395,8 +395,18 @@ const updateCharacter = async (characterId, updates) => {
             await CharactersModel.update(updatedFields, { where: { id: characterId } });
         }
 
-        const updatedCharacter = await CharactersModel.findByPk(characterId);
-        return success(updatedCharacter, message = 'Character updated successfully');
+        let updatedCharacter = await CharactersModel.findByPk(characterId);
+        
+        if (updatedCharacter.character_type_id === 1) {
+            updatedCharacter = await PlayersModel.findByPk(characterId, {
+                include: includePlayerAssociationsOutsideTeamPlayer(true)
+            });
+        } else {
+            [updatedCharacter] = await BossesModel.findAll({
+                include: includePlayerAssociationsOutsideTeamPlayer()
+            });
+        }
+        return success(constructCharacterResponse(updatedCharacter), message = 'Character updated successfully');
     } catch (error) {
         return ServerError(error.message);
     }
@@ -454,10 +464,10 @@ const transferExtraPoints = async (from_player_id, to_player_id, points) => {
 
         // Fetch the updated details of both players
         const updatedfrom_player = await PlayersModel.findByPk(from_player_id, {
-            include: includePlayerAssociationsOutsideTeamPlayer()
+            include: includePlayerAssociationsOutsideTeamPlayer(true)
         });
         const updatedto_player = await PlayersModel.findByPk(to_player_id, {
-            include: includePlayerAssociationsOutsideTeamPlayer()
+            include: includePlayerAssociationsOutsideTeamPlayer(true)
         });
 
         return success({

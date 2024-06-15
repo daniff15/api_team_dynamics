@@ -49,6 +49,14 @@ const includePlayerAssociationsInsideTeam = () => {
                             ]
                         }
                     ]
+                },
+                {
+                    model: TeamPlayersModel,
+                    include: [
+                        {
+                            model: TeamsModel
+                        }
+                    ]
                 }
             ]
         }
@@ -56,7 +64,7 @@ const includePlayerAssociationsInsideTeam = () => {
 };
 
 // Utility function to include player associations outside team query
-const includeCharacterAssociationsOutsideTeam = () => {
+const includeBossesAssociations = () => {
     return [
         {
             model: CharacterLevelAttributesModel,
@@ -99,8 +107,8 @@ const includeCharacterAssociationsOutsideTeam = () => {
     ]
 };
 
-const includePlayerAssociationsOutsideTeamPlayer = () => {
-    return [
+const includePlayerAssociationsOutsideTeamPlayer = (player = false) => {
+    const includes = [
         {
             model: CharactersModel,
             include: [
@@ -145,6 +153,19 @@ const includePlayerAssociationsOutsideTeamPlayer = () => {
             ]
         }
     ]
+
+    if(player) {
+        includes.push({
+            model: TeamPlayersModel,
+            include: [
+                {
+                    model: TeamsModel
+                }
+            ]
+        });
+    }
+
+    return includes;
 };
 
 // Utility function to construct character response
@@ -153,12 +174,13 @@ const constructCharacterResponse = (character) => {
         id: character.id,
         ext_id: character.ext_id,
         name: character?.character ? character.character.name : character.name,
+        team: character?.team_players && character.team_players[0].team.id,
         level: character?.character ? character.character.level_id : character.level,
-        character_type_id: character.character.character_type_id,
+        character_type_id: character?.character ? character.character.character_type_id : character.character_type_id,
         xp: character.xp,
         total_xp: character.total_xp,
         att_xtra_points: character.att_xtra_points,
-        image_path: character.character.image_path,
+        image_path: character?.character ? character.character.image_path : character.image_path,
         before_defeat_phrase: character.before_defeat_phrase,
         after_defeat_phrase: character.after_defeat_phrase,
         cooldown_time: character.cooldown_time,
@@ -333,7 +355,7 @@ const adjustAttributesForLevel = async (character) => {
 
 module.exports = {
     includePlayerAssociationsInsideTeam,
-    includeCharacterAssociationsOutsideTeam,
+    includeBossesAssociations,
     includePlayerAssociationsOutsideTeamPlayer,
     constructCharacterResponse,
     updateParticipantBattleStatus,

@@ -111,6 +111,9 @@ const router = express.Router();
  *         name:
  *           type: string
  *           description: The name of the character
+ *         team:
+ *           type: integer
+ *           description: The ID of the team the character belongs to
  *         level:
  *           type: integer
  *           description: The level of the character

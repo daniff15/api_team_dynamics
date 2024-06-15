@@ -672,7 +672,7 @@ router.put('/:id/attributes', async (req, res) => {
  *     description: Update the name, image or element of the character with the specified ID.
  *       
  * 
- *       The alteration of the player's `element` is only allowed for player characters and will penalize the player with a deduction of three levels and if the player has remaining xp it will be 0 after the update of the element.
+ *       The alteration of the player's `element` is only allowed for player characters and will penalize the player with a deduction of `three levels` and if the player has `remaining xp it will be 0` after the update of the element.
  *       
  *     parameters:
  *       - in: path

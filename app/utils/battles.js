@@ -64,7 +64,7 @@ const rewardWinningTeam = async (battleResult, boss_id, t) => {
     const maxLevel = await LevelsModel.max('level_value', { transaction: t });
     for (let character of winningTeam) {
         const player = await PlayersModel.findByPk(character.player_id, {
-            include: includePlayerAssociationsOutsideTeamPlayer(),
+            include: includePlayerAssociationsOutsideTeamPlayer(true),
             transaction: t
         });
         if (player.character.level_id !== maxLevel) {

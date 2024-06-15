@@ -2,7 +2,7 @@ const { GamesModel, GameBossesModel, BossesModel, TeamsModel, CharactersModel, T
 const { NotFoundError, ConflictError, BadRequestError } = require('../utils/errors');
 const { success } = require('../utils/apiResponse');
 const gamesBosses = require('../models/gamesBosses');
-const { constructCharacterResponse, includePlayerAssociationsOutsideTeamPlayer, includeCharacterAssociationsOutsideTeam, includePlayerAssociationsInsideTeam } = require('../utils/characters');
+const { constructCharacterResponse, includePlayerAssociationsOutsideTeamPlayer, includeBossesAssociations, includePlayerAssociationsInsideTeam } = require('../utils/characters');
 const { simulateBattles } = require('../utils/battles');
 const { Op } = require('sequelize');
 
@@ -127,7 +127,7 @@ const getGameOdds = async (teamId) => {
                     { character_type_id: 3 }
                 ]
             },
-            include: includeCharacterAssociationsOutsideTeam()
+            include: includeBossesAssociations()
         });
 
         const opponent = {
