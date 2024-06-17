@@ -1,7 +1,6 @@
 const { GamesModel, GameBossesModel, BossesModel, TeamsModel, CharactersModel, TeamPlayersModel, BattlesModel } = require('../models/index');
 const { NotFoundError, ConflictError, BadRequestError } = require('../utils/errors');
 const { success } = require('../utils/apiResponse');
-const gamesBosses = require('../models/gamesBosses');
 const { constructCharacterResponse, includePlayerAssociationsOutsideTeamPlayer, includeBossesAssociations, includePlayerAssociationsInsideTeam } = require('../utils/characters');
 const { simulateBattles } = require('../utils/battles');
 const { Op } = require('sequelize');

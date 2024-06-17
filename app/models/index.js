@@ -16,12 +16,12 @@ const BossesModel = require("./bosses");
 const GamesModel = require("./games");
 const GameBossesModel = require("./gamesBosses");
 const env = process.env.NODE_ENV || 'local';
-const config = require('./../config/config')[env];
+const connection = require('../config/connection')[env];
 
-const sequelize = new Sequelize(config.database, config.username, config.password, {
-  dialect: config.dialect,
-  host: config.host,
-  port: config.port
+const sequelize = new Sequelize(connection.database, connection.username, connection.password, {
+  dialect: connection.dialect,
+  host: connection.host,
+  port: connection.port
 });
 
 const db = {

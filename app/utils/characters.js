@@ -1,5 +1,14 @@
 const { PlayersModel, CharactersModel, CharacterLevelAttributesModel, AttributesModel, LevelsModel, CharacterElementsModel, ElementsModel, ElementRelationshipsModel, TeamPlayersModel, TeamsModel } = require('../models');
 const { NotFoundError, ServerError } = require('../utils/errors');
+const fs = require('fs');
+const config = JSON.parse(fs.readFileSync('/app/config.json', 'utf-8'));
+
+// Global Variables
+const MAX_FIRST_FORMULA_LEVEL = config.CRITICAL_HIT_PROBABILITY || 9;
+const BASE_XP = config.BASE_XP || 100;
+const INCREMENT = config.INCREMENT || 50;
+const SEC_FORMULA_INCREMENT = config.SEC_FORMULA_INCREMENT || 500;
+const INCREMENT_ATTS_FACTOR = config.INCREMENT_ATTS_FACTOR || 0.11;
 
 // Utility function to include player associations inside team query
 const includePlayerAssociationsInsideTeam = () => {
@@ -278,28 +287,24 @@ const updateStatsAndAttributes = async (character, t) => {
     }
 };
 
-const calculateNewAttributes = (currentAttributes, scaling_factor = 0.11) => {
+const calculateNewAttributes = (currentAttributes) => {
     let newAttributes = { hp: 0, def: 0, atk: 0, speed: 0 };
 
     for (const attribute of currentAttributes) {
         if (attribute.attribute_id === 1) {
-            newAttributes.hp += Math.ceil(attribute.value * scaling_factor * (Math.random() * (1.1 - 1) + 1));
+            newAttributes.hp += Math.ceil(attribute.value * INCREMENT_ATTS_FACTOR * (Math.random() * (1.1 - 1) + 1));
         } else if (attribute.attribute_id === 2) {
-            newAttributes.def += Math.ceil(attribute.value * scaling_factor * (Math.random() * (1.1 - 1) + 1));
+            newAttributes.def += Math.ceil(attribute.value * INCREMENT_ATTS_FACTOR * (Math.random() * (1.1 - 1) + 1));
         } else if (attribute.attribute_id === 3) {
-            newAttributes.atk += Math.ceil(attribute.value * scaling_factor * (Math.random() * (1.1 - 1) + 1));
+            newAttributes.atk += Math.ceil(attribute.value * INCREMENT_ATTS_FACTOR * (Math.random() * (1.1 - 1) + 1));
         } else if (attribute.attribute_id === 4) {
-            newAttributes.speed += Math.ceil(attribute.value * scaling_factor * (Math.random() * (1.1 - 1) + 1));
+            newAttributes.speed += Math.ceil(attribute.value * INCREMENT_ATTS_FACTOR * (Math.random() * (1.1 - 1) + 1));
         }
     }
 
     return newAttributes;
 };
 
-const MAX_FIRST_FORMULA_LEVEL = 9;
-const BASE_XP = 100;
-const INCREMENT = 50;
-const SEC_FORMULA_INCREMENT = 500;
 const calculate_xp_needed = (character) => {
     // METER ISTO A IR BUSCAR A UM FICHEIRO DE CONFIGURACAO
     if (character.character.level_id < MAX_FIRST_FORMULA_LEVEL) {

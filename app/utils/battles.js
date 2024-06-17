@@ -1,5 +1,12 @@
 const { TeamPlayersModel, PlayersModel, LevelsModel, CharactersModel, BattlesModel } = require("../models");
 const { updateTeamTotalXP, includePlayerAssociationsOutsideTeamPlayer, checkLevelUp, updateParticipantBattleStatus } = require("./characters");
+const fs = require('fs');
+const config = JSON.parse(fs.readFileSync('/app/config.json', 'utf-8'));
+
+// Global Variables
+const CRITICAL_HIT_PROBABILITY = config.CRITICAL_HIT_PROBABILITY ||0.1;
+const STRONG_ATTACK = config.STRONG_ATTACK || 1.5;
+const WEAK_ATTACK = config.WEAK_ATTACK || 0.5;
 
 const initializeQueue = (participants) => {
     const allCharacters = participants;
@@ -11,21 +18,20 @@ const initializeQueue = (participants) => {
     return characters;
 }
 
-const CRITICAL_HIT_PROBABILITY = 0.1;
 const calculateDamage = (attacker, defender) => {
     let baseDamage = (attacker.attributes.ATK * attacker.attributes.ATK) / (attacker.attributes.ATK + defender.attributes.DEF);
 
     if (Math.random() < CRITICAL_HIT_PROBABILITY) {
-        baseDamage *= 1.5;
+        baseDamage *= STRONG_ATTACK;
     }
 
     // VER A OPCAO DE QUANDO O BOSS TEM DIFERENTES ELEMENTS
     // Por agora realiza a batalha na mesma, mas damageModifier = 1.0 pq nao entra em nenhuma condicao
     let damageModifier = 1.0;
     if (attacker.strength === defender.element) {
-        damageModifier = 1.5;
+        damageModifier = STRONG_ATTACK;
     } else if (attacker.element === defender.strength) {
-        damageModifier = 0.5;
+        damageModifier = WEAK_ATTACK;
     }
 
     const totalDamage = parseInt((baseDamage * damageModifier) * (Math.floor(Math.random() * (255 - 240 + 1)) + 240) / 255, 10);
