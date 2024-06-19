@@ -1,12 +1,12 @@
+require('dotenv').config();
 const { TeamPlayersModel, PlayersModel, LevelsModel, CharactersModel, BattlesModel } = require("../models");
 const { updateTeamTotalXP, includePlayerAssociationsOutsideTeamPlayer, checkLevelUp, updateParticipantBattleStatus } = require("./characters");
 const fs = require('fs');
-const config = JSON.parse(fs.readFileSync('/app/config.json', 'utf-8'));
 
 // Global Variables
-const CRITICAL_HIT_PROBABILITY = config.CRITICAL_HIT_PROBABILITY ||0.1;
-const STRONG_ATTACK = config.STRONG_ATTACK || 1.5;
-const WEAK_ATTACK = config.WEAK_ATTACK || 0.5;
+const CRITICAL_HIT_PROBABILITY = process.env.CRITICAL_HIT_PROBABILITY ||0.1;
+const STRONG_ATTACK = process.env.STRONG_ATTACK || 1.5;
+const WEAK_ATTACK = process.env.WEAK_ATTACK || 0.5;
 
 const initializeQueue = (participants) => {
     const allCharacters = participants;

@@ -1,14 +1,14 @@
+require('dotenv').config();
 const { PlayersModel, CharactersModel, CharacterLevelAttributesModel, AttributesModel, LevelsModel, CharacterElementsModel, ElementsModel, ElementRelationshipsModel, TeamPlayersModel, TeamsModel } = require('../models');
 const { NotFoundError, ServerError } = require('../utils/errors');
 const fs = require('fs');
-const config = JSON.parse(fs.readFileSync('/app/config.json', 'utf-8'));
 
 // Global Variables
-const MAX_FIRST_FORMULA_LEVEL = config.CRITICAL_HIT_PROBABILITY || 9;
-const BASE_XP = config.BASE_XP || 100;
-const INCREMENT = config.INCREMENT || 50;
-const SEC_FORMULA_INCREMENT = config.SEC_FORMULA_INCREMENT || 500;
-const INCREMENT_ATTS_FACTOR = config.INCREMENT_ATTS_FACTOR || 0.11;
+const MAX_FIRST_FORMULA_LEVEL = process.env.MAX_FIRST_FORMULA_LEVEL || 9;
+const BASE_XP = process.env.BASE_XP || 100;
+const INCREMENT = process.env.INCREMENT || 50;
+const SEC_FORMULA_INCREMENT = process.env.SEC_FORMULA_INCREMENT || 500;
+const INCREMENT_ATTS_FACTOR = process.env.INCREMENT_ATTS_FACTOR || 0.11;
 
 // Utility function to include player associations inside team query
 const includePlayerAssociationsInsideTeam = () => {

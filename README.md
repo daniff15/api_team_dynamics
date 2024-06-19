@@ -28,90 +28,81 @@ Team Dynamics is an API-driven platform designed to manage and interact with cha
 ## Getting Started
 
 ### Prerequisites
-- **Node.js** (v16.x or later)
-- **NPM** (v6.x or later)
-- **Docker** (optional, for containerized deployment)
+- **Node.js**
+- **NPM** 
+- **Docker** 
 
-### Installation - FAZER ISTO PARA O ENV FILE
+### Installation
 1. Clone the repository:
     ```sh
-    git clone https://github.com/yourusername/team-dynamics.git
-    cd team-dynamics
+    git clone https://github.com/daniff15/api_team_dynamics
+    cd api_team_dynamics
     ```
 
-2. Install dependencies:
-    ```sh
-    npm install
-    ```
-
-3. Set up environment variables by creating a `.env` file based on the example provided:
+2. Set up environment variables by creating a `.env` file based on the example provided:
     ```sh
     cp .env.example .env
     ```
 
-4. Update the `.env` file with your configuration settings.
+3. Update the `.env` file with your configuration settings.
 
-### Running the Application - MUDAR ISTO PARA CORRER COM O ENV FILE CERTO
+## Environment Variables
+Explanation about the environment variables:
+
+1. Ensure your `.env` file is properly configured. An example `.env` file might look like this:
+
+    ```plaintext
+    # Application configuration
+    PORT=5000
+
+    # Database configuration
+    MYSQL_USER=YOUR_MYSQL_USER
+    MYSQL_ROOT_PASSWORD=YOUR_MYSQL_ROOT_PASSWORD
+    MYSQL_DATABASE=YOUR_MYSQL_DATABASE
+    MYSQL_HOST=mysql
+    MYSQL_PORT=3306
+    MYSQL_DIALECT=mysql
+
+    # Game configuration (This are the default values for the game to work properly)
+    # You can change them if you want to modify the game behavior (Always test the game after changing these values - more information about the game configuration in the README.md file)
+    CRITICAL_HIT_PROBABILITY=0.1
+    STRONG_ATTACK=1.5
+    WEAK_ATTACK=0.5
+    MAX_FIRST_FORMULA_LEVEL=9
+    BASE_XP=100
+    INCREMENT=50
+    SEC_FORMULA_INCREMENT=500
+    INCREMENT_ATTS_FACTOR=0.11
+    ```
+
+    The platform uses various configuration variables to control game mechanics. These variables can be adjusted in the `.env` file:
+
+    Battle Variables:
+    - **CRITICAL_HIT_PROBABILITY**: Probability of a critical hit occurring (0.1 = 10% probability).
+    - **STRONG_ATTACK**: Multiplier for a strong attack.
+    - **WEAK_ATTACK**: Multiplier for a weak attack.
+
+    Player evolution Variables:
+    - **MAX_FIRST_FORMULA_LEVEL**: Maximum level for the first formula. Level from where the second formula will be activated - From a certain level it was taking too much XP to level up.
+    - **BASE_XP**: Base experience points for leveling from level 1 to 2.
+    - **INCREMENT**: Incremental XP added per level (Supposing BASE_XP is 100, to level up from level 2 to level 3, it will take (100 + INCREMENT)XP to level up, and so on, always increasing the INCREMENT to the previous needed value).
+    - **SEC_FORMULA_INCREMENT**: Increment needed to level up when the player passes the MAX_FIRST_FORMULA_LEVEL.
+    - **INCREMENT_ATTS_FACTOR**: Factor for incrementing attributes.
+
+The application will be available at `http://localhost:5000`.
+
+### Running the Application
 To start the application with Docker:
 1. Build the Docker image:
     ```sh
-    docker build -t team-dynamics .
-    ```
-
-2. Run the Docker container:
-    ```sh
-    docker run -d -p 5000:3000 --env-file .env team-dynamics
+    docker compose up --build
     ```
 
 The API will be available at `http://localhost:5000`.
 
-## Configuration - SE CALHAR EXPLICAR MELHOR AS FORMULAS
-The platform uses various configuration variables to control game mechanics. These variables can be adjusted in the `app/config/variables.json` file:
-
-```json
-{
-    "CRITICAL_HIT_PROBABILITY": 0.1,
-    "STRONG_ATTACK": 1.5,
-    "WEAK_ATTACK": 0.5,
-    "MAX_FIRST_FORMULA_LEVEL": 9,
-    "BASE_XP": 100,
-    "INCREMENT": 50,
-    "SEC_FORMULA_INCREMENT": 500,
-    "INCREMENT_ATTS_FACTOR": 0.11
-}
-```
-
-Battle Variables:
-- **CRITICAL_HIT_PROBABILITY**: Probability of a critical hit occurring (0.1 = 10% probability).
-- **STRONG_ATTACK**: Multiplier for a strong attack.
-- **WEAK_ATTACK**: Multiplier for a weak attack.
-
-Player evolution Variables:
-- **MAX_FIRST_FORMULA_LEVEL**: Maximum level for the first formula. Level from where the second formula will be activated - From a certain level it was taking too much XP to level up.
-- **BASE_XP**: Base experience points for leveling from level 1 to 2.
-- **INCREMENT**: Incremental XP added per level (Supposing BASE_XP is 100, to level up from level 2 to level 3, it will take (100 + INCREMENT)XP to level up, and so on, always increasing the INCREMENT to the previous needed value).
-- **SEC_FORMULA_INCREMENT**: Increment needed to level up when the player passes the MAX_FIRST_FORMULA_LEVEL.
-- **INCREMENT_ATTS_FACTOR**: Factor for incrementing attributes.
-
 ## API Documentation
 The API is documented using Swagger. Once the application is running, you can access the documentation at:
 http://localhost:5000/api-docs
-
-
-## Docker Deployment - MUDAR ISTO
-To deploy the application using Docker:
-
-1. Build the Docker image:
-    ```sh
-    docker build -t team-dynamics .
-    ```
-
-2. Run the Docker container:
-    ```sh
-    docker run -d -p 5000:3000 --env-file .env team-dynamics
-    ```
-
-The application will be available at `http://localhost:5000`.
 
 <!-- ## Contributing
 Contributions are welcome! Please fork the repository and submit a pull request for any features, improvements, or bug fixes.
