@@ -9,6 +9,7 @@ const BASE_XP = process.env.BASE_XP || 100;
 const INCREMENT = process.env.INCREMENT || 50;
 const SEC_FORMULA_INCREMENT = process.env.SEC_FORMULA_INCREMENT || 500;
 const INCREMENT_ATTS_FACTOR = process.env.INCREMENT_ATTS_FACTOR || 0.11;
+const GAIN_XTRA_POINTS_PROBABILITY = process.env.GAIN_XTRA_POINTS_PROBABILITY || 0.65;
 
 // Utility function to include player associations inside team query
 const includePlayerAssociationsInsideTeam = () => {
@@ -247,7 +248,7 @@ const checkLevelUp = async (character, max_level, t) => {
             character.character.level_id += 1;
             character.xp -= xp_needed;
 
-            if (Math.random() < 0.65) {
+            if (Math.random() < GAIN_XTRA_POINTS_PROBABILITY) {
                 character.att_xtra_points += 1;
             }
 

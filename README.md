@@ -88,6 +88,7 @@ Explanation about the environment variables:
     - **INCREMENT**: Incremental XP added per level (Supposing BASE_XP is 100, to level up from level 2 to level 3, it will take (100 + INCREMENT)XP to level up, and so on, always increasing the INCREMENT to the previous needed value).
     - **SEC_FORMULA_INCREMENT**: Increment needed to level up when the player passes the MAX_FIRST_FORMULA_LEVEL.
     - **INCREMENT_ATTS_FACTOR**: Factor for incrementing attributes.
+    - **GAIN_XTRA_POINTS_PROBABILITY**: Probability of gaining extra points when leveling up the player.
 
 The application will be available at `http://localhost:5000`.
 
