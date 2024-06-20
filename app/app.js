@@ -6,9 +6,20 @@ const charactersRoutes = require('./routes/characters');
 const battlesRoutes = require('./routes/battles');
 const utilsRoutes = require('./routes/utils');
 const appSwagger = require('./swagger');
+const cors = require('cors'); // Importing cors middleware
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// Configure CORS
+const corsOptions = {
+    origin: 'http://your-frontend-domain.com', // Replace with your frontend domain
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true, // Enable credentials, if you need to include cookies or other credentials in cross-origin requests.
+};
+
+app.use(cors(corsOptions)); // Enable CORS with specified options
 
 app.use(express.json());
 app.use(appSwagger);
