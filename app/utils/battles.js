@@ -4,9 +4,9 @@ const { updateTeamTotalXP, includePlayerAssociationsOutsideTeamPlayer, checkLeve
 const fs = require('fs');
 
 // Global Variables
-const CRITICAL_HIT_PROBABILITY = process.env.CRITICAL_HIT_PROBABILITY ||0.1;
-const STRONG_ATTACK = process.env.STRONG_ATTACK || 1.5;
-const WEAK_ATTACK = process.env.WEAK_ATTACK || 0.5;
+const CRITICAL_HIT_PROBABILITY = parseFloat(process.env.CRITICAL_HIT_PROBABILITY) ||0.1;
+const STRONG_ATTACK = parseFloat(process.env.STRONG_ATTACK) || 1.5;
+const WEAK_ATTACK = parseFloat(process.env.WEAK_ATTACK) || 0.5;
 
 const initializeQueue = (participants) => {
     const allCharacters = participants;

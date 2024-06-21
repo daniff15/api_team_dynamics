@@ -4,12 +4,12 @@ const { NotFoundError, ServerError } = require('../utils/errors');
 const fs = require('fs');
 
 // Global Variables
-const MAX_FIRST_FORMULA_LEVEL = process.env.MAX_FIRST_FORMULA_LEVEL || 9;
-const BASE_XP = process.env.BASE_XP || 100;
-const INCREMENT = process.env.INCREMENT || 50;
-const SEC_FORMULA_INCREMENT = process.env.SEC_FORMULA_INCREMENT || 500;
-const INCREMENT_ATTS_FACTOR = process.env.INCREMENT_ATTS_FACTOR || 0.11;
-const GAIN_XTRA_POINTS_PROBABILITY = process.env.GAIN_XTRA_POINTS_PROBABILITY || 0.65;
+const MAX_FIRST_FORMULA_LEVEL = parseInt(process.env.MAX_FIRST_FORMULA_LEVEL) || 9;
+const BASE_XP = parseInt(process.env.BASE_XP) || 100;
+const INCREMENT = parseInt(process.env.INCREMENT) || 50;
+const SEC_FORMULA_INCREMENT = parseInt(process.env.SEC_FORMULA_INCREMENT) || 500;
+const INCREMENT_ATTS_FACTOR = parseFloat(process.env.INCREMENT_ATTS_FACTOR) || 0.11;
+const GAIN_XTRA_POINTS_PROBABILITY = parseFloat(process.env.GAIN_XTRA_POINTS_PROBABILITY) || 0.65;
 
 // Utility function to include player associations inside team query
 const includePlayerAssociationsInsideTeam = () => {
@@ -307,7 +307,6 @@ const calculateNewAttributes = (currentAttributes) => {
 };
 
 const calculate_xp_needed = (character) => {
-    // METER ISTO A IR BUSCAR A UM FICHEIRO DE CONFIGURACAO
     if (character.character.level_id < MAX_FIRST_FORMULA_LEVEL) {
         return BASE_XP + ((character.character.level_id - 1) * INCREMENT);
     } else {
