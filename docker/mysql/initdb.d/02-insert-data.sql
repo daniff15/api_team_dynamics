@@ -23,8 +23,7 @@ SET FOREIGN_KEY_CHECKS = 1; -- Re-enable foreign key checks
 
 -- Inserting data into the 'games' table
 INSERT INTO games (name) VALUES 
-('Narrativa One'), 
-('Narrativa Two');
+('Narrativa One');
 
 -- Inserting data into the 'character_types' table
 INSERT INTO character_types (name) VALUES 
@@ -91,14 +90,12 @@ INSERT INTO games_bosses(game_id, boss_id) VALUES
 (1,9),
 (1,10),
 (1,11),
-(1,12),
-(2,10),
-(2,12);
+(1,12);
 
 -- Inserting data into the 'teams' table
 INSERT INTO teams (name, community_id_ext, game_id, owner_id) VALUES 
 ('Alpha Team', 'deca', 1, 1), 
-('Beta Team', 'cocaad', 2, 5);
+('Beta Team', 'cocaad', 1, 5);
 
 -- Inserting data into the 'team_characters' table
 INSERT INTO team_players (team_id, player_id) VALUES 
@@ -176,10 +173,10 @@ INSERT INTO character_level_attributes (character_id, level_id, attribute_id, va
 (11, 5, 3, 60), -- ATK
 (11, 5, 4, 60), -- SPEED
 -- Boss Fogo
-(12, 5, 1, 600), -- HP
-(12, 5, 2, 135), -- DEF
-(12, 5, 3, 135), -- ATK
-(12, 5, 4, 135); -- SPEED
+(12, 5, 1, 500), -- HP
+(12, 5, 2, 80), -- DEF
+(12, 5, 3, 80), -- ATK
+(12, 5, 4, 80); -- SPEED
 
 -- Inserting data into the 'elements' table
 INSERT INTO elements (name) VALUES 
@@ -202,30 +199,11 @@ INSERT INTO character_elements (character_id, element_id) VALUES
 (2, 2),
 (3, 3),
 (4, 4),
-(5, 1),
-(6, 2),
-(7, 3),
+(5, 3),
+(6, 3),
+(7, 4),
 (8, 4),
 (9, 4),
 (10, 3),
 (11, 1),
 (12, 2);
-
--- Inserting data into the 'battles' table - team battle
-INSERT INTO battles (team_id, opponent_team_id, battle_date, winner_id) VALUES (1, 2, NOW(), 1);
-INSERT INTO battles (team_id, opponent_team_id, battle_date, winner_id) VALUES (1, 2, NOW(), 2);
-
--- Inserting data into the 'battles' table - boss battle
-INSERT INTO battles (team_id, boss_id, battle_date, winner_id) VALUES (1, 9, NOW(), 1);
-INSERT INTO battles (team_id, boss_id, battle_date, winner_id) VALUES (2, 10, NOW(), 10);
-
--- Inserting data into the 'attacks' table - simulate the attacks between characters and bosses
-INSERT INTO attacks (battle_id, attacker_id, defender_id, damage, attack_time) VALUES 
-(1, 1, 9, 5, NOW()), 
-(1, 2, 9, 3, NOW()), 
-(1, 3, 9, 4, NOW()), 
-(1, 4, 9, 2, NOW()), 
-(1, 9, 1, 10, NOW()), 
-(1, 9, 2, 10, NOW()), 
-(1, 9, 3, 10, NOW()), 
-(1, 9, 4, 10, NOW()); 

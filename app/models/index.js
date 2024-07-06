@@ -16,16 +16,15 @@ const PlayersModel = require("./players");
 const BossesModel = require("./bosses");
 const GamesModel = require("./games");
 const GameBossesModel = require("./gamesBosses");
-const env = process.env.NODE_ENV || 'local';
 
 const sequelize = new Sequelize(
-  process.env.MYSQL_DATABASE,
-  process.env.MYSQL_USER,
-  process.env.MYSQL_ROOT_PASSWORD,
+  process.env.MYSQL_DATABASE || 'team_dynamics',
+  process.env.MYSQL_USER || 'root',
+  process.env.MYSQL_ROOT_PASSWORD || 'password',
   {
-    dialect: process.env.MYSQL_DIALECT,
-    host: process.env.MYSQL_HOST,
-    port: process.env.MYSQL_PORT
+    dialect: process.env.MYSQL_DIALECT || 'mysql',
+    host: process.env.MYSQL_HOST || 'mysql',
+    port: process.env.MYSQL_PORT || 3306,
   }
 );
 
