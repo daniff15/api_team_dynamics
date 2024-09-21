@@ -99,8 +99,6 @@ To start the application with Docker:
     docker compose up --build
     ```
 
-The API will be available at `http://localhost:5000`.
-
 ## API Documentation
 The API is documented using Swagger. Once the application is running, you can access the documentation at:
 http://localhost:5000/api-docs
