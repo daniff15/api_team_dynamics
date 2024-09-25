@@ -45,10 +45,6 @@ for player_key, badges_list in player_badges.items():
 
 # After the loop, print the median for each team
 for team_id, badge_list in team_badges.items():
-  if team_id == 2:
-    team_median = median(badge_list) + 5
-  else:
-    team_median = median(badge_list)
   print(f"Team {team_id} - Median Badges: {team_median}")
 
 # Print the results
