@@ -56,8 +56,8 @@ Explanation about the environment variables:
     PORT=5000
 
     # Database configuration
-    MYSQL_USER=YOUR_MYSQL_USER
-    MYSQL_ROOT_PASSWORD=YOUR_MYSQL_ROOT_PASSWORD
+    MYSQL_USER=root #default
+    MYSQL_ROOT_PASSWORD=password #default
     MYSQL_DATABASE=YOUR_MYSQL_DATABASE
     MYSQL_HOST=mysql
     MYSQL_PORT=3306
