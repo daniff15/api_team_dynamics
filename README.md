@@ -90,7 +90,7 @@ Explanation about the environment variables:
     - **INCREMENT_ATTS_FACTOR**: Factor for incrementing attributes.
     - **GAIN_XTRA_POINTS_PROBABILITY**: Probability of gaining extra points when leveling up the player.
 
-The application will be available at `http://localhost:5000`.
+The application will be available at `http://localhost:5001`.
 
 ### Running the Application
 To start the application with Docker:
@@ -101,7 +101,7 @@ To start the application with Docker:
 
 ## API Documentation
 The API is documented using Swagger. Once the application is running, you can access the documentation at:
-http://localhost:5000/api-docs
+http://localhost:5001/api-docs
 
 <!-- ## Contributing
 Contributions are welcome! Please fork the repository and submit a pull request for any features, improvements, or bug fixes.

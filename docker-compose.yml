@@ -1,8 +1,8 @@
 version: "3.9"
 services:
   mysql:
-    image: mysql:5.7
-    command: --default-authentication-plugin=mysql_native_password
+    image: mysql:latest
+    platform: linux/amd64
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: password
@@ -18,12 +18,13 @@ services:
     depends_on:
       - mysql
     ports:
-      - 5000:5000
+      - 5001:5000
     env_file:
       - .env
 
   nginx:  
     image: nginx:latest
+    platform: linux/amd64
     ports:
       - "80:80"
     volumes:
