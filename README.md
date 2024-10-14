@@ -103,7 +103,28 @@ To start the application with Docker:
 The API is documented using Swagger. Once the application is running, you can access the documentation at:
 http://localhost:5001/api-docs
 
-<!-- ## Contributing
+## Scripts Execution (Testing proposes)
+•	flow.py: Creates and simulates two teams to defeat all bosses.
+
+•	count_badges.py: Calculates the median badges needed for each team to win.
+
+•	cleanup.py: Deletes records from the database for rerunning the scripts.
+
+
+```sh
+    cd scripts
+
+    # create a virtual environment
+    python3 -m venv venv
+    source venv/bin/activate
+
+    # run the scripts
+    python3 cleanup.py
+    python3 flow.py
+    python3 count_badges.py
+```
+
+## Contributing
 Contributions are welcome! Please fork the repository and submit a pull request for any features, improvements, or bug fixes.
 
 ### Steps to Contribute
@@ -114,4 +135,4 @@ Contributions are welcome! Please fork the repository and submit a pull request 
 5. Create a new Pull Request
 
 ## License
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details. -->
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
