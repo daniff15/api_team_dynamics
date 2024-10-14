@@ -6,9 +6,10 @@ import time
 # Configuration
 TEAM_1 = "1"
 TEAM_2 = "2"
-ENDPOINT_BASE_URL = "http://localhost:5000/"
+ENDPOINT_BASE_URL = "http://localhost:5001/"
 LOG_FILE = "game_log.txt"
-MAX_BADGES = 2
+XP_FOR_BADGE = 175
+
 
 # Initialize log file
 with open(LOG_FILE, "w") as log_file:
@@ -33,7 +34,7 @@ def allocate_badges_and_xp(team_id, num_players, round_num):
     for i in range(1, num_players + 1):
         player_id = i + (int(team_id) - 1) * num_players
         badges = 1
-        xp = badges * 175
+        xp = badges * XP_FOR_BADGE
         
         with open(LOG_FILE, "a") as log_file:
             log_file.write(f"Round {round_num}: Team {team_id} - Player {player_id} received {badges} badges ({xp} XP)\n")
@@ -45,6 +46,7 @@ def allocate_badges_and_xp(team_id, num_players, round_num):
 def attempt_boss_defeat(team_id, round_num):
     response = call_endpoint(f"games/odds/{team_id}", "GET")
     if response is None or "data" not in response:
+        print(response)
         with open(LOG_FILE, "a") as log_file:
             log_file.write(f"Round {round_num}: Team {team_id} - Error: Empty or malformed response from API\n")
         return 0
