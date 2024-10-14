@@ -298,6 +298,7 @@ CREATE TABLE IF NOT EXISTS `team_dynamics`.`players` (
   `att_xtra_points` INT(11) NULL DEFAULT '0',
   `ext_id` VARCHAR(256) NOT NULL,
   PRIMARY KEY (`id`, `ext_id`),
+  UNIQUE (`id`),
   CONSTRAINT `fk_players_1`
     FOREIGN KEY (`id`)
     REFERENCES `team_dynamics`.`characters` (`id`)
